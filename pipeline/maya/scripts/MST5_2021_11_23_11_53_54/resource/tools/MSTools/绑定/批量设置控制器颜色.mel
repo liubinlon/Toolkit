@@ -1,0 +1,82 @@
+
+global proc colorChange()
+{
+	int $color=3;
+	if(`window -ex colorChageWin`) // 
+		deleteUI colorChageWin; // 
+	window -w 300 -t "colorChangeWin 作者：未知" colorChageWin;
+
+	columnLayout -adj 1;
+	
+	text -l "			";
+	button -label "color"  -bgc 0.5 0.5 0.5 -command ("lineChange(0)");
+	button -label "color1"  -bgc 0 0 0 -command ("lineChange(1)");
+	button -label "color2" -bgc 0.247 0.247 0.247 -command ("lineChange(2)");
+	button -label "color3" -bgc 0.498 0.498 0.498 -command ("lineChange(3)");
+	button -label "color4" -bgc 0.608 0 0.157 -command ("lineChange(4)");
+	button -label "color5" -bgc 0 0.16 0.376-command ("lineChange(5)");
+	button -label "color6" -bgc 0 0 1 -command ("lineChange(6)");
+	button -label "color7" -bgc 0 0.275 0.094 -command ("lineChange(7)");
+	button -label "color8" -bgc 0.149 0 0.263-command ("lineChange(8)");
+	button -label "color9" -bgc 0.78 0 0.78 -command ("lineChange(9)");
+	button -label "color10" -bgc 0.537 0.278 0.2 -command ("lineChange(10)");
+	button -label "color11" -bgc 0.243 0.133 0.121 -command ("lineChange(11)");
+	button -label "color12" -bgc 0.6 0.145 0 -command ("lineChange(12)");
+	button -label "color13" -bgc 1 0 0 -command ("lineChange(13)");
+	button -label "color14" -bgc 0 1 0 -command ("lineChange(14)");
+	button -label "color15" -bgc 0 0.2549 0.6 -command ("lineChange(15)");
+	button -label "color16" -bgc 1 1 1 -command ("lineChange(16)");
+	button -label "color17" -bgc 1 1 0 -command ("lineChange(17)");
+	button -label "color18" -bgc 0.388 0.863 1 -command ("lineChange(18)");
+	button -label "color19" -bgc 0.263 1 0.639 -command ("lineChange(19)");
+	button -label "color20" -bgc 1 0.686 0.686 -command ("lineChange(20)");
+	button -label "color21" -bgc 0.89 0.674 0.474 -command ("lineChange(21)");
+	button -label "color22" -bgc 1 1 0.388 -command ("lineChange(22)");
+	button -label "color23" -bgc 0 0.6 0.329-command ("lineChange(23)");
+	button -label "color24" -bgc 0.627 0.411 0.188 -command ("lineChange(24)");
+	button -label "color25" -bgc 0.619 0.627 0.188 -command ("lineChange(25)");
+	button -label "color26" -bgc 0.408 0.631 0.188 -command ("lineChange(26)");
+	button -label "color27" -bgc 0.188 0.631 0.365 -command ("lineChange(27)");
+	button -label "color28" -bgc 0.188 0.627 0.627 -command ("lineChange(28)");
+	button -label "color29" -bgc 0.188 0.403 0.627 -command ("lineChange(29)");
+	button -label "color30" -bgc 0.434 0.188 0.627 -command ("lineChange(30)");
+	button -label "color31" -bgc 0.627 0.188 0.411 -command ("lineChange(31)");
+text -l "			";
+
+
+
+
+		
+	showWindow;
+}
+
+
+global proc lineChange(int $color)
+{
+	int $i;
+	string $over;
+	string $col;
+	string $curves[] =`ls -sl`;//父物体
+	int $num =size($curves);
+	for($i =0;$i<$num;$i=$i+1)
+	{
+		string $nodeType = `nodeType $curves[$i]`;
+		if($nodeType =="joint")     //骨骼		
+			{
+				string $over =$curves[$i]+".overrideEnabled";  //骨骼draw override
+				setAttr $over 1;
+				string $col =$curves[$i]+".overrideColor";
+				setAttr $col $color;}
+			else     	//骨骼外其他物体
+			{
+				pickWalk -d down;
+				string $curveshape[] =`ls -sl`;//子物体
+				string $over =$curveshape[$i]+".overrideEnabled";  //子物体draw override
+				setAttr $over 1;
+				string $col =$curveshape[$i]+".overrideColor";  //子物体颜色
+				setAttr $col $color;}
+	}
+}
+
+
+colorChange();

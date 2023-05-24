@@ -1,0 +1,201 @@
+//实体多边形剪切工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+//拷贝全部代码，到脚本编辑器里面，执行代码，打开多边形剪切工具窗口///////
+//////////////////////////////////////////////////////////////////
+global proc gtCrackMe()
+{
+           string $window = "crackMeWindow";
+	if (`window -q -ex $window`) deleteUI $window;
+
+	window -w 350 -h 325 -title "老船角色绑定-☆☆☆☆☆-实体多边形剪切工具！" $window;
+ columnLayout -adjustableColumn true ;
+  text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/854\"";
+         text -align "left" "步骤一:";
+         text -align "left" "选择实体多边形物体，创建剪切平面物体";
+          $strNumSplitsField = `intFieldGrp
+                -width 300
+		-columnWidth2 105 30
+		-columnAttach2 "both" "both"
+		-columnOffset2 3 0
+		-columnAlign2 "right" "left"
+		-label "剪切平面物体段数:"
+		-numberOfFields 1
+		-value1 25
+		-enable1 1
+		numOfDivs`;
+          
+
+         button -label "创建剪切平面物体" -c createPlane;
+         
+         text -align "left" "剪切平面物体的名称不是：carvingPlane,时\n点击重命名按钮";
+
+        button -label "重命名剪切平面物体"  -c carvePlaneRename;
+
+         text -align "left" "步骤二:";
+         text -align "left" "选择实体多边形物体，进行剪切";
+         checkBox -l "删除剪切平面" -v 0 gtCutPlane;
+
+         button -label "剪切选择物体" -c crackMeCode;
+
+                separator -h 10;
+
+         columnLayout -adjustableColumn true;
+         text -align "left" -label "当前选择物体将被剪切";
+			textField -editable false currentObjectToCrackField;
+
+                             setParent..;
+                             setParent..;
+                             setParent..;
+showWindow $window;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+////                              Multiple Planes Procedures                         ////
+/////////////////////////////////////////////////////////////////////////////////////////
+
+global proc carvePlaneRename(){
+
+   string $selected[] = `ls -sl`;
+   rename $selected[0] carvingPlane; 
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+////                              crackMe Procedure                             ////
+/////////////////////////////////////////////////////////////////////////////////////////
+global proc crackMeCode()
+{
+ //query polygonal object and plane
+ string $select[] = `ls -sl`;
+ string $plane = "carvingPlane";
+    int $cutPlane=`checkBox -q -v gtCutPlane`;
+
+ if ($select[0] == "")
+ {
+   warning "请选择多边形物体";
+ }
+ else
+ {
+
+  //duplicate for booleans
+
+  select -r $select[0];
+  string $duplicateObject[] = `duplicate -rr`;
+if($cutPlane==0){
+      select -r $plane;
+      duplicate -rr;
+      rename ($plane+"temp");
+}
+  select -r $plane;
+  string $duplicatePlane[] = `duplicate -rr`;
+
+  //inverse the normals on the second plane
+  polyNormal -normalMode 3 -ch 1 $duplicatePlane[0];
+
+  //boolean the object
+  string $boolean1[] = `polyBoolOp -op 3 -ch 1 -useThresholds 1 $select[0] $plane`;
+  string $boolean2[] = `polyBoolOp -op 3 -ch 1 -useThresholds 1 $duplicateObject[0] $duplicatePlane[0]`;
+
+  
+  //delete history and center pivot on new objects
+    select -r $boolean1[0];
+    delete -ch;
+    CenterPivot;
+    makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+    
+    select -r $boolean2[0];
+    delete -ch;
+    CenterPivot;
+    makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+    if($cutPlane==0){
+      select -r ($plane+"temp");
+      rename $plane;
+    }
+}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+////                              crackMe create plane procedure                    ////
+/////////////////////////////////////////////////////////////////////////////////////////
+global proc createPlane()
+{
+   string $select[] =`ls -sl`;
+   if ($select[0] == "")
+   {
+     warning "请选择多边形物体";
+   }else
+   {
+   //query the object selected for menu
+        string $currentBaseMesh = `textField -q -text currentObjectToCrackField`;
+        string $currentSelXform[] = `ls -sl`;
+	string $currentSelShape[] = `listRelatives -shapes $currentSelXform[0]`;
+	
+	if ($currentSelXform[1] != "")
+	{
+		warning "请选择多边形物体";
+	} else
+		{
+			if (`objectType $currentSelShape[0]` != "mesh")
+			{
+				warning "请选择多边形物体，不支持NURBS曲面和细分物体";
+			} else
+				{
+					textField -edit -tx $currentSelXform[0] currentObjectToCrackField;
+					print ($currentSelXform[0] + " was loaded as the base mesh.\n");
+				}
+		}
+
+    //create plane at selected object
+    string $getType[] = `listRelatives -path -s $select[0]`;
+
+    if (!`objectType -isType "mesh" $getType[0]`)
+    {
+      warning "请选择多边形物体，不支持NURBS曲面和细分物体";
+    }
+    else
+    {
+
+          //get int from text field for plane
+        int $divisionsFromTextField = `intFieldGrp -q -value1 numOfDivs`;
+//        int $sizeFromTextField = `intFieldGrp -q -value1 planeSize`;
+        float $bbmin[]=`getAttr ($select[0]+".boundingBoxMin")`;
+        float $bbmax[]=`getAttr ($select[0]+".boundingBoxMax")`;
+        float $lxx=$bbmax[0]-$bbmin[0];
+        float $lyy=$bbmax[1]-$bbmin[1];
+        float $lzz=$bbmax[2]-$bbmin[2];
+        float $sizeFromTextField;
+        if($lxx>=$lyy){
+            $sizeFromTextField=$lxx;
+        }else{
+             $sizeFromTextField=$lyy;
+        }
+        if($sizeFromTextField<=$lzz)$sizeFromTextField=$lzz;
+        $sizeFromTextField=$sizeFromTextField*1.5;
+    
+        string $plane[] = `polyPlane -w $sizeFromTextField -h $sizeFromTextField -sx $divisionsFromTextField -sy $divisionsFromTextField -ax 0 1 0 -cuv 1 -ch 1 -n carvingPlane`;
+
+        float $worldSpace[] = `xform -q -ws -rp $select[0]`;
+        setAttr ($plane[0] + ".translateX") $worldSpace[0];
+        setAttr ($plane[0] + ".translateY") $worldSpace[1];
+        setAttr ($plane[0] + ".translateZ") $worldSpace[2];
+
+        select -r $plane[0];
+        delete -ch;
+        makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+        select -cl;
+        select -r $plane[0];
+    }
+
+  }
+}
+/////////////////////////////////////////////////////////////
+gtCrackMe;

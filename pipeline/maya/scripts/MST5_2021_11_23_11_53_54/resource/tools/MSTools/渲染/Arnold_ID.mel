@@ -1,0 +1,371 @@
+
+
+global int $IDNumber;
+global int $floatIDnumber;
+global int $AovStartNum;
+global int $OoM;
+
+//创建ID
+global proc Create_windows()
+
+{
+
+string $win = "RockGenerator";
+global int $IDNumber;
+global int $floatIDnumber;
+global int $AovStartNum;
+global int $OoM;
+
+if ($floatIDnumber<1 && $floatIDnumber>300 )
+
+{$floatIDnumber =1;}
+
+if ($IDNumber<1 && $IDNumber>300 )
+
+{$IDNumber =1;}
+
+if (`window -exists $win`) deleteUI -window $win;
+
+window -title "Matte ID for arnold"
+
+-minimizeButton true
+
+-maximizeButton false
+
+-rtf true
+
+-wh 300 300 $win;
+
+columnLayout
+
+-adjustableColumn true
+
+-cal "left" ColumnLayout;
+
+frameLayout
+
+-labelVisible false
+
+-marginWidth 0
+
+-marginHeight 0 rockFrame;
+
+columnLayout;
+
+radioButtonGrp
+
+-numberOfRadioButtons 1
+
+-label "ID Type"
+
+-labelArray2 "ObjectsID" "MaterialsID"
+
+-sl $OoM rezFlag;
+
+separator -height 8 -st none;
+
+intSliderGrp
+
+-label "Number of IDs" -field true
+
+-value $floatIDnumber
+
+-minValue 1
+
+-maxValue 200
+
+-sliderStep 1
+
+idNum;
+
+separator -height 10 -st none;
+
+intSliderGrp
+
+-label "Custom aovs startNum" -field true
+
+-value $AovStartNum
+
+-minValue 1
+
+-maxValue 200
+
+-sliderStep 1
+
+aovNum;
+
+separator -height 10 -st none;
+
+rowColumnLayout -numberOfRows 1 -rowHeight 1 30;
+
+button -label "Create_ID" -w 120 -c "Create_ID()";
+
+button -label "remove_ID" -w 120 -c "Remove_objectID()";
+
+button -label "Create_Aov" -w 120 -c "Create_Aov()";
+
+button -label "Clear node form ths" -w 120 -c "Clear_node()";
+
+setParent RockGenerator;
+
+showWindow $win;
+
+}
+
+
+//加属性
+global proc Create_ID()
+{
+global int $IDNumber;
+global int $floatIDnumber;
+global int $AovStartNum;
+global int $OoM;
+global string $win;
+int $IDNumber = `intSliderGrp -q -value idNum`;
+int $AovStartNum = `intSliderGrp -q -value aovNum`;
+int $OoM =`radioButtonGrp -q -sl rezFlag`;
+
+int $ID_star;
+switch($IDNumber%3)
+  {
+ case 1: $ID_star=$IDNumber;
+        break;
+ case 2: $ID_star=$IDNumber-1;
+        break;
+ case 0:$ID_star=$IDNumber-2;
+        break;
+  }
+int $ID_midd=$ID_star+1;
+int $ID_end=$ID_midd+1;
+string $attname = "mtoa_constant_ID"+$ID_star+"_"+$ID_end;
+string $attnamex = $attname+"X";
+string $attnamey = $attname+"Y";
+string $attnamez = $attname+"Z";
+
+string $selection[] = `ls -sl`;
+string $shapes[]    = `listRelatives -shapes -noIntermediate $selection`;
+
+for ($node in $shapes)
+  {
+   if(`objExists ($node+"."+$attname)` !=1)
+    {
+
+addAttr -ln $attname  -at double3  $node;
+addAttr -ln $attnamex  -at double -p $attname  $node;
+addAttr -ln $attnamey  -at double -p $attname  $node;
+addAttr -ln $attnamez  -at double -p $attname  $node;
+
+      switch($IDNumber%3)
+        {
+          case 1: 
+          setAttr -type double3 ($node+"."+$attname) 1 0 0;
+          setAttr -e-keyable true ($node+"."+$attname);
+          setAttr -e-keyable true ($node+"."+$attnamex);
+          setAttr -e-keyable true ($node+"."+$attnamey);
+          setAttr -e-keyable true ($node+"."+$attnamez);
+          print ("\n 创建了ID：" + $attname + ":1 0 0");
+          break;
+          case 2:
+          setAttr -type double3 ($node+"."+$attname) 0 1 0;
+          setAttr -e-keyable true ($node+"."+$attname);
+          setAttr -e-keyable true ($node+"."+$attnamex);
+          setAttr -e-keyable true ($node+"."+$attnamey);
+          setAttr -e-keyable true ($node+"."+$attnamez);
+          print ("\n 创建了ID：" + $attname + ":0 1 0");
+          break;
+          case 0:
+          setAttr -type double3 ($node+"."+$attname) 0 0 1;
+          setAttr -e-keyable true ($node+"."+$attname);
+          setAttr -e-keyable true ($node+"."+$attnamex);
+          setAttr -e-keyable true ($node+"."+$attnamey);
+          setAttr -e-keyable true ($node+"."+$attnamez);
+          print ("\n 创建了ID：" + $attname + ":0 0 1");
+          break;
+
+         }
+
+Create_objectID_layer();
+Into_objectID_layer();
+$floatIDnumber = $IDNumber + 1;
+
+}
+else 
+{
+    switch($IDNumber%3)
+{
+ case 1: 
+setAttr -type double3 ($node+"."+$attname) 1 0 0;
+setAttr -e-keyable true ($node+"."+$attname);
+setAttr -e-keyable true ($node+"."+$attnamex);
+setAttr -e-keyable true ($node+"."+$attnamey);
+setAttr -e-keyable true ($node+"."+$attnamez);
+Create_objectID_layer();
+Into_objectID_layer();
+$floatIDnumber = $IDNumber + 1;
+print ("\n 设置了ID：" + $attname + ":1 0 0");
+        break;
+ case 2:
+setAttr -type double3 ($node+"."+$attname) 0 1 0;
+setAttr -e-keyable true ($node+"."+$attname);
+setAttr -e-keyable true ($node+"."+$attnamex);
+setAttr -e-keyable true ($node+"."+$attnamey);
+setAttr -e-keyable true ($node+"."+$attnamez);
+Create_objectID_layer();
+Into_objectID_layer();
+$floatIDnumber = $IDNumber + 1;
+print ("\n 设置了ID：" + $attname + ":0 1 0");
+        break;
+ case 0:
+setAttr -type double3 ($node+"."+$attname) 0 0 1;
+setAttr -e-keyable true ($node+"."+$attname);
+setAttr -e-keyable true ($node+"."+$attnamex);
+setAttr -e-keyable true ($node+"."+$attnamey);
+setAttr -e-keyable true ($node+"."+$attnamez);
+Create_objectID_layer();
+Into_objectID_layer();
+$floatIDnumber = $IDNumber + 1;
+print ("\n 设置了ID：" + $attname + ":0 0 1");
+        break;
+
+}
+
+}
+
+}
+
+Create_windows();
+
+}
+
+//去除ID
+
+global proc Remove_objectID()
+
+{
+
+ string $mySelection []  = `ls -sl`;
+ string $shapes[]    = `listRelatives -shapes -noIntermediate $mySelection`;
+ string $useAtt[] = `listAttr -userDefined $shapes`;
+
+ for($each in $shapes)
+ {
+  for ($X=0; $X<=size($useAtt);$X=$X+4) 
+   {
+     if(`objExists ($each+"."+$useAtt[$X])` !=0)
+       {
+        deleteAttr -attribute $useAtt[$X] $each;
+        }
+   }
+ }
+}
+
+//创建层
+
+global proc Create_objectID_layer() {
+
+if (`objExists "ObjectID_temp_layer"` != 1)
+
+{
+
+createDisplayLayer -name "ObjectID_temp_layer" -number 1 -nr;
+setAttr "ObjectID_temp_layer.visibility" 0;
+}
+
+}
+
+//添加物体进层
+
+global proc Into_objectID_layer() {
+
+editDisplayLayerMembers -noRecurse ObjectID_temp_layer `ls -selection`;
+
+}
+
+//创建Aov
+
+global proc Create_Aov(){
+
+global int $IDNumber;
+
+global int $AovStartNum;
+
+global int $OoM;
+
+int $IDNumber = `intSliderGrp -q -value idNum`;
+
+int $AovStartNum = `intSliderGrp -q -value aovNum`;
+
+int $MmaxID=$IDNumber;
+
+int $OoM =`radioButtonGrp -q -sl rezFlag`;
+
+//物体ID创建AOV
+if($OoM==1)
+{
+int $aov_star=1;
+int $aov_midd=$aov_star+1;
+int $aov_end=$aov_midd+1;
+int $aovListNum=0;
+string $attname = "ID"+$aov_star+"_"+$aov_end;
+string $nodename;
+for ($aov_star=$AovStartNum; $aov_star <= $IDNumber-1; $aov_star=$aov_star+3)
+{
+//创建aiUserDataColor
+$aov_end=$aov_star+2;
+string $nodename = `createNode aiUserDataColor -name ("aiUserDataColor_"+"ID"+$aov_star
++"_"+$aov_end)`;
+setAttr -type "string" ($nodename+".colorAttrName") ("ID"+$aov_star+"_"+$aov_end);
+//创建aiAov
+string $aiAOVname = `createNode aiAOV -name ("aiAOV_"+"ID"+$aov_star+"_"+$aov_end)`;
+setAttr -type "string" ($aiAOVname+".name") ("ID"+$aov_star+"_"+$aov_end);
+setAttr  ($aiAOVname+".type") 5;
+connectAttr defaultArnoldDriver.message ($aiAOVname+".outputs[0].driver");
+connectAttr defaultArnoldFilter.message ($aiAOVname+".outputs[0].filter");
+connectAttr ($nodename+".outColor") ($aiAOVname+".defaultValue");
+
+//创建aovList
+if (`objExists defaultArnoldRenderOptions.aovList[$aovListNum]` !=1)
+  {
+ connectAttr ($aiAOVname+".message") defaultArnoldRenderOptions.aovList[$aovListNum];
+  }
+else
+  {
+    while (`connectionInfo -isDestination defaultArnoldRenderOptions.aovList[$aovListNum]
+`) 
+    {
+     $aovListNum=$aovListNum+1;
+    }
+    connectAttr ($aiAOVname+".message") defaultArnoldRenderOptions.aovList[$aovListNum];
+  }
+ }
+}
+
+//材质ID创建AOV
+if($OoM==2)
+ {
+
+ }
+}
+
+//清理aiUserDataColorID和aiAOVID的节点.
+global proc Clear_node()
+
+{
+global int $IDNumber;
+global int $floatIDnumber;
+global int $AovStartNum;
+global int $OoM;
+global string $win;
+int $IDNumber = `intSliderGrp -q -value idNum`;
+int $AovStartNum = `intSliderGrp -q -value aovNum`;
+int $OoM =`radioButtonGrp -q -sl rezFlag`;
+
+//删除插件所创建的节点
+string $clearnode[] = `ls ("aiUserDataColor_ID*") ("aiAOV_ID*")`;
+delete $clearnode;
+//刷新面板
+Create_windows();
+}
+
+
+Create_windows();

@@ -1,0 +1,891 @@
+//MAYA灯光创建工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+global proc gtSkyLightWin(){
+
+string $gtFrame1on="frameLayout -e -vis  1 gtFrame1;frameLayout -e  gtFrame1;frameLayout -e -vis 0 gtFrame3;frameLayout -e -vis 0 gtFrame2;";
+
+string $gtFrame3on="frameLayout -e -vis 0 gtFrame1;frameLayout -e -vis 1 gtFrame3;frameLayout -e -vis 0 gtFrame2;frameLayout -e  gtFrame3;";
+
+string $gtFrame2on="frameLayout -e -vis 0 gtFrame1;frameLayout -e -vis 0 gtFrame3;frameLayout -e -vis 1 gtFrame2;frameLayout -e  gtFrame2;";
+
+if(`window -ex gtSkyLightWin`) deleteUI -window gtSkyLightWin;
+window -t  "老船角色绑定-☆-MAYA灯光创建工具" -wh 420 260 gtSkyLightWin;
+formLayout gtForm;
+columnLayout -adj 1 gtColumnLmain;
+columnLayout -adj 1 gtMaintColumnLay;
+text -l "老船动画吧";
+button -l "访 问 老 船 动 画 吧！" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1712\"";
+frameLayout  -l "灯光形状" -la "center"  gtframeMain;
+radioButtonGrp  -l "" -nrb 3 -la3 "球形" "平面" "圆柱" -cw4 100 90 90 90 -sl 1
+          -on1 $gtFrame3on -on2 $gtFrame1on  -on3 $gtFrame2on gtRadioShapeType;
+
+setParent..;
+
+frameLayout -l "平面灯光" -la "center" -vis 0   gtFrame1;
+
+columnLayout -adj 1 gtColumnL1;
+
+radioButtonGrp -l "灯光类型" -nrb 3 -cw4 60 100 100 100  -sl 1 -la3 "方向光" "点光" "聚光灯"  gtRadioType1;
+radioButtonGrp -l ""  -nrb 3 -cw4 60 100 100 100 -scl "gtRadioType1" -la3 "环境光" "区域光" "体积光" gtRadioType1a;
+separator -style single;
+rowLayout -nc 5 -cw5 66 29 91 59 80 gtrowL1;
+text -l "" texta;
+text -l "宽度:" -w 60 text1;
+floatField  -v 15  gtfloatF1;
+text -l "长宽比:" -w 60 text2;
+floatField  -v 1  gtfloatF2;
+setParent..;
+
+rowLayout -nc 5 -cw5 60 35 115 35 110 gtrowL2;
+text -l "" textb;
+text -l "U段数:" text3;
+intField  -v 6 gtintF1;
+text -l "V段数:" text4;
+intField  -v 6 gtintF2;
+setParent..;
+
+rowLayout -nc 4 -cw4 60 35 133 160  gtrowL3;
+text -l "" textc;
+text -l "名称:" text5;
+textField  -text "plane" -w 120 gttextF1;
+button -l "创建平面灯光" -c "gtLightsplane;" but1;
+setParent..;
+
+setParent..;
+setParent..; 
+
+frameLayout -l "圆柱灯光" -la "center" -vis 0  gtFrame2;
+
+formLayout gtSubForm2;
+columnLayout -adj 1 gtcolumnL2;
+radioButtonGrp -l "灯光类型" -nrb 3 -cw4 60 100 100 100  -sl 1 -la3 "方向光" "点光" "聚光灯"  gtRadioType2;
+radioButtonGrp -l ""  -nrb 3 -cw4 60 100 100 100 -scl "gtRadioType2" -la3 "环境光" "区域光" "体积光" gtRadioType2a;
+
+separator -style single;
+rowLayout -nc 5 -cw5 64 31 122 28 80 gtrowL4; 
+
+text -l "" textd;
+text -l "半径:" text6;
+floatField  -v 10 gtfloatF3;
+text -l "高度:" text7;
+floatField -v 2 gtfloatF4;
+setParent..;
+
+rowLayout -nc 5 -cw5 60 35 115 35 110 gtrowL5;
+text -l "" texte;
+text -l "U段数:" text8;
+intField  -v 6 gtintF3;
+text -l "V段数:" text9; 
+intField  -v 6 gtintF4;
+setParent..;
+
+rowLayout -nc 4 -cw4 60 35 133 160 gtrowL6;
+text -l "" textf;
+text -l "名称:" text10;
+textField -text "cylinder" -w 120 gttextF2;
+button -l "创建圆柱灯光" -c "gtLightscylinder;" but2;
+setParent..;
+formLayout -e 
+ -af gtcolumnL2 left 0 -af gtcolumnL2 right 0  -af gtcolumnL2 top 0 gtSubForm2;
+
+setParent..;
+setParent..; 
+setParent..; 
+
+frameLayout -l "球形灯光" -la "center" -vis 1   gtFrame3;
+
+formLayout gtSubForm3;
+columnLayout -adj 1 gtcolumnL3;
+radioButtonGrp -l "灯光类型" -nrb 3 -cw4 60 100 100 100  -sl 1 -la3 "方向光" "点光" "聚光灯"    gtRadioType3;
+radioButtonGrp -l ""  -nrb 3 -cw4 60 100 100 100 -scl "gtRadioType3" -la3 "环境光" "区域光" "体积光" gtRadioType3a;
+
+separator -style single;
+rowLayout -nc 5 -cw5 64 31 80 71 100 gtrowL7;
+text -l "" textg;
+text -l "半径:" text11;
+floatField  -v 10  gtfloatF6;
+text -l "" textg1;
+checkBox -l "创建底部灯光" -v 1 gtcheckBox;
+setParent..;
+rowLayout -nc 5 -cw5 60 35 115 35 110 gtrowL8;
+text -l "" texth;
+text -l "U段数:" text12;
+intField  -v 6 gtfloatF5;
+text -l "V段数:" text13;
+intField -v 6 gtfloatF5a;
+setParent..;
+rowLayout -nc 4 -cw4 60 35 133 160 gtrowL9;
+text -l "" texti;
+text -l "名称:" text14;
+textField -text "sphere" -w 120 gttextF3;
+button -l "创建球形灯光" -c "gtLightsSphere;" but3;
+formLayout -e 
+ -af gtcolumnL3 left 0 -af gtcolumnL3 right 0  -af gtcolumnL3 top 0  gtSubForm3;
+setParent..;
+setParent..; 
+setParent..; 
+setParent..; 
+setParent..; 
+formLayout -e 
+-af gtColumnLmain left 10 -af gtColumnLmain right 10 -af gtColumnLmain top 10  -af gtColumnLmain bottom 30  
+ gtForm;
+showWindow  gtSkyLightWin;
+}
+////////////////////////////////////////////
+global proc gtLightRendering(string $kk[]){
+
+int $shapeType=`radioButtonGrp -q -sl gtRadioShapeType`;
+
+setAttr ($kk[0]+".castsShadows") 0;
+setAttr ($kk[0]+".receiveShadows") 0;
+setAttr ($kk[0]+".motionBlur") 0;
+setAttr ($kk[0]+".smoothShading") 0;
+setAttr ($kk[0]+".visibleInReflections") 0;
+setAttr ($kk[0]+".visibleInRefractions") 0;
+setAttr ($kk[0]+".doubleSided") 0;
+setAttr ($kk[0]+".opposite") 1;
+setAttr ($kk[0]+".primaryVisibility") 0;
+if($shapeType==2) setAttr ($kk[0]+".opposite") 0;
+}
+//////////////////////////
+global proc gtConnectLight(string $kk[]){
+
+int $shapeType=`radioButtonGrp -q -sl gtRadioShapeType`;
+
+int $type;
+switch($shapeType){
+case 1:
+  int $typea=`radioButtonGrp -q -sl gtRadioType3`;
+int $typeb=`radioButtonGrp -q -sl gtRadioType3a`;
+int $type;
+if($typea==0) $type=$typeb+3;
+if($typea!=0)  $type=$typea;
+
+break;
+case 2:
+ int $typea=`radioButtonGrp -q -sl gtRadioType1`;
+int $typeb=`radioButtonGrp -q -sl gtRadioType1a`;
+int $type;
+if($typea==0) $type=$typeb+3;
+if($typea!=0)  $type=$typea;
+break;
+
+case 3:
+  int $typea=`radioButtonGrp -q -sl gtRadioType2`;
+int $typeb=`radioButtonGrp -q -sl gtRadioType2a`;
+
+int $type;
+if($typea==0) $type=$typeb+3;
+if($typea!=0)  $type=$typea;
+break;
+}
+
+int $i;
+string $pl[];
+select -cl;
+select -add ($kk[0]+"_light"+"*"+"Shape");
+$pl=`ls -sl -s`;
+string $objCtrl=($kk[0]+"SkyLihgts");
+float $intensity=3.0/size($pl);
+
+select -r $objCtrl;
+
+if($type==3){
+addAttr -ln lightColor -at "float3" -nc 3 -uac;
+addAttr -ln lightColorR -at "float"  -p lightColor -dv 1 ;
+addAttr -ln lightColorG -at "float"  -p lightColor -dv 1;
+addAttr -ln lightColorB -at "float"  -p lightColor -dv 1;
+addAttr -ln "intensity" -at "float" -k 1 -dv $intensity;
+
+addAttr -ln "emitDiffuse" -at bool -k 1 -dv 1;
+addAttr -ln "emitSpecular" -at bool -k 1 -dv 1;
+
+addAttr -ln "coneAngle" -at "float" -k 1 -dv 60;
+addAttr -ln "penumbraAngle" -at "float" -k 1 -dv 10;
+addAttr -ln "dropoff" -at "float" -k 1 -dv 5;
+
+addAttr -ln shadowColor -at "float3" -nc 3 -uac;
+addAttr -ln shadowColorR -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorG -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorB -at "float"  -p shadowColor -dv 0;
+
+addAttr -ln "useRayTraceShadows" -at bool -k 1 -dv 0;
+addAttr -ln "lightRadius" -at "float" -k 1 -dv 5;
+addAttr -ln "shadowRays" -at long -k 1 -dv 8;
+addAttr -ln "rayDepthLimit" -at long -k 1 -dv 1;
+
+addAttr -ln "useDepthMapShadows" -at bool -k 1 -dv 1;
+addAttr -ln "useMidDistDmap" -at bool -k 1 -dv 1;
+addAttr -ln "useDmapAutoFocus" -at bool -k 1 -dv 1;
+
+addAttr -ln "dmapResolution" -at long -k 1 -dv 512;
+addAttr -ln "dmapFilterSize" -at "float" -k 1 -dv 6;
+addAttr -ln "dmapBias" -at "float" -k 1 -dv 0.01;
+addAttr -ln "dmapFocus" -at "float" -k 1 -dv 90;
+addAttr -ln "centerOfIllumination" -at "float" -k 1 -dv 5;
+
+}
+
+if($type==4){
+
+addAttr -ln lightColor -at "float3" -nc 3 -uac;
+addAttr -ln lightColorR -at "float"  -p lightColor -dv 1 ;
+addAttr -ln lightColorG -at "float"  -p lightColor -dv 1;
+addAttr -ln lightColorB -at "float"  -p lightColor -dv 1;
+
+addAttr -ln "intensity" -at "float" -k 1 -dv $intensity;
+addAttr -ln "ambientShade" -at "float" -k 1 -dv 0.45;
+
+addAttr -ln shadowColor -at "float3" -nc 3 -uac;
+addAttr -ln shadowColorR -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorG -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorB -at "float"  -p shadowColor -dv 0;
+
+addAttr -ln "useRayTraceShadows" -at bool -k 1 -dv 1;
+addAttr -ln "shadowRadius" -at "float" -k 1 -dv 5;
+addAttr -ln "shadowRays" -at long -k 1 -dv 8;
+addAttr -ln "rayDepthLimit" -at long -k 1 -dv 1;
+addAttr -ln "centerOfIllumination" -at "float" -k 1 -dv 5;
+
+}
+
+if($type==2){
+
+addAttr -ln lightColor -at "float3" -nc 3 -uac;
+addAttr -ln lightColorR -at "float"  -p lightColor -dv 1;
+addAttr -ln lightColorG -at "float"  -p lightColor -dv 1;
+addAttr -ln lightColorB -at "float"  -p lightColor -dv 1;
+addAttr -ln "intensity" -at "float" -k 1 -dv $intensity;
+
+addAttr -ln "emitDiffuse" -at bool -k 1 -dv 1;
+addAttr -ln "emitSpecular" -at bool -k 1 -dv 1;
+
+addAttr -ln shadowColor -at "float3" -nc 3 -uac;
+addAttr -ln shadowColorR -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorG -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorB -at "float"  -p shadowColor -dv 0;
+
+addAttr -ln "useRayTraceShadows" -at bool -k 1 -dv 0;
+addAttr -ln "lightRadius" -at "float" -k 1 -dv 5;
+addAttr -ln "shadowRays" -at long -k 1 -dv 8;
+addAttr -ln "rayDepthLimit" -at long -k 1 -dv 1;
+
+addAttr -ln "useDepthMapShadows" -at bool -k 1 -dv 1;
+addAttr -ln "useMidDistDmap" -at bool -k 1 -dv 1;
+addAttr -ln "useDmapAutoFocus" -at bool -k 1 -dv 1;
+
+addAttr -ln "dmapResolution" -at long -k 1 -dv 512;
+addAttr -ln "dmapFilterSize" -at "float" -k 1 -dv 6;
+addAttr -ln "dmapBias" -at "float" -k 1 -dv 0.01;
+addAttr -ln "dmapFocus" -at "float" -k 1 -dv 90;
+addAttr -ln "centerOfIllumination" -at "float" -k 1 -dv 5;
+
+}
+
+if($type==6){
+
+addAttr -ln lightColor -at "float3" -nc 3 -uac;
+addAttr -ln lightColorR -at "float"  -p lightColor -dv 1;
+addAttr -ln lightColorG -at "float"  -p lightColor -dv 1;
+addAttr -ln lightColorB -at "float"  -p lightColor -dv 1;
+addAttr -ln "intensity" -at "float" -k 1 -dv $intensity;
+
+addAttr -ln "lightScale" -at "float" -k 1 -dv 1;
+
+addAttr -ln "emitDiffuse" -at bool -k 1 -dv 1;
+addAttr -ln "emitSpecular" -at bool -k 1 -dv 1;
+
+addAttr -ln shadowColor -at "float3" -nc 3 -uac;
+addAttr -ln shadowColorR -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorG -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorB -at "float"  -p shadowColor -dv 0;
+
+addAttr -ln "useRayTraceShadows" -at bool -k 1 -dv 0;
+addAttr -ln "lightRadius" -at "float" -k 1 -dv 5;
+addAttr -ln "shadowRays" -at long -k 1 -dv 8;
+addAttr -ln "rayDepthLimit" -at long -k 1 -dv 1;
+
+addAttr -ln "useDepthMapShadows" -at bool -k 1 -dv 1;
+addAttr -ln "useMidDistDmap" -at bool -k 1 -dv 1;
+
+
+addAttr -ln "dmapResolution" -at long -k 1 -dv 512;
+addAttr -ln "dmapFilterSize" -at "float" -k 1 -dv 6;
+addAttr -ln "dmapBias" -at "float" -k 1 -dv 0.01;
+addAttr -ln "centerOfIllumination" -at "float" -k 1 -dv 5;
+
+}
+
+if($type==5){
+
+addAttr -ln lightColor -at "float3" -nc 3 -uac;
+addAttr -ln lightColorR -at "float"  -p lightColor -dv 1;
+addAttr -ln lightColorG -at "float"  -p lightColor -dv 1;
+addAttr -ln lightColorB -at "float"  -p lightColor -dv 1;
+addAttr -ln "intensity" -at "float" -k 1 -dv $intensity;
+
+addAttr -ln "lightScale" -at "float" -k 1 -dv 1;
+
+
+addAttr -ln "emitDiffuse" -at bool -k 1 -dv 1;
+addAttr -ln "emitSpecular" -at bool -k 1 -dv 1;
+
+addAttr -ln shadowColor -at "float3" -nc 3 -uac;
+addAttr -ln shadowColorR -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorG -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorB -at "float"  -p shadowColor -dv 0;
+
+addAttr -ln "useRayTraceShadows" -at bool -k 1 -dv 0;
+addAttr -ln "shadowRays" -at long -k 1 -dv 8;
+addAttr -ln "rayDepthLimit" -at long -k 1 -dv 1;
+addAttr -ln "useDepthMapShadows" -at bool -k 1 -dv 1;
+addAttr -ln "useMidDistDmap" -at bool -k 1 -dv 1;
+addAttr -ln "dmapResolution" -at long -k 1 -dv 512;
+addAttr -ln "dmapFilterSize" -at "float" -k 1 -dv 6;
+addAttr -ln "dmapBias" -at "float" -k 1 -dv 0.01;
+addAttr -ln "centerOfIllumination" -at "float" -k 1 -dv 5;
+
+}
+
+if($type==1){
+
+addAttr -ln lightColor -at "float3" -nc 3 -uac;
+addAttr -ln lightColorR -at "float"  -p lightColor -dv 1;
+addAttr -ln lightColorG -at "float"  -p lightColor -dv 1;
+addAttr -ln lightColorB -at "float"  -p lightColor -dv 1;
+addAttr -ln "intensity" -at "float" -k 1 -dv $intensity;
+
+addAttr -ln "emitDiffuse" -at bool -k 1 -dv 1;
+addAttr -ln "emitSpecular" -at bool -k 1 -dv 1;
+
+addAttr -ln shadowColor -at "float3" -nc 3 -uac;
+addAttr -ln shadowColorR -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorG -at "float"  -p shadowColor -dv 0;
+addAttr -ln shadowColorB -at "float"  -p shadowColor -dv 0;
+
+addAttr -ln "useRayTraceShadows" -at bool -k 1 -dv 0;
+addAttr -ln "lightAngle" -at "float" -k 1 -dv 5;
+addAttr -ln "shadowRays" -at long -k 1 -dv 8;
+addAttr -ln "rayDepthLimit" -at long -k 1 -dv 1;
+
+addAttr -ln "useDepthMapShadows" -at bool -k 1 -dv 1;
+addAttr -ln "useMidDistDmap" -at bool -k 1 -dv 1;
+addAttr -ln "useDmapAutoFocus" -at bool -k 1 -dv 1;
+
+addAttr -ln "dmapResolution" -at long -k 1 -dv 512;
+addAttr -ln "dmapFilterSize" -at "float" -k 1 -dv 6;
+addAttr -ln "dmapBias" -at "float" -k 1 -dv 0.01;
+addAttr -ln "dmapWidthFocus" -at "float" -k 1 -dv 90;
+addAttr -ln "useLightPosition" -at long -k 1 -dv 0;
+addAttr -ln "centerOfIllumination" -at "float" -k 1 -dv 5;
+
+}
+
+select -cl;
+if($type==5||$type==6){
+select -add ($kk[0]+"_light*");
+string $plf[]=`ls -sl -transforms`;
+for($i=0;$i<size($plf);$i++){
+connectAttr -f ($objCtrl+".lightScale") ($plf[$i]+".scaleX");
+connectAttr -f ($objCtrl+".lightScale") ($plf[$i]+".scaleY");
+connectAttr -f ($objCtrl+".lightScale") ($plf[$i]+".scaleZ");
+}
+}
+
+for($i=0;$i<size($pl);$i++){
+
+if($type==3){
+connectAttr -f ($objCtrl+".coneAngle") ($pl[$i]+".coneAngle");
+connectAttr -f ($objCtrl+".penumbraAngle") ($pl[$i]+".penumbraAngle");
+connectAttr -f ($objCtrl+".dropoff") ($pl[$i]+".dropoff");
+
+connectAttr -f ($objCtrl+".lightColor") ($pl[$i]+".color");
+connectAttr -f ($objCtrl+".intensity") ($pl[$i]+".intensity");
+
+connectAttr -f ($objCtrl+".emitDiffuse") ($pl[$i]+".emitDiffuse");
+connectAttr -f ($objCtrl+".emitSpecular") ($pl[$i]+".emitSpecular");
+connectAttr -f ($objCtrl+".shadowColor") ($pl[$i]+".shadowColor");
+
+connectAttr -f ($objCtrl+".useRayTraceShadows") ($pl[$i]+".useRayTraceShadows");
+connectAttr -f ($objCtrl+".lightRadius") ($pl[$i]+".lightRadius");
+connectAttr -f ($objCtrl+".shadowRays") ($pl[$i]+".shadowRays");
+connectAttr -f ($objCtrl+".rayDepthLimit") ($pl[$i]+".rayDepthLimit");
+
+connectAttr -f ($objCtrl+".useDepthMapShadows") ($pl[$i]+".useDepthMapShadows");
+connectAttr -f ($objCtrl+".useMidDistDmap") ($pl[$i]+".useMidDistDmap");
+connectAttr -f ($objCtrl+".useDmapAutoFocus") ($pl[$i]+".useDmapAutoFocus");
+connectAttr -f ($objCtrl+".dmapFocus") ($pl[$i]+".dmapFocus");
+connectAttr -f ($objCtrl+".dmapResolution") ($pl[$i]+".dmapResolution");
+connectAttr -f ($objCtrl+".dmapBias") ($pl[$i]+".dmapBias");
+
+connectAttr -f ($objCtrl+".dmapFilterSize") ($pl[$i]+".dmapFilterSize");
+connectAttr -f ($objCtrl+".centerOfIllumination") ($pl[$i]+".centerOfIllumination");
+}
+
+if($type==4){
+connectAttr -f ($objCtrl+".lightColor") ($pl[$i]+".color");
+connectAttr -f ($objCtrl+".intensity") ($pl[$i]+".intensity");
+connectAttr -f ($objCtrl+".ambientShade") ($pl[$i]+".ambientShade");
+connectAttr -f ($objCtrl+".shadowColor") ($pl[$i]+".shadowColor");
+connectAttr -f ($objCtrl+".useRayTraceShadows") ($pl[$i]+".useRayTraceShadows");
+connectAttr -f ($objCtrl+".shadowRadius") ($pl[$i]+".shadowRadius");
+connectAttr -f ($objCtrl+".shadowRays") ($pl[$i]+".shadowRays");
+connectAttr -f ($objCtrl+".rayDepthLimit") ($pl[$i]+".rayDepthLimit");
+connectAttr -f ($objCtrl+".centerOfIllumination") ($pl[$i]+".centerOfIllumination");
+}
+
+if($type==2){
+
+connectAttr -f ($objCtrl+".lightColor") ($pl[$i]+".color");
+connectAttr -f ($objCtrl+".intensity") ($pl[$i]+".intensity");
+
+connectAttr -f ($objCtrl+".emitDiffuse") ($pl[$i]+".emitDiffuse");
+connectAttr -f ($objCtrl+".emitSpecular") ($pl[$i]+".emitSpecular");
+connectAttr -f ($objCtrl+".shadowColor") ($pl[$i]+".shadowColor");
+
+connectAttr -f ($objCtrl+".useRayTraceShadows") ($pl[$i]+".useRayTraceShadows");
+connectAttr -f ($objCtrl+".lightRadius") ($pl[$i]+".lightRadius");
+connectAttr -f ($objCtrl+".shadowRays") ($pl[$i]+".shadowRays");
+connectAttr -f ($objCtrl+".rayDepthLimit") ($pl[$i]+".rayDepthLimit");
+
+connectAttr -f ($objCtrl+".useDepthMapShadows") ($pl[$i]+".useDepthMapShadows");
+connectAttr -f ($objCtrl+".useMidDistDmap") ($pl[$i]+".useMidDistDmap");
+connectAttr -f ($objCtrl+".useDmapAutoFocus") ($pl[$i]+".useDmapAutoFocus");
+connectAttr -f ($objCtrl+".dmapFocus") ($pl[$i]+".dmapFocus");
+connectAttr -f ($objCtrl+".dmapResolution") ($pl[$i]+".dmapResolution");
+connectAttr -f ($objCtrl+".dmapBias") ($pl[$i]+".dmapBias");
+
+connectAttr -f ($objCtrl+".dmapFilterSize") ($pl[$i]+".dmapFilterSize");
+connectAttr -f ($objCtrl+".centerOfIllumination") ($pl[$i]+".centerOfIllumination");
+
+}
+
+if($type==6){
+
+connectAttr -f ($objCtrl+".lightColor") ($pl[$i]+".color");
+connectAttr -f ($objCtrl+".intensity") ($pl[$i]+".intensity");
+
+connectAttr -f ($objCtrl+".emitDiffuse") ($pl[$i]+".emitDiffuse");
+connectAttr -f ($objCtrl+".emitSpecular") ($pl[$i]+".emitSpecular");
+connectAttr -f ($objCtrl+".shadowColor") ($pl[$i]+".shadowColor");
+
+connectAttr -f ($objCtrl+".useRayTraceShadows") ($pl[$i]+".useRayTraceShadows");
+connectAttr -f ($objCtrl+".lightRadius") ($pl[$i]+".lightRadius");
+connectAttr -f ($objCtrl+".shadowRays") ($pl[$i]+".shadowRays");
+connectAttr -f ($objCtrl+".rayDepthLimit") ($pl[$i]+".rayDepthLimit");
+
+connectAttr -f ($objCtrl+".useDepthMapShadows") ($pl[$i]+".useDepthMapShadows");
+connectAttr -f ($objCtrl+".useMidDistDmap") ($pl[$i]+".useMidDistDmap");
+
+
+connectAttr -f ($objCtrl+".dmapResolution") ($pl[$i]+".dmapResolution");
+connectAttr -f ($objCtrl+".dmapBias") ($pl[$i]+".dmapBias");
+
+connectAttr -f ($objCtrl+".dmapFilterSize") ($pl[$i]+".dmapFilterSize");
+connectAttr -f ($objCtrl+".centerOfIllumination") ($pl[$i]+".centerOfIllumination");
+
+}
+
+if($type==5){
+
+connectAttr -f ($objCtrl+".lightColor") ($pl[$i]+".color");
+connectAttr -f ($objCtrl+".intensity") ($pl[$i]+".intensity");
+
+connectAttr -f ($objCtrl+".emitDiffuse") ($pl[$i]+".emitDiffuse");
+connectAttr -f ($objCtrl+".emitSpecular") ($pl[$i]+".emitSpecular");
+connectAttr -f ($objCtrl+".shadowColor") ($pl[$i]+".shadowColor");
+
+connectAttr -f ($objCtrl+".useRayTraceShadows") ($pl[$i]+".useRayTraceShadows");
+connectAttr -f ($objCtrl+".shadowRays") ($pl[$i]+".shadowRays");
+connectAttr -f ($objCtrl+".rayDepthLimit") ($pl[$i]+".rayDepthLimit");
+
+connectAttr -f ($objCtrl+".useDepthMapShadows") ($pl[$i]+".useDepthMapShadows");
+connectAttr -f ($objCtrl+".useMidDistDmap") ($pl[$i]+".useMidDistDmap");
+
+connectAttr -f ($objCtrl+".dmapResolution") ($pl[$i]+".dmapResolution");
+connectAttr -f ($objCtrl+".dmapBias") ($pl[$i]+".dmapBias");
+
+connectAttr -f ($objCtrl+".dmapFilterSize") ($pl[$i]+".dmapFilterSize");
+connectAttr -f ($objCtrl+".centerOfIllumination") ($pl[$i]+".centerOfIllumination");
+
+}
+
+if($type==1){
+
+connectAttr -f ($objCtrl+".lightColor") ($pl[$i]+".color");
+connectAttr -f ($objCtrl+".intensity") ($pl[$i]+".intensity");
+
+connectAttr -f ($objCtrl+".emitDiffuse") ($pl[$i]+".emitDiffuse");
+connectAttr -f ($objCtrl+".emitSpecular") ($pl[$i]+".emitSpecular");
+connectAttr -f ($objCtrl+".shadowColor") ($pl[$i]+".shadowColor");
+
+connectAttr -f ($objCtrl+".useRayTraceShadows") ($pl[$i]+".useRayTraceShadows");
+connectAttr -f ($objCtrl+".lightAngle") ($pl[$i]+".lightAngle");
+connectAttr -f ($objCtrl+".shadowRays") ($pl[$i]+".shadowRays");
+connectAttr -f ($objCtrl+".rayDepthLimit") ($pl[$i]+".rayDepthLimit");
+
+connectAttr -f ($objCtrl+".useDepthMapShadows") ($pl[$i]+".useDepthMapShadows");
+connectAttr -f ($objCtrl+".useMidDistDmap") ($pl[$i]+".useMidDistDmap");
+connectAttr -f ($objCtrl+".useDmapAutoFocus") ($pl[$i]+".useDmapAutoFocus");
+connectAttr -f ($objCtrl+".dmapWidthFocus") ($pl[$i]+".dmapWidthFocus");
+connectAttr -f ($objCtrl+".dmapResolution") ($pl[$i]+".dmapResolution");
+connectAttr -f ($objCtrl+".dmapBias") ($pl[$i]+".dmapBias");
+
+connectAttr -f ($objCtrl+".dmapFilterSize") ($pl[$i]+".dmapFilterSize");
+connectAttr -f ($objCtrl+".useLightPosition") ($pl[$i]+".useLightPosition");
+
+connectAttr -f ($objCtrl+".centerOfIllumination") ($pl[$i]+".centerOfIllumination");
+    }
+}
+
+select -cl;
+}
+///////////////////////////////////////////
+global proc gtLightscylinder(){
+int $i,$j,$u,$v;
+vector $po[];
+float $pp[];
+
+int $typea=`radioButtonGrp -q -sl gtRadioType2`;
+int $typeb=`radioButtonGrp -q -sl gtRadioType2a`;
+
+int $type;
+if($typea==0) $type=$typeb+3;
+if($typea!=0)  $type=$typea;
+
+
+$u=`intField -q -v gtintF3`;
+$v=`intField -q -v gtintF4`;
+float $hight=`floatField -q -v gtfloatF4`;
+float $radius=`floatField -q -v gtfloatF3`;
+string $name=`textField -q -text gttextF2`;
+string $kk[];
+int $tokN=`tokenize $name "_" $kk`;
+
+int $ex=`objExists ($kk[0]+"SkyLihgts")`;
+if($ex==1) error "the same object is exists please enter a new name in the field";
+
+string $kkk[]=`cylinder -radius $radius -hr $hight -s $v -spans ($u-3) -d 3 -ax 0 1 0 -n ($kk[0]+"SkyLihgts")`;
+$u=$u+3;
+$v=$v;
+
+float $scale=$radius/20.0;
+float $scalea=$radius/5.0;
+
+switch($type){
+
+case 1:
+defaultDirectionalLight(1, 1,0,1, "0", 0,0,0, 0);
+rename  ($kk[0]+"_light");
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+
+case 2:
+defaultPointLight(1, 1,1,1, 0, 0, 0,0,0, 1);
+rename  ($kk[0]+"_light");
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+
+case 3:
+defaultSpotLight(1, 1,1,1, 0, 40, 0, 0, 0, 0,0,0, 1, 0);
+rename  ($kk[0]+"_light");
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+
+case 4:
+defaultAmbientLight(1, 0.45, 1,1,1, "0", 0,0,0, "1");
+rename  ($kk[0]+"_light");
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+
+case 5:
+defaultAreaLight(1, 1,1,1, 0, 0, 0,0,0, 1, 0);
+rename  ($kk[0]+"_light");
+scale $scalea $scalea $scalea;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+
+case 6:
+defaultVolumeLight(1, 1,1,1, 0, 0, 0,0,0, 1);
+rename  ($kk[0]+"_light");
+scale $scalea $scalea $scalea;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+}
+
+for($i=0;$i<$u;$i++){
+
+ for($j=0;$j<$v;$j++){
+
+$pp=`pointPosition($kkk[0]+".cv["+$i+"]["+$j+"]")`;
+select -r ($kk[0]+"_light");
+duplicate;
+move -r -ls -wd $pp[0] $pp[1] $pp[2];
+  }
+}
+
+select -r ($kk[0]+"_light");
+delete;
+
+
+select -cl;
+select -add ($kk[0]+"_light"+"*");
+string $lights[]=`ls -type transform -sl`;
+for($i=0;$i<size($lights);$i++){
+select -cl;
+select -r $kkk[0] $lights[$i];
+string $gtAimconstraint[]=`aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 0 -1 -upVector 0 1 0 -worldUpType "vector" -worldUpVector 0 1 0`;
+delete $gtAimconstraint[0];
+select -r $lights[$i] $kkk[0];
+parent;
+}
+
+gtConnectLight($kk);
+gtLightRendering($kkk);
+
+}
+
+///////////////////////////////////////
+global proc gtLightsSphere(){
+int $i,$j;
+int $u,$v;
+
+float $pp[];
+int $checkS=`checkBox -q -v gtcheckBox`;
+int $typea=`radioButtonGrp -q -sl gtRadioType3`;
+int $typeb=`radioButtonGrp -q -sl gtRadioType3a`;
+int $type;
+if($typea==0) $type=$typeb+3;
+if($typea!=0)  $type=$typea;
+
+float $radius=`floatField -q -v gtfloatF6`; 
+string $name=`textField -q -text gttextF3`; 
+$u=`intField -q -v gtfloatF5`;
+$v=`intField -q -v gtfloatF5a`;
+
+string $kk[];
+int $tonN=`tokenize $name "_" $kk`;
+
+int $ex=`objExists ($kk[0]+"SkyLihgts")`;
+if($ex==1) error "the same object is exists please enter a new name in the field";
+
+string $kkk[]=`sphere -radius $radius -nsp ($u-3) -s $v -d 3 -ax 0 1 0 -n ($kk[0]+"SkyLihgts")`;
+
+int $va=$v-1;
+
+float $scale=$radius/20.0;
+float $scalea=$radius/5.0;
+
+switch($type){
+case 1:
+defaultDirectionalLight(1, 1,1,1, "0", 0,0,0, 0);
+rename ($kk[0]+"_light");
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+case 2:
+defaultPointLight(1, 1,1,1, 0, 0, 0,0,0, 1);
+rename ($kk[0]+"_light");
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+case 3:
+defaultSpotLight(1, 1,1,1, 0, 40, 0, 0, 0, 0,0,0, 1, 0);
+rename ($kk[0]+"_light");
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+case 4:
+defaultAmbientLight(1, 0.45, 1,1,1, "0", 0,0,0, "1");
+rename ($kk[0]+"_light");
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+case 5:
+defaultAreaLight(1, 1,1,1, 0, 0, 0,0,0, 1, 0);
+rename  ($kk[0]+"_light");
+scale $scalea $scalea $scalea;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+
+case 6:
+defaultVolumeLight(1, 1,1,1, 0, 0, 0,0,0, 1);
+rename  ($kk[0]+"_light");
+scale $scalea $scalea $scalea;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+break;
+}
+
+if($checkS){
+
+$pp=`pointPosition ($kkk[0]+".cv[0]["+$va+"]")`;
+select -r ($kk[0]+"_light");
+duplicate;
+move -r -ls -wd $pp[0] $pp[1] $pp[2];
+
+$pp=`pointPosition ($kkk[0]+".cv["+$u+"]["+$va+"]")`;
+select -r ($kk[0]+"_light");
+duplicate;
+move -r -ls -wd $pp[0] $pp[1] $pp[2];
+
+for($i=1;$i<$u-1;$i++){
+   for($j=0;$j<$v;$j++){
+     
+$pp=`pointPosition ($kkk[0]+".cv["+$i+"]["+$j+"]")`;
+select -r ($kk[0]+"_light");
+duplicate;
+move -r -ls -wd $pp[0] $pp[1] $pp[2];
+}
+}
+}
+
+if(!$checkS){
+
+$pp=`pointPosition ($kkk[0]+".cv["+$u+"]["+$va+"]")`;
+select -r ($kk[0]+"_light");
+duplicate;
+move -r -ls -wd $pp[0] $pp[1] $pp[2];
+
+for($i=$u/2;$i<$u-1;$i++){
+   for($j=0;$j<$v;$j++){
+     
+$pp=`pointPosition ($kkk[0]+".cv["+$i+"]["+$j+"]")`;
+select -r ($kk[0]+"_light");
+duplicate;
+move -r -ls -wd $pp[0] $pp[1] $pp[2];
+}
+}
+}
+
+select -r ($kk[0]+"_light");
+delete;
+
+select -cl;
+select -add ($kk[0]+"_light"+"*");
+string $lights[]=`ls -type transform -sl`;
+for($i=0;$i<size($lights);$i++){
+select -cl;
+select -r $kkk[0] $lights[$i];
+string $gtAimconstraint[]=`aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 0 -1 -upVector 0 1 0 -worldUpType "vector" -worldUpVector 0 1 0`;
+delete $gtAimconstraint[0];
+select -r $lights[$i]  $kkk[0];
+parent;
+}
+
+gtConnectLight($kk);
+gtLightRendering($kkk);
+
+}
+////////////////////////
+global proc gtLightsplane(){
+int $i,$j,$u,$v;
+int $deg[];
+float $pp[];
+
+
+int $typea=`radioButtonGrp -q -sl gtRadioType1`;
+int $typeb=`radioButtonGrp -q -sl gtRadioType1a`;
+int $type;
+if($typea==0) $type=$typeb+3;
+if($typea!=0)  $type=$typea;
+
+float $width=`floatField -q -v gtfloatF1`;
+float $lratio=`floatField -q -v gtfloatF2`;
+$u=`intField -q -v gtintF1`;
+$v=`intField -q -v gtintF2`;
+string $name=`textField -q -text gttextF1`;
+
+string $kk[];
+int $tokN=`tokenize $name "_" $kk`;
+int $ex=`objExists ($kk[0]+"SkyLihgts")`;
+if($ex==1) error "the same object is exists please enter a new name in the field";
+
+string $kkk[]=`nurbsPlane -w $width -lr $lratio -d 3 -ax 0 1 0  -u ($u-3) -v ($v-3) -n ($kk[0]+"SkyLihgts")`;
+
+
+float $scale=$width/20.0;
+float $scalea=$width/5.0;
+switch($type){
+case 1:
+defaultDirectionalLight(1, 1,0,1, "0", 0,0,0, 0);
+rotate 90 0 0;
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+rename  ($kk[0]+"_light");
+break;
+
+case 2:
+defaultPointLight(1, 1,1,1, 0, 0, 0,0,0, 1);
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+rename  ($kk[0]+"_light");
+break;
+
+case 3:
+defaultSpotLight(1, 1,1,1, 0, 40, 0, 0, 0, 0,0,0, 1, 0);
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+rotate 90 0 0;
+rename  ($kk[0]+"_light");
+break;
+
+case 4:
+defaultAmbientLight(1, 0.45, 1,1,1, "0", 0,0,0, "1");
+scale $scale $scale $scale;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+rename  ($kk[0]+"_light");
+break;
+
+case 5:
+defaultAreaLight(1, 1,1,1, 0, 0, 0,0,0, 1, 0);
+rotate 90 0 0;
+scale $scalea $scalea $scalea;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+rename  ($kk[0]+"_light");
+break;
+
+case 6:
+defaultVolumeLight(1, 1,1,1, 0, 0, 0,0,0, 1);
+scale $scalea $scalea $scalea;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+rename  ($kk[0]+"_light");
+break;
+}
+
+for($i=0;$i<$u;$i++)
+ {
+    for($j=0;$j<$v;$j++)
+       {
+  $pp=`pointPosition ($kkk[0]+".cv"+"["+$i+"]"+"["+$j+"]")`;
+select -r ($kk[0]+"_light");
+duplicate;
+move -r -ls -wd $pp[0] $pp[1] $pp[2];
+}
+}
+select -r ($kk[0]+"_light");
+delete;
+
+select -cl;
+select -add ($kk[0]+"_light"+"*");
+string $lights[]=`ls -type transform -sl`;
+for($i=0;$i<size($lights);$i++){
+select -cl;
+select -r $lights[$i]  $kkk[0];
+parent;
+}
+gtConnectLight($kk);
+gtLightRendering($kkk);
+}
+/////////////////////////
+gtSkyLightWin;
+///////////////////////////2016-10-30

@@ -1,0 +1,503 @@
+//MAYA簇变形绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+///////////////////////////////////////
+global proc gtClusterDeformToolCreateWin(){
+
+if(`window -ex gtClusterDeformToolCreateWin`) deleteUI -window gtClusterDeformToolCreateWin;
+window -wh 420 200 -t "老船角色绑定-☆-MAYA簇变形绑定工具" gtClusterDeformToolCreateWin;
+scrollLayout gtmainBSL;
+
+columnLayout -adj 1 -w 380 gtBSColumlayout;
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1778\"";
+separator -style single  sep1;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+textFieldGrp  -cw2 100 130 -l "变形模型" -tx "请载入变形模型" -ed 0 gtTextBSLCluster3d;
+button -l "载入变形模型" -c "gtBSLoadClusterMeshd" gtButBSC3;
+
+setParent..;
+floatSliderGrp -l "半径" -f 1 -min 0  -max 100 -v 0.5 -s 0.001 -sliderStep 0.001 gtClusterRadius;
+
+rowColumnLayout -nc 4 -cw 1 60  -cw 2 80 -cw 3 100 -cw 4 140;
+text -l "";
+checkBox -l "嘴巴模式" gtClusterMouth;
+text -l "选择模型顶点";
+
+button -l "簇变形绑定" -c "gtClusterToolProc;" but3ab;
+
+setParent..;
+
+separator -style single  sep11;
+rowColumnLayout -nc 2 -cw 1 190  -cw 2 190;
+button -l "编辑簇权重" -c "gtClusterWeightEditProcA;" but3b;
+
+button -l "绑定POSE" -c "gtClusterToolBindProc;" but3a;
+setParent..;
+
+separator -style single  sep1A;
+
+showWindow  gtClusterDeformToolCreateWin;
+}
+///////////////////////
+global proc gtClusterToolBindProc (){
+    string $sel[]=`ls -sl`;
+    string $mesh=`textFieldGrp -q -text  gtTextBSLCluster3d`;
+     int $ex=`objExists ($mesh+"_ClusterConGrp")`;
+     if($ex==1){
+       string $childs[]=`listRelatives -c -type "transform" ($mesh+"_ClusterConGrp")`;
+       select -r ($childs);
+       pickWalk -d down;
+       pickWalk -d down;
+       pickWalk -d down;
+       pickWalk -d right;
+       string $conC[]=`ls -sl -type "transform"`;
+       for($i=0;$i<size($conC);$i++){
+         setAttr -type float3 ($conC[$i]+".t") 0 0 0;
+         setAttr -type float3 ($conC[$i]+".s") 1 1 1;
+         setAttr -type float3 ($conC[$i]+".r") 0 0 0;                  
+       }
+   }
+   select -r ($sel);
+}
+//////////////////////////////
+global proc gtBSLoadClusterMeshd(){
+string $sel[]=`ls -sl`;
+string $obj="";
+for($i=0;$i<size($sel);$i++){
+    $obj+=(" "+$sel[$i]);
+}
+textFieldGrp -e -tx ($obj) gtTextBSLCluster3d;
+}
+////////////////////
+global proc gtClusterToolProc (){
+    string $sel[]=`ls -sl -fl`;
+    string $mesh=`textFieldGrp -q -text  gtTextBSLCluster3d`;
+    float $scl=`floatSliderGrp -q -v  gtClusterRadius`;
+
+    int $mouth=`checkBox -q -v gtClusterMouth`;
+    int $ex=`objExists ($mesh+"_ClusterConGrp")`;
+if($ex==0){
+    select -cl;
+    group -empty -n ($mesh+"_ClusterConGrp");
+    }
+    
+        int $ex=`objExists ($mesh+"_ClutserModGrp")`;
+if($ex==0){
+    select -cl;
+    group -empty -n ($mesh+"_ClutserModGrp");
+    setAttr ($mesh+"_ClutserModGrp.visibility") 0;
+    setAttr -lock true ($mesh+"_ClutserModGrp.v");
+    }
+        
+    for($i=0;$i<size($sel);$i++){
+    float $pos[]=`xform -q -ws -t -a ($sel[$i])`;
+    string $tm[];
+    int $t=`tokenize ($sel[$i]) "[" $tm`;
+    string $tmm=$tm[1];
+    string $ttmm[];
+    int $t=`tokenize ($tmm) "]" $ttmm`;
+    int $pointnum=($ttmm[0]);
+    int $num=$pointnum;
+
+    select -cl;
+    spaceLocator -p 0 0 0;
+    rename ($mesh+"_"+$num+"_loc");
+    select -r ($mesh+"_"+$num+"_loc"); 
+    setAttr -type float3 ($mesh+"_"+$num+"_loc.t")  $pos[0] $pos[1] $pos[2];
+    float $boundingBoxInfo[] = `polyEvaluate -boundingBox $mesh`;
+			
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($mesh+"_"+$num+"Con"+$i);
+group -n ($mesh+"_"+$num+"ConGrp"+$i);
+group -n  ($mesh+"_"+$num+"ConGrpA"+$i);
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+select -r ($mesh+"_"+$num+"_loc"); 
+select -add ($mesh+"_"+$num+"ConGrpA"+$i);
+delete `parentConstraint`;
+select -r ($mesh+"_"+$num+"_loc");
+delete;
+
+string $shape[]=`listRelatives -s ($mesh+"_"+$num+"Con"+$i)`;
+setAttr ($shape[0]+".overrideEnabled") 1;
+setAttr ($shape[0]+".overrideColor") 22;
+select -r ($mesh+"_"+$num+"ConGrpA"+$i);
+select -add ($mesh+"_ClusterConGrp");
+parent;
+
+shadingNode -asUtility multiplyDivide;
+rename ($mesh+"_"+$num+"Multiply"+$i);
+connectAttr -f ($mesh+"_"+$num+"Con"+$i+".translate") ($mesh+"_"+$num+"Multiply"+$i+".input1");
+setAttr -type float3 ($mesh+"_"+$num+"Multiply"+$i+".input2") -1 -1 -1;
+connectAttr -f ($mesh+"_"+$num+"Multiply"+$i+".output") ($mesh+"_"+$num+"ConGrp"+$i+".translate");
+
+////////////////////////////////
+select -r ($mesh+"_"+$num+"Con"+$i);
+string $middleBn[]=`ls -sl`;
+
+select -r ($mesh+".vtx[0:2000000]") ;
+newCluster "-relative -envelope 1" ;
+rename ($middleBn[0]+"cluster");
+group -n ($middleBn[0]+"clusterGrp");
+float $tt[]=`xform -q -ws -a -t ($middleBn[0])`;
+
+move ($tt[0]) ($tt[1]) ($tt[2]) ($middleBn[0]+"clusterGrp.scalePivot") ($middleBn[0]+"clusterGrp.rotatePivot") ;
+
+string $clusterShape[]=`listRelatives -s ($middleBn[0]+"cluster")`;
+setAttr ($clusterShape[0]+".originX") ($tt[0]);
+setAttr ($clusterShape[0]+".originY") ($tt[1]);
+setAttr ($clusterShape[0]+".originZ") ($tt[2]);
+move ($tt[0]) ($tt[1]) ($tt[2]) ($middleBn[0]+"cluster.scalePivot") ($middleBn[0]+"cluster.rotatePivot") ;
+
+
+spaceLocator -p 0 0 0 -n ($middleBn[0]+"Loc");
+string $shapLoc[]=`listRelatives -s ($middleBn[0]+"Loc")`;
+setAttr ($shapLoc[0]+".localScaleX") ($scl/18);
+setAttr ($shapLoc[0]+".localScaleY") ($scl/18);
+setAttr ($shapLoc[0]+".localScaleZ") ($scl/18);
+setAttr ($shapLoc[0]+".v") 0;
+setAttr -l true ($shapLoc[0]+".v");
+
+select -r  ($middleBn[0]);
+select -add ($middleBn[0]+"Loc");
+delete `parentConstraint`;
+
+select -r  ($middleBn[0]);
+pickWalk -d up;
+string $tempp[]=`ls -sl`;
+select -r ($middleBn[0]+"Loc");
+select -add ($tempp[0]);
+parent;
+select -r  ($middleBn[0]);
+select -add ($middleBn[0]+"Loc");
+parent;
+
+connectAttr -f ($middleBn[0]+".rotate") ($middleBn[0]+"cluster.rotate");
+connectAttr -f ($middleBn[0]+".translate") ($middleBn[0]+"cluster.translate");
+connectAttr -f ($middleBn[0]+".scale") ($middleBn[0]+"cluster.scale");
+
+select -r ($middleBn[0]+"clusterGrp");
+select -add ($mesh+"_ClutserModGrp");
+parent;
+select -r  ($middleBn[0]);
+float $radi=$scl;
+addAttr -ln "clusterRadius"  -at double -k 1 -dv $radi;
+
+addAttr -ln "radi"  -at double -k 1 -dv $radi ($middleBn[0]+"cluster");
+
+connectAttr -f ($middleBn[0]+".clusterRadius") ($middleBn[0]+"cluster.radi");
+
+if($mouth==1)addAttr -ln "gtMouth"  -at double -k 1 -dv $radi ($middleBn[0]+"cluster");
+
+select -r ($middleBn[0]+"cluster");
+gtClusterWeightEditA;
+////////////////////////////////////
+select -r ($mesh+"_"+$num+"ConGrpA"+$i);
+string $selc[]=`ls -sl`;
+
+string $bigManM=$mesh;
+string $shape[]=`listRelatives -s $bigManM`;
+
+string $type=`objectType  $shape[0]`;
+if($type!="mesh"&&$type!="nurbsSurface")error "需要多边形或者曲面作为固定的面";
+
+int $exsit=`objExists ($bigManM+"follicleGrp")`;
+
+if($exsit==0){
+group -em -n ($bigManM+"follicleGrp");
+}
+
+for($ii=0;$ii<size($selc);$ii++){
+spaceLocator -p 0 0 0 -n ($selc[$ii]+"Loc");
+
+group -n ($selc[$ii]+"LocGrp");
+
+select -r ($selc[$ii]);
+select -add ($selc[$ii]+"LocGrp");
+delete `parentConstraint`;
+select -r ($selc[$ii]+"Loc");
+select -add ($selc[$ii]);
+pointConstraint -mo;
+string $shap[]=`listRelatives -s ($selc[$ii]+"Loc")`;
+setAttr ($shap[0]+".localScaleZ") 0.01;
+setAttr ($shap[0]+".localScaleX") 0.01;
+setAttr ($shap[0]+".localScaleY") 0.01;
+
+float $pos[]=`xform -q -a -ws -t ($selc[$ii]+"Loc")`;
+string $type=`objectType  $shape[0]`;
+
+////////////////////////
+if($type=="mesh"){
+createNode closestPointOnMesh -n ($selc[$ii]+"cpom"+$ii);
+connectAttr -f ($bigManM+".outMesh") ($selc[$ii]+"cpom"+$ii+".inMesh");
+
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionX") $pos[0] ;
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionY") $pos[1] ;
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionZ") $pos[2] ;
+float $u=`getAttr ($selc[$ii]+"cpom"+$ii+".parameterU")`;
+float $v=`getAttr ($selc[$ii]+"cpom"+$ii+".parameterV")`;
+
+createNode follicle -n ($selc[$ii]+"follicleShape"+$ii);
+select -r ($selc[$ii]+"follicleShape"+$ii);
+pickWalk -d up;
+rename ($selc[$ii]+"follicle"+$ii);
+connectAttr -f ($bigManM+".outMesh") ($selc[$ii]+"follicleShape"+$ii+".inputMesh");
+connectAttr -f ($bigManM+".worldMatrix[0]") ($selc[$ii]+"follicleShape"+$ii+".inputWorldMatrix");
+
+connectAttr -f ($selc[$ii]+"follicleShape"+$ii+".outTranslate") ($selc[$ii] +"follicle"+$ii+".translate");
+connectAttr -f ($selc[$ii]+"follicleShape"+$ii+".outRotate") ($selc[$ii]+"follicle"+$ii+".rotate");
+
+setAttr  ($selc[$ii]+"follicleShape"+$ii+".parameterU") $u;
+setAttr  ($selc[$ii]+"follicleShape"+$ii+".parameterV") $v;
+
+select -r ($selc[$ii]+"follicle"+$ii);
+select -add ($bigManM+"follicleGrp");
+parent;
+select -r ($selc[$ii]+"cpom"+$ii);
+delete;
+}
+else
+{
+createNode closestPointOnSurface -n ($selc[$ii]+"cpom"+$ii);
+string $shape[]=`listRelatives -s $bigManM`;
+connectAttr -f ($shape[0]+".worldSpace") ($selc[$ii]+"cpom"+$ii+".inputSurface");
+
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionX") $pos[0] ;
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionY") $pos[1] ;
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionZ") $pos[2] ;
+float $u=`getAttr ($selc[$ii]+"cpom"+$ii+".parameterU")`;
+float $v=`getAttr ($selc[$ii]+"cpom"+$ii+".parameterV")`;
+
+createNode follicle -n ($selc[$ii]+"follicleShape"+$ii);
+select -r ($selc[$ii]+"follicleShape"+$ii);
+pickWalk -d up;
+rename ($selc[$ii]+"follicle"+$ii);
+connectAttr -f ($shape[0]+".local") ($selc[$ii]+"follicleShape"+$ii+".inputSurface");
+connectAttr -f ($shape[0]+".worldMatrix[0]") ($selc[$ii]+"follicleShape"+$ii+".inputWorldMatrix");
+
+connectAttr -f ($selc[$ii]+"follicleShape"+$ii+".outTranslate") ($selc[$ii] +"follicle"+$ii+".translate");
+connectAttr -f ($selc[$ii]+"follicleShape"+$ii+".outRotate") ($selc[$ii]+"follicle"+$ii+".rotate");
+
+setAttr  ($selc[$ii]+"follicleShape"+$ii+".parameterU") $u;
+setAttr  ($selc[$ii]+"follicleShape"+$ii+".parameterV") $v;
+
+select -r ($selc[$ii]+"follicle"+$ii);
+select -add ($bigManM+"follicleGrp");
+parent;
+select -r ($selc[$ii]+"cpom"+$ii);
+delete;
+        }
+    select -r ($selc[$ii]+"follicle"+$ii);
+    select -add ($selc[$ii]+"LocGrp");
+    delete `parentConstraint`;
+
+    select -r ($selc[$ii]+"LocGrp");
+    select -add ($selc[$ii]+"follicle"+$ii);
+    parent;
+    float $pos[]=`getAttr ($selc[$ii]+"follicle"+$ii+".translate")`;
+    move $pos[0] $pos[1] $pos[2]  ($selc[$ii]+".scalePivot")  ($selc[$ii]+".rotatePivot") ;       
+    }   
+    select -r  ($mesh+"_"+$num+"Con"+$i);
+    }    
+}
+//////////////////////////////////
+global proc gtClusterWeightEditA (){
+string $sel[]=`ls -sl`;
+string $mesh=`textFieldGrp -q -tx gtTextBSLCluster3d`;
+
+for($ii=0;$ii<size($sel);$ii++){
+    
+string $clustA=$sel[$ii];
+    int $mouth=`objExists ($clustA+".gtMouth")`;
+float $dismt=`getAttr ($clustA+".radi")`;
+float $mind=$dismt*0.2;
+int $vexAll[]=`polyEvaluate -v $mesh`;
+
+string $clusA[]=`listConnections -s 0 -d 1 ($clustA+".worldMatrix[0]")`;
+string $cluster=$clusA[0];
+$tempStringA=`listConnections ($clusA[0]+".message")`;
+string $clusterSet=$tempStringA[0];
+select `sets -q ($clusterSet)`;
+$dvtxs=`ls -sl -fl`;
+	string $geometry=$mesh;
+		
+	int $ex=`objExists 	closestSampler`;
+	if($ex==1)delete closestSampler;
+	
+createNode -n closestSampler closestPointOnMesh;
+$tempString=`listRelatives -ni -s $geometry`;
+connectAttr -f ($tempString[0]+".outMesh") closestSampler.inMesh;
+connectAttr -f ($geometry+".worldMatrix[0]") closestSampler.inputMatrix;
+
+spaceLocator -p 0 0 0 -n ($clustA+"loc");
+select -r ($clustA);
+select -add  ($clustA+"loc");
+delete `pointConstraint`;
+float $posAA[]=`xform -q -ws -t ($clustA+"loc")`;
+delete ($clustA+"loc");
+int $closestOppositeVtxNr;
+
+float $mag;
+select -r ($mesh+".vtx[0:999999]");
+
+if($mouth==0){
+string $vtxs[]=`ls -sl -fl`;	
+select -cl;
+	for($cc=0;$cc<size($vtxs);$cc++){
+	    float $posB[]=`xform -q -ws -t $vtxs[$cc]`;
+	 $mag=mag (<<($posAA[0]-$posB[0]),($posAA[1]-$posB[1]),($posAA[2]-$posB[2])>>);
+        if($mag<($dismt+$dismt*0.1)) select -add $vtxs[$cc];
+	}
+
+	string $vex[]=`ls -sl -fl`;
+		if(size($vex)>0)
+		sets -add ($clusterSet) `ls -sl`;
+		
+}else{
+    	string $vex[]=`ls -sl -fl`;
+		if(size($vex)>0)
+		sets -add ($clusterSet) `ls -sl`;
+        
+//select -r $vtxs;
+
+	setAttr -type float3 closestSampler.inPosition ($posAA[0]) $posAA[1] $posAA[2];
+	$closestOppositeVtxNr=`getAttr closestSampler.result.closestVertexIndex`;
+float $posA[]=`xform -q -ws -t ($geometry+".vtx["+$closestOppositeVtxNr+"]")`;
+	
+select -r ($geometry+".vtx["+$closestOppositeVtxNr+"]");
+GrowPolygonSelectionRegion;
+select -d ($geometry+".vtx["+$closestOppositeVtxNr+"]");
+
+string $tempVext[]=`ls -sl -fl`;	
+
+float $tempDis=0;
+float $tempDisA=100;
+for($cc=0;$cc<size($tempVext);$cc++){
+	    float $posB[]=`xform -q -ws -t $tempVext[$cc]`;
+	 $mag=mag (<<($posA[0]-$posB[0]),($posA[1]-$posB[1]),($posA[2]-$posB[2])>>);
+        if($mag>$tempDis){$tempDis=$mag;select -r  $tempVext[$cc];}
+        if($mag<$tempDisA){$tempDisA=$mag;}
+	}	
+    //print ($tempDis);
+    //print ($tempDisA);
+    
+string $tempVex[]=`ls -sl -fl`;	
+select -r ($tempVex[0]);
+float $posA[]=`xform -q -ws -t ($tempVex[0])`;
+	
+GrowPolygonSelectionRegion;
+select -d ($tempVex[0]);
+
+string $tempVext[]=`ls -sl -fl`;		
+float $tempDis1=0;
+float $tempDisA1=100;
+for($cc=0;$cc<size($tempVext);$cc++){
+	    float $posB[]=`xform -q -ws -t $tempVext[$cc]`;
+	 $mag=mag (<<($posA[0]-$posB[0]),($posA[1]-$posB[1]),($posA[2]-$posB[2])>>);
+        if($mag>$tempDis1){$tempDis1=$mag;select -r  $tempVext[$cc];}
+        if($mag<$tempDisA1){$tempDisA1=$mag;}
+	}	
+	//print ($tempDis1);
+    //print ($tempDisA1);
+    
+string $tempVex[]=`ls -sl -fl`;	
+select -r ($tempVex[0]);
+float $posA[]=`xform -q -ws -t ($tempVex[0])`;
+	
+GrowPolygonSelectionRegion;
+select -d ($tempVex[0]);
+
+string $tempVext[]=`ls -sl -fl`;		
+float $tempDis2=0;
+float $tempDisA2=100;
+for($cc=0;$cc<size($tempVext);$cc++){
+	    float $posB[]=`xform -q -ws -t $tempVext[$cc]`;
+	 $mag=mag (<<($posA[0]-$posB[0]),($posA[1]-$posB[1]),($posA[2]-$posB[2])>>);
+        if($mag>$tempDis2){$tempDis2=$mag;}
+        if($mag<$tempDisA2){$tempDisA2=$mag;select -r  $tempVext[$cc];}
+	}	
+	//print ($tempDis2);
+    //print ($tempDisA2);
+    string $tempVex[]=`ls -sl -fl`;	
+select -r ($tempVex[0]);
+float $posA[]=`xform -q -ws -t ($tempVex[0])`;
+	
+GrowPolygonSelectionRegion;
+select -d ($tempVex[0]);
+
+string $tempVext[]=`ls -sl -fl`;		
+float $tempDis3=0;
+float $tempDisA3=100;
+for($cc=0;$cc<size($tempVext);$cc++){
+	    float $posB[]=`xform -q -ws -t $tempVext[$cc]`;
+	 $mag=mag (<<($posA[0]-$posB[0]),($posA[1]-$posB[1]),($posA[2]-$posB[2])>>);
+        if($mag>$tempDis3){$tempDis3=$mag;select -r  $tempVext[$cc];}
+        if($mag<$tempDisA3){$tempDisA3=$mag;}
+	}	
+    
+int $loop=0;
+    $loop=($dismt+$dismt*0.1)/(($tempDis+$tempDisA+$tempDis1+$tempDisA1+$tempDis2+$tempDisA2+$tempDis3+$tempDisA3)/8.0)+1;
+select -r ($geometry+".vtx["+$closestOppositeVtxNr+"]");
+	for($cc=0;$cc<$loop;$cc++){
+GrowPolygonSelectionRegion;
+    }
+    
+}
+    delete closestSampler;
+
+$cVext=`ls -sl -fl`;
+global string $gMainProgressBar;
+//print ($posAA);
+progressBar -e -st ("编辑簇权重："+$sel[$ii]) -bp -ii 1 -min 0 -max `size($cVext)` $gMainProgressBar;
+for ($i=0;$i<size($cVext);$i++)
+	{
+	if (`progressBar -q -ic $gMainProgressBar`)
+		break;
+	progressBar -e -s 1 $gMainProgressBar;
+    float $posB[]=`xform -q -ws -t $cVext[$i]`;
+	$mag=mag (<<($posAA[0]-$posB[0]),($posAA[1]-$posB[1]),($posAA[2]-$posB[2])>>);
+
+	float $weightV=1-(smoothstep($mind,$dismt,$mag));	
+	$tempFloat[0]=$weightV;
+		
+	percent -v $tempFloat[0] $cluster $cVext[$i];
+	}
+	progressBar -e -ep $gMainProgressBar;
+
+select -r ($mesh+".vtx[0:999999]");
+select -d $cVext;
+$cVext=`ls -sl -fl`;
+if(size($cVext))
+sets -rm ($clusterSet) $cVext;
+    }
+select -r ($sel);
+}
+////////////////////////////////////////////
+global proc gtClusterWeightEditProcA(){
+    string $sel[]=`ls -sl`;
+    for($i=0;$i<size($sel);$i++){
+       string $clustera[]=`listConnections -s 0 -d 1 ($sel[$i]+".clusterRadius")`;
+       int $ex=`objExists ($clustera[0]+".radi")`;
+       if($ex==1){
+           select -r $clustera[0];
+           gtClusterWeightEditA;
+       } 
+    }
+    select -r ($sel);
+}
+///////////////////////////
+gtClusterDeformToolCreateWin;
+/////////////////////////////2016-10-30

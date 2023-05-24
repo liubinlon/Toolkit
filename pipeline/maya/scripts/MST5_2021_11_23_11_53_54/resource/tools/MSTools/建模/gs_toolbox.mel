@@ -1,0 +1,2 @@
+source "gs_toolbox/gs_toolbox_ui.mel";
+gsCreateWorkspaceControl();

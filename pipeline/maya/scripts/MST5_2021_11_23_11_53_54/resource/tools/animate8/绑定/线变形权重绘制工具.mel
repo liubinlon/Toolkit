@@ -1,0 +1,83 @@
+//MAYA线变形权重绘制工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+///////////////////////////////////////
+global proc gtWireWeightPaintWin(){
+
+if(`window -ex gtWireWeightPaintWin`) deleteUI -window gtWireWeightPaintWin;
+window -wh 420 200 -t "老船角色绑定-☆-MAYA线变形权重绘制工具" gtWireWeightPaintWin;
+scrollLayout gtmainBSL;
+
+columnLayout -adj 1 -w 380 gtBSColumlayout;
+text -l "点击下方按钮↓↓↓↓↓" texta1;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1764\"";
+separator -style single  sep1;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+textFieldGrp  -cw2 100 130 -l "变形模型" -tx "请载入变形模型" -ed 0 gtTextBSLW3;
+button -l "载入变形模型" -c "gtBSLoadWireMesh" gtButBSC3;
+
+setParent..;
+separator -style single  sep3;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "选择变形曲线";
+
+button -l "绘制线变形权重" -c "gtWireWeightPaintProc;" but3ab;
+
+setParent..;
+separator -style single  sep2;
+
+showWindow  gtWireWeightPaintWin;
+}
+///////////////////////
+global proc gtBSLoadWireMesh(){
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+if($size>1) error "只能选择一个模型";
+textFieldGrp -e -tx ($sel[0]) gtTextBSLW3;
+}
+////////////////////
+global proc gtWireWeightPaintProc (){
+    string $sel[]=`ls -sl`;
+    string $mesh=`textFieldGrp -q -text  gtTextBSLW3`;
+    string $shap[]=`listRelatives -s ($sel[0])`;
+    
+    string $clusA[]=`listConnections -s 0 -d 1 ($shap[0]+".worldSpace[0]")`;   
+    select -cl;
+     string $clusterSets[];
+    string $currentMembers[];
+    int $num=100;
+    for($i=0;$i<size($clusA);$i++){
+    string $baseW[]=`listConnections -s 1 -d 0 ($clusA[$i]+".baseWire[0]")`;   
+
+    int $ex=`objExists  ($baseW[0])`;
+    if($ex==1){
+    string  $clusterSetsA[]=`listConnections ($clusA[$i]+".message")`;
+    $clusterSets[0]=$clusterSetsA[0];
+    string $currentMembersa[]=`sets -q ($clusterSets[0])`;
+    $currentMembers[0]=$currentMembersa[0];
+    $num=$i;
+             }
+    }
+		select ($mesh+".vtx[0:999999]");
+		select -d $currentMembers;
+		string $vex[]=`ls -sl`;
+		if(size($vex)>0){
+		sets -add ($clusterSets[0]) `ls -sl`;
+		percent -v 0 $clusA[0] `ls -sl`;
+		}
+    artAttrToolScript 4 "wire";
+eval ("artSetToolAndSelectAttr( \"artAttrCtx\", \"cluster."+$clusA[$num]+".weights\")");
+select $mesh;
+evalEcho ("artSetToolAndSelectAttr( \"artAttrCtx\", \"cluster."+$clusA[$num]+".weights\")");
+}
+///////////////////////////////////////////
+gtWireWeightPaintWin;
+////////////////////////////2016-10-30

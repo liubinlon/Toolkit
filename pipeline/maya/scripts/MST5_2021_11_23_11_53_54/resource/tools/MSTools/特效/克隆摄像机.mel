@@ -1,0 +1,201 @@
+
+
+global proc copy_cam(){
+string $name_ca[]=`ls -sl `;
+float $num_c=`size($name_ca)`;
+
+if($num_c==0){print ("=====请选择摄像机。====="+"\n");}
+else{
+string $name_cam_s[]=`listRelatives -s $name_ca[0]`;
+
+string $w_t=`nodeType $name_ca[0]`;
+string $w_c[]=`listConnections ($name_cam_s[0]+".horizontalFilmAperture")`;
+
+
+
+if($w_t=="stereoRigTransform")
+
+{
+
+CreateCameraOnly ;
+rename ("copy_"+$w_c[0]);
+string $name_cam_s_wc[]=`listRelatives -s $w_c[0]`;
+string $name_cam_copy_s_wc[]=`listRelatives -s ("copy_"+$w_c[0])`;
+select -r $w_c[0];
+select -add ("copy_"+$w_c[0]);
+        pointConstraint -offset 0 0 0 -weight 1;
+        orientConstraint -offset 0 0 0 -weight 1;
+        connectAttr -f ($name_cam_s_wc[0]+".focalLength") 
+($name_cam_copy_s_wc[0]+".focalLength");
+
+        connectAttr -f ($name_cam_s_wc[0]+".horizontalFilmAperture") 
+($name_cam_copy_s_wc[0]+".horizontalFilmAperture");
+        connectAttr -f ($name_cam_s_wc[0]+".verticalFilmAperture") 
+($name_cam_copy_s_wc[0]+".verticalFilmAperture");
+        connectAttr -f ($name_cam_s_wc[0]+".lensSqueezeRatio") 
+($name_cam_copy_s_wc[0]+".lensSqueezeRatio");
+
+        connectAttr -f ($name_cam_s_wc[0]+".shutterAngle") 
+($name_cam_copy_s_wc[0]+".shutterAngle");
+   
+      
+
+     
+
+
+CreateCameraOnly ;
+rename ("copy_"+$w_c[1]);
+string $name_cam_s_wc_2[]=`listRelatives -s $w_c[1]`;
+string $name_cam_copy_s_wc_2[]=`listRelatives -s ("copy_"+$w_c[1])`;
+select -r $w_c[1];
+select -add ("copy_"+$w_c[1]);
+        pointConstraint -offset 0 0 0 -weight 1;
+        orientConstraint -offset 0 0 0 -weight 1;
+        connectAttr -f ($name_cam_s_wc_2[0]+".focalLength") 
+($name_cam_copy_s_wc_2[0]+".focalLength");
+
+        connectAttr -f ($name_cam_s_wc_2[0]+".horizontalFilmAperture") 
+($name_cam_copy_s_wc_2[0]+".horizontalFilmAperture");
+        connectAttr -f ($name_cam_s_wc_2[0]+".verticalFilmAperture") 
+($name_cam_copy_s_wc_2[0]+".verticalFilmAperture");
+        connectAttr -f ($name_cam_s_wc_2[0]+".lensSqueezeRatio") 
+($name_cam_copy_s_wc_2[0]+".lensSqueezeRatio");
+
+        connectAttr -f ($name_cam_s_wc_2[0]+".shutterAngle") 
+($name_cam_copy_s_wc_2[0]+".shutterAngle");
+   
+       
+
+        
+
+
+     
+
+CreateCameraOnly ;
+rename ("copy_"+$name_ca[0]);
+string $name_cam_copy_s[]=`listRelatives -s ("copy_"+$name_ca[0])`;
+select -r $name_ca;
+select -add ("copy_"+$name_ca[0]);
+        pointConstraint -offset 0 0 0 -weight 1;
+        orientConstraint -offset 0 0 0 -weight 1;
+        connectAttr -f ($name_cam_s[0]+".focalLength") 
+($name_cam_copy_s[0]+".focalLength");
+
+        connectAttr -f ($name_cam_s[0]+".horizontalFilmAperture") 
+($name_cam_copy_s[0]+".horizontalFilmAperture");
+        connectAttr -f ($name_cam_s[0]+".verticalFilmAperture") 
+($name_cam_copy_s[0]+".verticalFilmAperture");
+        connectAttr -f ($name_cam_s[0]+".lensSqueezeRatio") 
+($name_cam_copy_s[0]+".lensSqueezeRatio");
+
+        connectAttr -f ($name_cam_s[0]+".shutterAngle") 
+($name_cam_copy_s[0]+".shutterAngle");
+   
+          
+           select -r ("copy_"+$w_c[0]) ;
+        
+        
+
+        
+               select -add ("copy_"+$w_c[1]) ;
+        
+        select -add ("copy_"+$name_ca[0]) ;
+        
+        
+        isolateSelect -state 1 modelPanel4;
+      
+   BakeSimulation ;  
+      
+ isolateSelect -state 0 modelPanel4;
+
+        
+    select -r ("copy_"+$w_c[0]) ;
+   SelectHierarchy;
+ select -d ("copy_"+$w_c[0]);
+ select -d ($name_cam_copy_s_wc[0]);
+     doDelete;
+        
+        
+        
+    select -r ("copy_"+$w_c[1]) ;
+   SelectHierarchy;
+ select -d ("copy_"+$w_c[1]);
+ select -d ($name_cam_copy_s_wc_2[0]);
+     doDelete;
+          
+
+   select -r ("copy_"+$name_ca[0]) ;
+   SelectHierarchy;
+ select -d ("copy_"+$name_ca[0]);
+ select -d ($name_cam_copy_s[0]);
+     doDelete;
+          
+                 select -r ("copy_"+$w_c[1]);
+            select -add ("copy_"+$w_c[0]);
+            select -add ("copy_"+$name_ca[0]) ;
+            }
+          
+else    
+  {CreateCameraOnly ;
+string $newname=`rename ("copy_"+$name_ca[0])`;
+string $name_cam_copy_s[]=`listRelatives -s ("copy_"+$name_ca[0])`;
+select -r $name_ca;
+select -add ("copy_"+$name_ca[0]);
+        pointConstraint -offset 0 0 0 -weight 1;
+        orientConstraint -offset 0 0 0 -weight 1;
+                connectAttr -f ($name_cam_s[0]+".focalLength") 
+($name_cam_copy_s[0]+".focalLength");
+
+        connectAttr -f ($name_cam_s[0]+".horizontalFilmAperture") 
+($name_cam_copy_s[0]+".horizontalFilmAperture");
+        connectAttr -f ($name_cam_s[0]+".verticalFilmAperture") 
+($name_cam_copy_s[0]+".verticalFilmAperture");
+        connectAttr -f ($name_cam_s[0]+".lensSqueezeRatio") 
+($name_cam_copy_s[0]+".lensSqueezeRatio");
+
+        connectAttr -f ($name_cam_s[0]+".shutterAngle") 
+($name_cam_copy_s[0]+".shutterAngle");
+       
+
+        select -r ("copy_"+$name_ca[0]) ;
+        
+        
+isolateSelect -state 1 modelPanel4;
+      
+   BakeSimulation ;  
+      
+ isolateSelect -state 0 modelPanel4;
+   select -r ("copy_"+$name_ca[0]) ;
+   SelectHierarchy;
+ select -d ("copy_"+$name_ca[0]);
+ select -d ($name_cam_copy_s[0]);
+     doDelete;
+          select -r $newname ;}    
+          
+          print ("=====已克隆摄像机并bake。====="+"\n");
+          
+          }
+          
+         
+          }
+          
+
+
+
+if(`window -ex FY_tool_5`) deleteUI FY_tool_5; 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 0 -tlb 0 FY_tool_5;
+rowColumnLayout -numberOfColumns 1  ;
+text -l "";
+text -l "";
+text -fn "boldLabelFont" -l "    奥义之克隆摄像机大法 - 先选择一个摄像机（或立体主体摄像机）    ";
+
+text -l "";
+
+text -l "";
+button -l "执行" -c "copy_cam()";
+text -l "";
+text -l "";
+setParent ..;   
+showWindow FY_tool_5;

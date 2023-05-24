@@ -1,0 +1,75 @@
+//属性移动动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////
+global proc gtMoveUpDnAttrsProcWin(){
+if(`window -ex gtMoveUpDnAttrsProcWin`) deleteUI -window gtMoveUpDnAttrsProcWin;
+if(`windowPref -ex gtMoveUpDnAttrsProcWin`) windowPref -r gtMoveUpDnAttrsProcWin;
+
+window -wh 310 150 -title "老船角色绑定-☆☆☆☆☆-属性移动绑定工具" gtMoveUpDnAttrsProcWin;
+ columnLayout -adj 1 mainColumnattr;
+     text -l "查看程序说明，了解更多应用细节\n老船动画吧：http://www.animate8.com/";
+button -l "访 问 老 船 动 画 吧！" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com\"";
+formLayout liziForm;
+columnLayout -adj 1 liziCol;
+separator -style single  sep1;
+rowColumnLayout -nc 2 -cw 1 150 -cw 2 150;
+text -l "----通道盒选择属性----";
+button -c "gtMoveUpDnAttrsProc 1;" -l "上移选择属性"  ;
+text -l "----通道盒选择属性----";
+button -c "gtMoveUpDnAttrsProc 0;" -l "下移选择属性" ;
+setParent..;
+formLayout -e 
+-af liziCol left 5 -af liziCol top 3 -af liziCol right 5 liziForm;
+showWindow gtMoveUpDnAttrsProcWin;
+}
+//////////////
+global proc gtMoveUpDnAttrsProc(int $updn){
+string $objs[]=`ls -sl`;
+string $attrs[]=`channelBox -q -sma mainChannelBox`;
+int $ex;
+for($j=0;$j<size($objs);$j++){
+string $obj=$objs[$j];
+    for($i=0;$i<size($attrs);$i++){
+        string $attr=$attrs[$i];
+        $ex=`objExists ($obj+"."+$attr)`;
+        if($ex==0)continue;
+        string $udAttrs[]=`listAttr -ud -u $obj`;
+
+        int $index=-1;
+        for($a=0;$a<size($udAttrs);$a++)
+            if($attr==$udAttrs[$a])$index=$a;
+        if($index==-1)continue;
+        int $indexUp=$index-1;
+        if($indexUp<0)$indexUp=$index;
+        string $upAttr=$udAttrs[$indexUp];
+        
+        if($updn==1){        
+        if($index==0)continue;
+        deleteAttr ($obj+"."+$upAttr);
+        undo;
+        for($aa=($index+1);$aa<size($udAttrs);$aa++){
+            deleteAttr ($obj+"."+$udAttrs[$aa]);
+            undo;
+            }
+        }
+        if($updn==0){ 
+        deleteAttr ($obj+"."+$attr);
+        undo;
+        int $dnSize=size($attrs);
+        for($aa=($index+$dnSize+1);$aa<size($udAttrs);$aa++){
+            deleteAttr ($obj+"."+$udAttrs[$aa]);
+            undo;
+                }
+            }
+        }  
+    }
+}
+///////////////
+gtMoveUpDnAttrsProcWin;

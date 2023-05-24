@@ -1,0 +1,483 @@
+//高低模型烘焙法线贴图动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+
+global proc gtNormalTextureWin(){
+string $workspacePath=`workspace -q -fn`+"/";
+if(`window -ex gtNormalCreateTNWin`==1) deleteUI -window gtNormalCreateTNWin;
+window -t "老船角色绑定-☆-高低模型烘焙法线贴图动画工具" -wh 600 300 gtNormalCreateTNWin;
+    columnLayout -adj 1 mainColumnattr;
+text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 45  -c "showHelp -a \"http://www.animate8.com/archives/1714\"";
+string $form=`formLayout gtFormL`;
+frameLayout -lv 0  -cll 0 -cl 0 -h 35 mianFrame1;
+formLayout gtF;
+
+string $Bof="textFieldButtonGrp -e -en 0 gtTextFieldGA;";
+string $Bon="textFieldButtonGrp -e -en 1 gtTextFieldGA;";
+
+string $Aof="textFieldButtonGrp -e -en 0 gtTextFieldG;optionMenu -e -en 0 gtNBT_menu;textField -e -en 0  gtNBT_textField;intField  -e -en 0 gtNBT_intField;";
+
+string $Aon="textFieldButtonGrp -e -en 1 gtTextFieldG;optionMenu -e -en 1 gtNBT_menu;textField -e -en 1  gtNBT_textField;intField  -e -en 1 gtNBT_intField;";
+help radioButtonGrp;
+
+string $radioBG=`radioButtonGrp -l "操作项:"  -nrb 3 -cw4 50 155  155 160  -la3 "创建并连接法线贴图" "连接法线贴图" "删除法线贴图" -sl 1 -on1 $Aon -of1  $Aof -on2 $Bon -of2 $Bof  gtradioBG`;
+setParent..;
+setParent..;
+formLayout -e
+
+-af gtradioBG left 15 -af gtradioBG right 5 -af gtradioBG top 5 -af gtradioBG bottom 5 gtF;
+
+frameLayout -lv 0  -cll 0 -cl 0 mainFrame2;
+formLayout gtForm1;
+text -l "贴图名称:" text1;
+textField -text "normalBumpTexture" -w 95 gtNBT_textField;
+text -l "贴图尺寸:" text2;
+intField  -min 128 -max 4096 -value 512 -w 95 gtNBT_intField;
+separator -style single sep3;
+optionMenu -l "贴图格式:" gtNBT_menu;
+menuItem -l "als";
+menuItem -l "bmp";
+menuItem -l "gif";
+menuItem -l "iff";
+menuItem -l "jpg";
+menuItem -l "pic";
+menuItem -l "rla";
+menuItem -l "sgi";
+menuItem -l "tif";
+menuItem -l "tga";
+optionMenu -e -sl 9 gtNBT_menu;
+textFieldButtonGrp -cw3 80 415 80 -l "输出贴图路径:" -text $workspacePath -bl "浏       览" -bc "gtNormalTexGetfile;" gtTextFieldG;
+
+textFieldButtonGrp -en 0 -cw3 80 415 80 -l "读取贴图路径:" -text $workspacePath -bl "浏       览" -bc "gtNormalTexGetfileA;" gtTextFieldGA;
+
+setParent..;
+setParent..;
+
+formLayout -e 
+-af text1 left 15 -af text1 top 5 -ap text1 right 0 15
+-ac gtNBT_textField left 0 text1 -af gtNBT_textField top 5 -ap gtNBT_textField right 15 42
+-ac text2 left 25 gtNBT_textField  -af text2 top 5 -ap text2 right 45 62
+
+-ac gtNBT_intField left 0 text2 -af gtNBT_intField top 5 -ap gtNBT_intField right 68 87
+-ac gtNBT_menu left 0 gtNBT_intField -af gtNBT_menu top 5 -af gtNBT_menu right 5
+
+-af sep3 left 10 -ac sep3 top 2 gtNBT_intField -af sep3 right 10
+
+-af gtTextFieldG left 0 -ac gtTextFieldG top 2 sep3  -af gtTextFieldG right 2
+
+-af gtTextFieldGA left 0 -ac gtTextFieldGA top 2 gtTextFieldG  -af gtTextFieldGA right 2  gtForm1;
+
+formLayout gtForm2;
+
+button -l "应         用" -w 120 -c "gtNormTextureMake" but2;
+formLayout -e 
+-af but2 left 5  -af but2 right 5 -af but2 top 5 gtForm2; 
+
+setParent..;
+setParent..;
+
+formLayout -e 
+-af mianFrame1 left 10 -af mianFrame1 top 5 -af mianFrame1 right 10
+-af mainFrame2 left 10 -ac mainFrame2 top 2 mianFrame1 -af mainFrame2 right 10
+-af gtForm2 left 5 -ac gtForm2 top 2 mainFrame2 -af gtForm2 right 5 gtFormL;
+
+showWindow gtNormalCreateTNWin;
+}
+
+///////////////////////////////////////
+global proc gtNormalTexGetName(string $dir,string $type){
+textFieldButtonGrp -e -text ($dir) gtTextFieldG;
+}
+global proc gtNormalTexGetNameA(string $dir,string $type){
+textFieldButtonGrp -e -text ($dir) gtTextFieldGA;
+}
+global proc gtNormalTexGetfile(){
+string $filename[] = `fileDialog2 -fileMode 2 -caption "Import Image"`;
+if (1 == `size($filename)`)
+    {
+   gtNormalTexGetName($filename[0], "");
+    }
+}
+global proc gtNormalTexGetfileA(){
+string $filename[] = `fileDialog2 -fileMode 1 -caption "Import Image"`;
+if (1 == `size($filename)`)
+    {
+   gtNormalTexGetNameA($filename[0], "");
+    }
+}
+////////////////////////////////
+global proc gtNormTextureMake(){
+
+ string $option=`radioButtonGrp -q -sl gtradioBG`;
+ string $texName=`textField -q -text "gtNBT_textField"`;
+ int    $outResolution=`intField -q -value "gtNBT_intField"`;
+ string $outFormat=`optionMenu -q -v "gtNBT_menu"`;
+
+ string $outName=$texName+"."+$outFormat;
+ string $texturepath=`textFieldGrp -q -text gtTextFieldG`;
+ string $texturepathA=`textFieldGrp -q -text gtTextFieldGA`;
+
+ string $texPath=$texturepath+"/"+$outName;
+ string $texPathA=$texturepathA;
+
+  if($option==1){
+
+  string $sel[]=`ls -sl`;
+  int $size=size($sel);
+  if($size==0) confirmDialog -title "NormalTextureWarning" -message "no object selected" -button "OK";
+     if($size>2) error "too many objects are selected. one or two should be fine";
+     if($size==2){
+
+     string $selShape0[]=`listRelatives -s $sel[0]`;
+     string $selShape1[]=`listRelatives -s $sel[1]`;
+
+     string $type0[]=`ls -st $selShape0[0]`;
+     string $type1[]=`ls -st $selShape1[0]`;
+
+
+     select -r ($selShape0[0]+".f[*]");
+     string $face1[]=`filterExpand -sm 34`;
+     int $size1=`size($face1)`;
+     select -r ($selShape1[0]+".f[*]");
+     string $face2[]=`filterExpand -sm 34`;
+     int $size2=`size($face2)`;
+
+     string $sourceSelect;
+     string $targetSelect;
+
+     string $sourceShape;
+     string $targetShape;
+     
+     string $tmpN="";
+ 
+     if($size1==$size2) error "the object selected are have the same shape and no high and low model can be distinct";
+
+     if($size1>$size2){
+     
+      $sourceSelect=$sel[0];
+      $targetSelect=$sel[1];
+
+      $sourceShape=$selShape0[0];
+      $targetShape=$selShape1[0];
+      $tmpN=($sel[1]+"_");}
+     
+     if($size1<$size2){
+     
+      $sourceSelect=$sel[1];
+      $targetSelect=$sel[0];
+
+      $sourceShape=$selShape1[0];
+      $targetShape=$selShape0[0];
+      $tmpN=($sel[0]+"_");}
+  
+     if($type0[1]!="mesh"&&$type0[1]!="nurbsSurface")
+          {error "the first object is not mesh or nurbs";}
+     
+     if($type1[1]!="mesh"&&$type1[1]!="nurbsSurface")
+          {error "the secound object is not mesh or nurbs";}
+
+     if($type0[1]=="mesh"||$type0[1]=="nurbsSurface"){
+     if($type1[1]=="mesh"||$type1[1]=="nurbsSurface"){
+
+     shadingNode -au vectorProduct -n ($tmpN+"normalBump_VProduct1");   setAttr ".op" 3;
+     shadingNode -au samplerInfo -n ($tmpN+"normalBump_samplerInfo");
+     shadingNode -au vectorProduct -n ($tmpN+"normalBump_VProduct2");   setAttr ".op" 3;
+     shadingNode -as surfaceShader -n ($tmpN+"normalBump_InShader");
+     sets -renderable true -noSurfaceShader true -empty -name ($tmpN+"surfaceShaderSG");
+     connectAttr -f ($tmpN+"normalBump_InShader.outColor") ($tmpN+"surfaceShaderSG.surfaceShader");
+
+
+     shadingNode -au setRange -n ($tmpN+"normalBump_setRange");
+     setAttr ".m" -type "float3"   1 1 1 ;
+     setAttr ".on" -type "float3" -1 -1 -1 ;
+     setAttr ".om" -type "float3"  1 1 1 ;
+
+     connectAttr ($tmpN+"normalBump_samplerInfo.normalCamera") ($tmpN+"normalBump_VProduct1.i1");
+     connectAttr ($tmpN+"normalBump_VProduct1.output") ($tmpN+"normalBump_VProduct2.input1");
+     connectAttr ($tmpN+"normalBump_setRange.o") ($tmpN+"normalBump_InShader.oc");
+     connectAttr ($tmpN+"normalBump_VProduct2.o") ($tmpN+"normalBump_setRange.v");
+    
+     connectAttr ("perspShape.worldMatrix[0]") ($tmpN+"normalBump_VProduct1.matrix");
+     connectAttr ($sourceShape+".worldInverseMatrix[0]") ($tmpN+"normalBump_VProduct2.matrix");
+
+     string $selShadSG[]=`listConnections -source 0 -destination 1 ($sourceShape+".instObjGroups[0]")`;
+     string $selShad[]=`listConnections -source 1 -destination 0 ($selShadSG[0]+".surfaceShader")`;
+
+     string $beforeShad=$selShad[0];
+
+     defaultNavigation -source ($tmpN+"normalBump_InShader") -destination ($sourceShape+".instObjGroups[0]") -connectToExisting;
+//print $outName
+     string $finalTex[]=`convertSolidTx -antiAlias 1 -bm 3 -fts 1 -sp 0 -sh 0 -alpha 0 -doubleSided 0
+                     -componentRange 0 -resolutionX  $outResolution -resolutionY $outResolution 
+                     -fileFormat $outFormat -fileImageName $texPath ($tmpN+"normalBump_setRange.outValue") $sourceSelect`;
+ 
+//help convertSolidTx;
+
+     string $fileTex=$finalTex[0];
+     string $inShadSG[]=`listConnections -source 0 -destination 1 ($tmpN+"normalBump_InShader.outColor")`;
+
+     defaultNavigation -source $beforeShad -destination ($sourceShape+".instObjGroups[0]") -connectToExisting;
+
+     select -r ($tmpN+"normalBump_samplerInfo");
+     select -add ($tmpN+"surfaceShaderSG");
+     select -add ($tmpN+"normalBump_VProduct1");
+     select -add ($tmpN+"normalBump_VProduct2");
+     select -add ($tmpN+"normalBump_setRange");
+     select -add ($tmpN+"normalBump_InShader");
+     select -add  $fileTex;
+     select -add -ne $inShadSG[0];
+     delete;
+
+     string $inputN=$texPath;
+
+     string $targetShadSG[]=`listConnections -source 0 -destination 1 ($targetShape+".instObjGroups[0]")`;
+     string $targetShad[]=`listConnections -source 1 -destination 0 ($targetShadSG[0]+".surfaceShader")`;
+     string $bumpInput[]=`listConnections -source 1 -destination 0 ($targetShad[0]+".normalCamera")`;
+     
+     string $connectNode;
+     int $bumpSize=size($bumpInput);
+     if($bumpSize==1){
+     int    $exbumpNormalCamera=`attributeExists normalCamera $bumpInput[0]`; 
+     if($exbumpNormalCamera==0) error "normalBumpTexture completed but can not assign to object your specified please check the shader's normalCamera of the object";
+
+     string $connectToBumpN[]=`listConnections -source 1 -destination 0 ($bumpInput[0]+".normalCamera")`;
+    
+     int $connectTBNtypesize=`size($connectToBumpN)`;
+     if($connectTBNtypesize==1)
+          error "normalBumpTexture completed but can not assign to object your specified please check the bump'normalCmaera attribute of the shader of the object";
+
+       $connectNode=$bumpInput[0];}
+
+     if($bumpSize==0){
+     $connectNode=$targetShad[0];}
+
+     string $file=`createNode file -n ($tmpN+"BNT_file")`;
+     shadingNode -au setRange    -n ($tmpN+"BNT_setRange");
+     setAttr ".max" -type "float3" 1 1 1 ;
+     setAttr ".min" -type "float3" -1 -1 -1 ;
+     setAttr ".om" -type "float3" 1 1 1 ;
+     shadingNode -au vectorProduct -n ($tmpN+"BNT_VProduct");  setAttr ".op" 3;
+     connectAttr -f ($tmpN+"BNT_file.outColor") ($tmpN+"BNT_setRange.value");
+     connectAttr -f ($tmpN+"BNT_setRange.outValue") ($tmpN+"BNT_VProduct.input1");
+
+
+        connectAttr -f ($tmpN+"BNT_VProduct.output") ($connectNode+".normalCamera");
+
+        //$texturepath=`workspace -q -fn`;
+        //$texPath=$texturepath+"/"+$texName+"."+$outFormat;
+//print $texPath;
+       // textFieldButtonGrp -e -text $texPath gtTextFieldG;
+
+        string $fileFullPath=$texPath;
+        setAttr -type "string"  ($file+".ftn") $fileFullPath;
+        select -r $file;
+        showEditor $file;
+        }        
+    }
+}
+
+  if($size==1){
+
+  string $selShape0[]=`listRelatives -s $sel[0]`;
+  string $type0[]=`ls -st $selShape0[0]`;
+  string $sourceSelect=$sel[0];
+  string $sourceShape=$selShape0[0];
+
+  string $tmpN=($sel[1]+"_");
+
+  if($type0[1]!="mesh"&&$type0[1]!="nurbsSurface")
+          {error "the object is not mesh or nurbs";}
+     
+  if($type0[1]=="mesh"||$type0[1]=="nurbsSurface"){
+
+   shadingNode -au vectorProduct -n ($tmpN+"normalBump_VProduct1");    setAttr ".op" 3;
+   shadingNode -au samplerInfo -n ($tmpN+"normalBump_samplerInfo");
+   shadingNode -au vectorProduct -n ($tmpN+"normalBump_VProduct2");    setAttr ".op" 3;
+   shadingNode -as surfaceShader -n ($tmpN+"normalBump_InShader");
+   sets -renderable true -noSurfaceShader true -empty -name ($tmpN+"surfaceShaderSG");
+   connectAttr -f ($tmpN+"normalBump_InShader.outColor") ($tmpN+"surfaceShaderSG.surfaceShader");
+
+
+   shadingNode -au setRange -n ($tmpN+"normalBump_setRange");
+	setAttr ".m" -type "float3" 1 1 1 ;
+	setAttr ".on" -type "float3" -1 -1 -1 ;
+	setAttr ".om" -type "float3" 1 1 1 ;
+
+   connectAttr ($tmpN+"normalBump_samplerInfo.normalCamera") ($tmpN+"normalBump_VProduct1.i1");
+   connectAttr ($tmpN+"normalBump_VProduct1.output") ($tmpN+"normalBump_VProduct2.input1");
+   connectAttr ($tmpN+"normalBump_setRange.o") ($tmpN+"normalBump_InShader.oc");
+
+
+   connectAttr ($tmpN+"normalBump_VProduct2.o") ($tmpN+"normalBump_setRange.v");
+   connectAttr ("perspShape.worldMatrix[0]") ($tmpN+"normalBump_VProduct1.matrix");
+   connectAttr ($sourceShape+".worldInverseMatrix[0]") ($tmpN+"normalBump_VProduct2.matrix");
+
+   string $selShadSG[]=`listConnections -source 0 -destination 1 ($sourceShape+".instObjGroups[0]")`;
+   string $selShad[]=`listConnections -source 1 -destination 0 ($selShadSG[0]+".surfaceShader")`;
+
+   string $beforeShad=$selShad[0];
+
+   defaultNavigation -source ($tmpN+"normalBump_InShader") -destination ($sourceShape+".instObjGroups[0]") -connectToExisting;
+
+   string $texName=`textField -q -text "gtNBT_textField"`;
+   int    $outResolution=`intField -q -value "gtNBT_intField"`;
+   string $outFormat=`optionMenu -q -v "gtNBT_menu"`;
+
+   string $outName=$texName+"."+$outFormat;
+   string $texturepath=`textFieldGrp -q -text gtTextFieldG`;
+   string $texPath=$texturepath+"/"+$outName;
+
+   string $finalTex[]=`convertSolidTx -antiAlias 1 -bm 3 -fts 1 -sp 0 -sh 0 -alpha 0 -doubleSided 0
+                     -componentRange 0 -resolutionX  $outResolution -resolutionY $outResolution 
+                     -fileFormat $outFormat -fileImageName $outName ($tmpN+"normalBump_setRange.outValue") $sourceSelect`;
+
+   string $fileTex=$finalTex[0];
+   string $inShadSG[]=`listConnections -source 0 -destination 1 ($tmpN+"normalBump_InShader.outColor")`;
+   defaultNavigation -source $beforeShad -destination ($sourceShape+".instObjGroups[0]") -connectToExisting;
+
+   select -r ($tmpN+"normalBump_samplerInfo");
+   select -add ($tmpN+"surfaceShaderSG"); 
+   select -add ($tmpN+"normalBump_VProduct1");
+   select -add ($tmpN+"normalBump_VProduct2");
+   select -add ($tmpN+"normalBump_setRange");
+   select -add ($tmpN+"normalBump_InShader");
+   select -add  $fileTex;
+   select -add -ne $inShadSG[0];
+   delete;
+
+   $texturepath=`workspace -q -fn`;
+
+   $texPath=$texturepath+"/"+$texName+"."+$outFormat;
+
+   textFieldButtonGrp -e -text $texPath gtTextFieldG;
+
+   string $fileFullPath=`textFieldButtonGrp -q -text gtTextFieldG`;
+    }
+  }
+}
+
+  if($option==2){
+  string $fileFullPath=`textFieldButtonGrp -q -text gtTextFieldGA`;
+  int $checkEx=`file -q -ex $fileFullPath`;
+  if($checkEx==0) error "texturePath of file do not exist please browser the file first";
+
+  string $sel[]=`ls -sl`;
+  int $size=size($sel);
+   if($size==0) confirmDialog -title "NormalTextureWarning" -message "no object selected" -button "OK";
+   
+    if($size>1) error "only one object is needed";
+    if($size==1){
+
+    string $selShape0[]=`listRelatives -s $sel[0]`;
+    string $type0[]=`ls -st $selShape0[0]`;
+    string $Select=$sel[0];
+    string $sShape=$selShape0[0];
+
+    if($type0[1]!="mesh"&&$type0[1]!="nurbsSurface") { error "the object is not mesh or nurbs";}
+          
+     
+    if($type0[1]=="mesh"||$type0[1]=="nurbsSurface"){
+
+    string $tmpN=($sel[0]+"_");
+    string $inputN=$fileFullPath;
+
+    string $ShadSG[]=`listConnections -source 0 -destination 1 ($sShape+".instObjGroups[0]")`;
+    string $Shad[]=`listConnections -source 1 -destination 0 ($ShadSG[0]+".surfaceShader")`;
+    string $bumpInput[]=`listConnections -source 1 -destination 0 ($Shad[0]+".normalCamera")`;
+    
+    string $connectNode;
+    int $bumpSize=size($bumpInput);
+
+    if($bumpSize==1){
+    int $exbumpNormalCamera=`attributeExists normalCamera $bumpInput[0]`;
+    if($exbumpNormalCamera==0) error "please check the shader's normalCamera attribute of the object";
+
+    string $tempBump[]=`listConnections -source 1 -destination 0 ($bumpInput[0]+".normalCamera")`;
+    int $size=`size($tempBump)`;
+     if($size==1) error "please check the bumpMap's normalCamera attribute of shader of the object";
+       
+    $connectNode=$bumpInput[0];}
+
+     if($bumpSize==0){
+     $connectNode=$Shad[0];}
+      
+    string $file=`createNode file -n ($tmpN+"BNT_file")`;
+    shadingNode -au setRange    -n ($tmpN+"BNT_setRange");
+    setAttr ".max" -type "float3" 1 1 1 ;
+	setAttr ".min" -type "float3" -1 -1 -1 ;
+	setAttr ".om" -type "float3" 1 1 1 ;
+    shadingNode -au vectorProduct -n ($tmpN+"BNT_VProduct");  setAttr ".op" 3;
+    connectAttr -f ($tmpN+"BNT_file.outColor") ($tmpN+"BNT_setRange.value");
+    connectAttr -f ($tmpN+"BNT_setRange.outValue") ($tmpN+"BNT_VProduct.input1");
+     
+      connectAttr -f ($tmpN+"BNT_VProduct.output") ($connectNode+".normalCamera");
+
+      setAttr -type "string"  ($file+".ftn") $fileFullPath;
+      select -r $file;
+      showEditor $file;
+      }else{
+      error "please select a polygon or nurbs object";
+      }
+   }
+}
+
+
+  if($option==3){
+
+  string $sel[]=`ls -sl`;
+  int $size=`size($sel)`;
+   if($size==0) confirmDialog -title "NormalTextureWarning" -message "no object selected" -button "OK";
+   if($size>1) confirmDialog -title "NormalTextureWarning" -message "too many object selected and once for one object" -button "OK";
+if($size==1){
+   string $selShape0[]=`listRelatives -s $sel[0]`;
+   string $type0[]=`ls -st $selShape0[0]`;
+
+   string $Select=$sel[0];
+   string $sShape=$selShape0[0];
+
+
+   if($type0[1]!="mesh"&&$type0[1]!="nurbsSurface")
+          { error "the object is not mesh or nurbs";}
+
+    if($type0[1]=="mesh"||$type0[1]=="nurbsSurface"){
+    string $ShadSG[]=`listConnections -source 0 -destination 1 ($sShape+".instObjGroups[0]")`;
+    string $Shad[]=`listConnections -source 1 -destination 0 ($ShadSG[0]+".surfaceShader")`;
+    string $bumpInput[]=`listConnections -source 1 -destination 0 ($Shad[0]+".normalCamera")`;
+
+    string $connectNode;
+     if($bumpInput[0]=="") confirmDialog -title "NormalTextureWarning" -message "Normal Bump already cancelled" -button "OK";
+       if($bumpInput[0]!=""){
+       int $attrEx=`attributeExists normalCamera $bumpInput[0]`;
+
+        if($attrEx==0){
+        $connectNode=$Shad[0];
+        }else{
+        $connectNode=$bumpInput[0];}       
+
+        string $vectorPnode[]=`listConnections -source 1 -destination 0 ($connectNode+".normalCamera")`;
+
+         if($vectorPnode[0]!=""){
+         string $setRange[]=`listConnections -source 1 -destination 0 ($vectorPnode[0]+".input1")`;
+          if($setRange[0]!=""){
+          string $fileNode[]=`listConnections -source 1 -destination 0 ($setRange[0]+".value")`;
+          select -r $fileNode[0] $setRange[0] $vectorPnode[0];
+          delete;
+          } 
+          }else{
+          confirmDialog -title "NormalTextureWaring" -message "bump Normal already cancelled" -button "ok";
+          }
+        }
+      }
+    }
+  }
+}
+////////////////
+gtNormalTextureWin;
+////////////////////2016-11-22

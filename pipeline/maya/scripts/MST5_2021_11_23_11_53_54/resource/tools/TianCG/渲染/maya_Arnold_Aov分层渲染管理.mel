@@ -1,0 +1,18 @@
+//Coded by Tiancg
+global proc tjh_Arnold_AOV_creator_Main()
+
+{python("import maya.cmds as mayaCmds");	string $srcPath = python("mayaCmds.moduleInfo(mn='MS_Toolkit',p=True)")+"/tools/TianCG/MST_DATA/plug-ins/tjh_Arnold_AOV_creator/";	
+
+    string $mayaVer=`about -v`;	
+    string $ver[];	
+    int $number=`tokenize $mayaVer "." $ver`;	
+    string $plug_ins="linkDll_"+$ver[0]+".mll";	
+    if(!` pluginInfo -query -l $plug_ins `)
+    loadPlugin -qt ($srcPath+"/lib/"+$plug_ins);	
+    string $dstScriptPath = python("mayaCmds.moduleInfo(mn='MS_Toolkit',p=True)")+"/tools/TianCG/MST_DATA/scripts/"; 
+    sysFile -copy ($dstScriptPath+"tjh_Arnold_AOV_creator.dll") 
+    ($srcPath+"/lib/"+"tjh_Arnold_AOV_creator.dll"); 
+    linkDll ($dstScriptPath+"tjh_Arnold_AOV_creator.dll");
+    tjh_Arnold_AOV_creator;
+    }
+tjh_Arnold_AOV_creator_Main;

@@ -1,0 +1,1227 @@
+//简单样条IK骨骼拉伸绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtSimpleSplineIksetupWin(){
+
+if(`window -ex gtSimpleSplineIksetupWin`) deleteUI  -window gtSimpleSplineIksetupWin;
+window -wh 400 220 -title "老船动画吧-简单样条IK骨骼拉伸绑定工具" gtSimpleSplineIksetupWin;
+columnLayout -adj 1   mainColumnL;
+text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 45  -c "showHelp -a \"http://www.animate8.com/archives/1365\"";
+
+	rowColumnLayout -nc 3 -cw 1 100 -cw 2 150 -cw 3 150;
+text -l "   "  -h 24  textConName;
+textField -text ""  ttgRigConName;
+
+button -l "载入总控制器" -c  "ttgLaodConNamProc;"   loadConNamBut;
+setParent..;
+	floatSliderGrp -l "控制器大小："  -f 1 -v 1 -min 0.01 -max 10  gtConradius;
+	separator -style double;
+	
+	radioButtonGrp -en 1 -bgc 0.3 0.4 0.5 -l "控制器数量：" -nrb  4 -la4 "二" "三" "四" "五"  -cw5 120 80 80 80 80  -select 2 gtsplineConTypeBox;
+	button  -l "创建自动曲线样条绑定" -c "gtSimpleiksplinesetup" gtIntsecoundBnButA;
+	
+separator -style double;	
+showWindow gtSimpleSplineIksetupWin;
+}
+///////////////////////////
+global proc ttgLaodConNamProc(){
+
+string $gtCname="";
+string $sel[]=`ls -sl`;
+string $teststring=$sel[0];
+$gtCname=$teststring;
+textField  -e -text $gtCname ttgRigConName;
+}
+//////////////////////////
+global proc  gtSimpleiksplinesetup(){
+    float $scl=`floatSliderGrp -q -v gtConradius`;
+    
+string $sel[]=`ls -sl`;
+
+for($ii=0;$ii<size($sel);$ii++){
+    
+string $gttextm[];
+int $gttextnum=`tokenize ($sel[$ii]) "_" $gttextm`;
+string $gtside=($gttextm[1]);
+
+string $childs[]=`listRelatives -c -ad ($sel[$ii])`;
+int $segment=size($childs);
+string $endbn=$childs[0];
+select -r $childs[1];
+select -add $endbn;
+delete `orientConstraint`;
+select -r $endbn;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+string $basebn=$sel[$ii];
+
+select -r ($basebn);
+    
+string $iksel[]=`ls -sl`;
+    $basebn=$iksel[0];
+    select -r ($basebn);
+    pickWalk -d down;
+    string $elbowbn[]=`ls -sl`;
+    for($i=1;$i<$segment;$i++){
+            pickWalk -d down;
+    }
+    string $end[]=`ls -sl`;
+    string $endbn=$end[0];
+
+int $cv=`radioButtonGrp -q -sl gtsplineConTypeBox`;
+
+select -r ($basebn+".rotatePivot") ;
+select -add ($endbn+".rotatePivot") ;
+ikHandle -sol ikSplineSolver -pcv false -ns ($cv);
+
+string $ikhandle[]=`ls -sl`;
+select -r ($ikhandle[0]);
+rename ($sel[$ii]+"ikhandle");
+
+string $endEffector[]=`listConnections -s 1 -d 0 ($sel[$ii]+"ikhandle.endEffector")`;
+setAttr ($endEffector[0]+".visibility") 0;
+setAttr -lock true ($endEffector[0]+".v");
+
+string $curve[]=`listConnections -d 0 -s 1 ($sel[$ii]+"ikhandle.inCurve")`;
+select -r ($curve[0]);
+//////////////////////////
+if($cv==1){
+    group -em; xform -os -piv 0 0 0;
+rename ($curve[0]+"ikConGrp");
+
+select -r ($curve[0]+".cv[0:1]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster0");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc0");
+select -r ($curve[0]+"cluster0");
+select -add ($curve[0]+"loc0");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster0");
+select -add ($curve[0]+"loc0");
+parent;
+
+
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con0");
+group -n ($curve[0]+"ConGrp0");
+group -n ($curve[0]+"ConGrpA0");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA0.sz") -1;
+    setAttr ($curve[0]+"ConGrpA0.sx") -1;
+    setAttr ($curve[0]+"ConGrpA0.sy") -1;
+}
+select -r ($basebn);
+select -add ($curve[0]+"ConGrpA0");
+delete `parentConstraint`;
+select -r ($curve[0]+"loc0");
+select -add ($curve[0]+"Con0");
+parent;
+
+
+select -r ($curve[0]+"ConGrpA0");
+select -add ($curve[0]+"ikConGrp");
+parent;
+setAttr ($curve[0]+"loc0.visibility") 0;
+setAttr -lock true ($curve[0]+"loc0.v");
+
+setAttr -lock true ($curve[0]+"Con0.sx");
+setAttr -lock true ($curve[0]+"Con0.sy");
+setAttr -lock true ($curve[0]+"Con0.sz");
+setAttr -lock true ($curve[0]+"Con0.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con0")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }  
+ ///////////////// 
+ 
+ select -r ($curve[0]+".cv[2:3]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster1");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc1");
+select -r ($curve[0]+"cluster1");
+select -add ($curve[0]+"loc1");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster1");
+select -add ($curve[0]+"loc1");
+parent;
+
+ curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con1");
+group -n ($curve[0]+"ConGrp1");
+group -n ($curve[0]+"ConGrpA1");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA1.sz") -1;
+    setAttr ($curve[0]+"ConGrpA1.sy") -1;
+    setAttr ($curve[0]+"ConGrpA1.sx") -1;
+}
+select -r ($endbn);
+select -add ($curve[0]+"ConGrpA1");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"loc1");
+select -add ($curve[0]+"Con1");
+parent;
+
+select -r ($curve[0]+"ConGrpA1");
+select -add ($curve[0]+"Con0");
+parent;
+setAttr ($curve[0]+"loc1.visibility") 0;
+setAttr -lock true ($curve[0]+"loc1.v");
+
+setAttr -lock true ($curve[0]+"Con1.sx");
+setAttr -lock true ($curve[0]+"Con1.sy");
+setAttr -lock true ($curve[0]+"Con1.sz");
+setAttr -lock true ($curve[0]+"Con1.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con1")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }           
+}
+
+//////////////////////////////////////////
+if($cv==2){
+ 
+ select -r ($curve[0]);
+duplicate -rr;
+rename ($curve[0]+"temp");
+
+select -r ($curve[0]+"temp.cv[2]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"clusterTemp0");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"locTemp0");
+select -r ($curve[0]+"clusterTemp0");
+select -add ($curve[0]+"locTemp0");
+delete `parentConstraint`;
+
+float $pos1[]=`xform -q -ws -t ($basebn)`;
+float $pos2[]=`xform -q -ws -t ($curve[0]+"locTemp0")`;
+float $pos3[]=`xform -q -ws -t ($endbn)`;
+select -cl;
+joint -p $pos1[0] $pos1[1] $pos1[2] -n ($curve[0]+"tempBn0") ;
+joint -p $pos2[0] $pos2[1] $pos2[2] -n ($curve[0]+"tempBn1") ; 
+joint -e -zso -oj xyz -sao yup ($curve[0]+"tempBn0") ;
+joint -p $pos3[0] $pos3[1] $pos3[2] -n ($curve[0]+"tempBn2") ; 
+joint -e -zso -oj xyz -sao yup ($curve[0]+"tempBn1") ; ;
+
+group -em; xform -os -piv 0 0 0;
+rename ($curve[0]+"ikConGrp");
+
+select -r ($curve[0]+".cv[0:1]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster0");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc0");
+select -r ($curve[0]+"cluster0");
+select -add ($curve[0]+"loc0");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster0");
+select -add ($curve[0]+"loc0");
+parent;
+
+
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con0");
+group -n ($curve[0]+"ConGrp0");
+group -n ($curve[0]+"ConGrpA0");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA0.sz") -1;
+    setAttr ($curve[0]+"ConGrpA0.sx") -1;
+    setAttr ($curve[0]+"ConGrpA0.sy") -1;
+    select -r ($curve[0]+"tempBn0") ; 
+    rename ($curve[0]+"tempBnA0") ; 
+    mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "" "";
+    rename ($curve[0]+"tempBnB0") ; 
+    joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+    mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "" "";
+    rename ($curve[0]+"tempBn0") ;    
+    select -r ($curve[0]+"tempBnA0") ($curve[0]+"tempBnB0"); 
+    delete;
+}
+select -r ($curve[0]+"tempBn0") ; 
+select -add ($curve[0]+"ConGrpA0");
+delete `parentConstraint`;
+select -r ($curve[0]+"loc0");
+select -add ($curve[0]+"Con0");
+parent;
+
+
+select -r ($curve[0]+"ConGrpA0");
+select -add ($curve[0]+"ikConGrp");
+parent;
+setAttr ($curve[0]+"loc0.visibility") 0;
+setAttr -lock true ($curve[0]+"loc0.v");
+
+setAttr -lock true ($curve[0]+"Con0.sx");
+setAttr -lock true ($curve[0]+"Con0.sy");
+setAttr -lock true ($curve[0]+"Con0.sz");
+setAttr -lock true ($curve[0]+"Con0.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con0")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }  
+ ///////////////// 
+ select -r ($curve[0]+".cv[2]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster1");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc1");
+select -r ($curve[0]+"cluster1");
+select -add ($curve[0]+"loc1");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster1");
+select -add ($curve[0]+"loc1");
+parent;
+
+ curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con1");
+group -n ($curve[0]+"ConGrp1");
+group -n ($curve[0]+"ConGrpA1");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA1.sz") -1;
+    setAttr ($curve[0]+"ConGrpA1.sx") -1;
+    setAttr ($curve[0]+"ConGrpA1.sy") -1;
+}
+select -r ($curve[0]+"tempBn0") ; 
+select -add ($curve[0]+"tempBn1") ; 
+select -add ($curve[0]+"ConGrpA1");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"loc1");
+select -add ($curve[0]+"ConGrpA1");
+delete `pointConstraint`;
+
+select -r ($curve[0]+"loc1");
+select -add ($curve[0]+"Con1");
+parent;
+
+select -r ($curve[0]+"ConGrpA1");
+select -add ($curve[0]+"Con0");
+parent;
+setAttr ($curve[0]+"loc1.visibility") 0;
+setAttr -lock true ($curve[0]+"loc1.v");
+
+setAttr -lock true ($curve[0]+"Con1.sx");
+setAttr -lock true ($curve[0]+"Con1.sy");
+setAttr -lock true ($curve[0]+"Con1.sz");
+setAttr -lock true ($curve[0]+"Con1.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con1")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }    
+///////////////////////////////////////////
+
+   select -r ($curve[0]+".cv[3:4]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster2");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc2");
+select -r ($curve[0]+"cluster2");
+select -add ($curve[0]+"loc2");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster2");
+select -add ($curve[0]+"loc2");
+parent;
+
+ curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con2");
+group -n ($curve[0]+"ConGrp2");
+group -n ($curve[0]+"ConGrpA2");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA2.sz") -1;
+    setAttr ($curve[0]+"ConGrpA2.sx") -1;
+    setAttr ($curve[0]+"ConGrpA2.sy") -1;
+}
+select -r ($endbn);
+select -add ($curve[0]+"ConGrpA2");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"loc2");
+select -add ($curve[0]+"Con2");
+parent;
+
+
+select -r ($curve[0]+"ConGrpA2");
+select -add ($curve[0]+"Con1");
+parent;
+setAttr ($curve[0]+"loc2.visibility") 0;
+setAttr -lock true ($curve[0]+"loc2.v");
+
+setAttr -lock true ($curve[0]+"Con2.sx");
+setAttr -lock true ($curve[0]+"Con2.sy");
+setAttr -lock true ($curve[0]+"Con2.sz");
+setAttr -lock true ($curve[0]+"Con2.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con2")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }  
+select -r ($curve[0]+"tempBn0") ;   
+select -add ($curve[0]+"temp") ;  
+select -add   ($curve[0]+"locTemp0") ; 
+delete;                      
+}
+
+//////////////////////////////////////////
+if($cv==3){
+select -r ($curve[0]);
+duplicate -rr;
+rename ($curve[0]+"temp");
+
+select -r ($curve[0]+"temp.cv[2]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"clusterTemp0");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"locTemp0");
+select -r ($curve[0]+"clusterTemp0");
+select -add ($curve[0]+"locTemp0");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"temp.cv[3]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"clusterTemp1");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"locTemp1");
+select -r ($curve[0]+"clusterTemp1");
+select -add ($curve[0]+"locTemp1");
+delete `parentConstraint`;
+
+float $pos1[]=`xform -q -ws -t ($basebn)`;
+float $pos2[]=`xform -q -ws -t ($curve[0]+"locTemp0")`;
+float $pos3[]=`xform -q -ws -t ($curve[0]+"locTemp1")`;
+float $pos4[]=`xform -q -ws -t ($endbn)`;
+select -cl;
+joint -p $pos1[0] $pos1[1] $pos1[2] -n ($curve[0]+"tempBn0") ;
+joint -p $pos2[0] $pos2[1] $pos2[2] -n ($curve[0]+"tempBn1") ; 
+joint -e -zso -oj xyz -sao yup ($curve[0]+"tempBn0") ;
+joint -p $pos3[0] $pos3[1] $pos3[2] -n ($curve[0]+"tempBn2") ; 
+joint -e -zso -oj xyz -sao yup ($curve[0]+"tempBn1") ; ;
+joint -p $pos4[0] $pos4[1] $pos4[2] -n ($curve[0]+"tempBn3") ; 
+joint -e -zso -oj xyz -sao yup ($curve[0]+"tempBn2") ; 
+
+////////////////////////
+group -em; xform -os -piv 0 0 0;
+rename ($curve[0]+"ikConGrp");
+
+select -r ($curve[0]+".cv[0:1]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster0");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc0");
+select -r ($curve[0]+"cluster0");
+select -add ($curve[0]+"loc0");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster0");
+select -add ($curve[0]+"loc0");
+parent;
+
+
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con0");
+group -n ($curve[0]+"ConGrp0");
+group -n ($curve[0]+"ConGrpA0");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA0.sz") -1;
+    setAttr ($curve[0]+"ConGrpA0.sx") -1;
+    setAttr ($curve[0]+"ConGrpA0.sy") -1;
+       select -r ($curve[0]+"tempBn0") ; 
+    rename ($curve[0]+"tempBnA0") ; 
+    mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "" "";
+    rename ($curve[0]+"tempBnB0") ; 
+    joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+    mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "" "";
+    rename ($curve[0]+"tempBn0") ;    
+    select -r ($curve[0]+"tempBnA0") ($curve[0]+"tempBnB0"); 
+    delete;
+}
+select -r ($curve[0]+"tempBn0") ;  
+select -add ($curve[0]+"ConGrpA0");
+delete `parentConstraint`;
+select -r ($curve[0]+"loc0");
+select -add ($curve[0]+"Con0");
+parent;
+
+select -r ($curve[0]+"ConGrpA0");
+select -add ($curve[0]+"ikConGrp");
+parent;
+setAttr ($curve[0]+"loc0.visibility") 0;
+setAttr -lock true ($curve[0]+"loc0.v");
+
+setAttr -lock true ($curve[0]+"Con0.sx");
+setAttr -lock true ($curve[0]+"Con0.sy");
+setAttr -lock true ($curve[0]+"Con0.sz");
+setAttr -lock true ($curve[0]+"Con0.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con0")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }  
+ ///////////////// 
+ 
+ select -r ($curve[0]+".cv[2]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster1");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc1");
+select -r ($curve[0]+"cluster1");
+select -add ($curve[0]+"loc1");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster1");
+select -add ($curve[0]+"loc1");
+parent;
+
+ curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con1");
+group -n ($curve[0]+"ConGrp1");
+group -n ($curve[0]+"ConGrpA1");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA1.sz") -1;
+     setAttr ($curve[0]+"ConGrpA1.sx") -1;
+      setAttr ($curve[0]+"ConGrpA1.sy") -1;
+}
+select -r ($curve[0]+"tempBn0") ; 
+select -add ($curve[0]+"tempBn1") ; 
+select -add ($curve[0]+"ConGrpA1");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"loc1");
+select -add ($curve[0]+"ConGrpA1");
+delete `pointConstraint`;
+
+select -r ($curve[0]+"loc1");
+select -add ($curve[0]+"Con1");
+parent;
+
+select -r ($curve[0]+"ConGrpA1");
+select -add ($curve[0]+"Con0");
+parent;
+setAttr ($curve[0]+"loc1.visibility") 0;
+setAttr -lock true ($curve[0]+"loc1.v");
+
+setAttr -lock true ($curve[0]+"Con1.sx");
+setAttr -lock true ($curve[0]+"Con1.sy");
+setAttr -lock true ($curve[0]+"Con1.sz");
+setAttr -lock true ($curve[0]+"Con1.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con1")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }  
+/////////////////////////////////////
+ select -r ($curve[0]+".cv[3]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster2");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc2");
+select -r ($curve[0]+"cluster2");
+select -add ($curve[0]+"loc2");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster2");
+select -add ($curve[0]+"loc2");
+parent;
+
+ curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con2");
+group -n ($curve[0]+"ConGrp2");
+group -n ($curve[0]+"ConGrpA2");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA2.sz") -1;
+    setAttr ($curve[0]+"ConGrpA2.sx") -1;
+    setAttr ($curve[0]+"ConGrpA2.sy") -1;
+}
+select -r ($curve[0]+"tempBn1") ; 
+select -add ($curve[0]+"tempBn2") ; 
+select -add ($curve[0]+"ConGrpA2");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"loc2");
+select -add ($curve[0]+"ConGrpA2");
+delete `pointConstraint`;
+
+select -r ($curve[0]+"loc2");
+select -add ($curve[0]+"Con2");
+parent;
+
+select -r ($curve[0]+"ConGrpA2");
+select -add ($curve[0]+"Con1");
+parent;
+setAttr ($curve[0]+"loc2.visibility") 0;
+setAttr -lock true ($curve[0]+"loc2.v");
+
+setAttr -lock true ($curve[0]+"Con2.sx");
+setAttr -lock true ($curve[0]+"Con2.sy");
+setAttr -lock true ($curve[0]+"Con2.sz");
+setAttr -lock true ($curve[0]+"Con2.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con2")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }      
+      
+///////////////////////////////////////////
+
+   select -r ($curve[0]+".cv[4:5]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster3");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc3");
+select -r ($curve[0]+"cluster3");
+select -add ($curve[0]+"loc3");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster3");
+select -add ($curve[0]+"loc3");
+parent;
+
+ curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con3");
+group -n ($curve[0]+"ConGrp3");
+group -n ($curve[0]+"ConGrpA3");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA3.sz") -1;
+    setAttr ($curve[0]+"ConGrpA3.sx") -1;
+    setAttr ($curve[0]+"ConGrpA3.sy") -1;
+}
+select -r ($endbn);
+select -add ($curve[0]+"ConGrpA3");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"loc3");
+select -add ($curve[0]+"Con3");
+parent;
+
+select -r ($curve[0]+"ConGrpA3");
+select -add ($curve[0]+"Con2");
+parent;
+setAttr ($curve[0]+"loc3.visibility") 0;
+setAttr -lock true ($curve[0]+"loc3.v");
+
+setAttr -lock true ($curve[0]+"Con3.sx");
+setAttr -lock true ($curve[0]+"Con3.sy");
+setAttr -lock true ($curve[0]+"Con3.sz");
+setAttr -lock true ($curve[0]+"Con3.v");
+
+string $shape[]=`listRelatives -s ($curve[0]+"Con3")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }   
+    
+select -r ($curve[0]+"tempBn0") ;   
+select -add ($curve[0]+"temp") ;  
+select -add   ($curve[0]+"locTemp0") ; 
+select -add   ($curve[0]+"locTemp1") ; 
+delete;        
+}
+/////////////////////////
+if($cv==4){
+select -r ($curve[0]);
+duplicate -rr;
+rename ($curve[0]+"temp");
+
+select -r ($curve[0]+"temp.cv[2]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"clusterTemp0");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"locTemp0");
+select -r ($curve[0]+"clusterTemp0");
+select -add ($curve[0]+"locTemp0");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"temp.cv[3]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"clusterTemp1");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"locTemp1");
+select -r ($curve[0]+"clusterTemp1");
+select -add ($curve[0]+"locTemp1");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"temp.cv[4]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"clusterTemp2");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"locTemp2");
+select -r ($curve[0]+"clusterTemp2");
+select -add ($curve[0]+"locTemp2");
+delete `parentConstraint`;
+
+float $pos1[]=`xform -q -ws -t ($basebn)`;
+float $pos2[]=`xform -q -ws -t ($curve[0]+"locTemp0")`;
+float $pos3[]=`xform -q -ws -t ($curve[0]+"locTemp1")`;
+float $pos4[]=`xform -q -ws -t ($curve[0]+"locTemp2")`;
+float $pos5[]=`xform -q -ws -t ($endbn)`;
+select -cl;
+joint -p $pos1[0] $pos1[1] $pos1[2] -n ($curve[0]+"tempBn0") ;
+joint -p $pos2[0] $pos2[1] $pos2[2] -n ($curve[0]+"tempBn1") ; 
+joint -e -zso -oj xyz -sao yup ($curve[0]+"tempBn0") ;
+joint -p $pos3[0] $pos3[1] $pos3[2] -n ($curve[0]+"tempBn2") ; 
+joint -e -zso -oj xyz -sao yup ($curve[0]+"tempBn1") ; ;
+joint -p $pos4[0] $pos4[1] $pos4[2] -n ($curve[0]+"tempBn3") ; 
+joint -e -zso -oj xyz -sao yup ($curve[0]+"tempBn2") ; 
+joint -p $pos4[0] $pos4[1] $pos4[2] -n ($curve[0]+"tempBn4") ; 
+joint -e -zso -oj xyz -sao yup ($curve[0]+"tempBn3") ;  
+   
+////////////////////// 
+group -em; xform -os -piv 0 0 0;
+rename ($curve[0]+"ikConGrp");
+
+select -r ($curve[0]+".cv[0:1]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster0");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc0");
+select -r ($curve[0]+"cluster0");
+select -add ($curve[0]+"loc0");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster0");
+select -add ($curve[0]+"loc0");
+parent;
+
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con0");
+group -n ($curve[0]+"ConGrp0");
+group -n ($curve[0]+"ConGrpA0");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA0.sz") -1;
+    setAttr ($curve[0]+"ConGrpA0.sx") -1;
+    setAttr ($curve[0]+"ConGrpA0.sy") -1;
+       select -r ($curve[0]+"tempBn0") ; 
+    rename ($curve[0]+"tempBnA0") ; 
+    mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "" "";
+    rename ($curve[0]+"tempBnB0") ; 
+    joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+    mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "" "";
+    rename ($curve[0]+"tempBn0") ;    
+    select -r ($curve[0]+"tempBnA0") ($curve[0]+"tempBnB0"); 
+    delete;
+}
+select -r ($curve[0]+"tempBn0") ;
+select -add ($curve[0]+"ConGrpA0");
+delete `parentConstraint`;
+select -r ($curve[0]+"loc0");
+select -add ($curve[0]+"Con0");
+parent;
+
+
+select -r ($curve[0]+"ConGrpA0");
+select -add ($curve[0]+"ikConGrp");
+parent;
+setAttr ($curve[0]+"loc0.visibility") 0;
+setAttr -lock true ($curve[0]+"loc0.v");
+
+setAttr -lock true ($curve[0]+"Con0.sx");
+setAttr -lock true ($curve[0]+"Con0.sy");
+setAttr -lock true ($curve[0]+"Con0.sz");
+setAttr -lock true ($curve[0]+"Con0.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con0")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }  
+ /////////////////  
+ select -r ($curve[0]+".cv[2]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster1");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc1");
+select -r ($curve[0]+"cluster1");
+select -add ($curve[0]+"loc1");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster1");
+select -add ($curve[0]+"loc1");
+parent;
+
+ curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con1");
+group -n ($curve[0]+"ConGrp1");
+group -n ($curve[0]+"ConGrpA1");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA1.sz") -1;
+    setAttr ($curve[0]+"ConGrpA1.sy") -1;
+    setAttr ($curve[0]+"ConGrpA1.sx") -1;
+}
+select -r ($curve[0]+"tempBn0") ; 
+select -add ($curve[0]+"tempBn1") ; 
+select -add ($curve[0]+"ConGrpA1");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"loc1");
+select -add ($curve[0]+"ConGrpA1");
+delete `pointConstraint`;
+
+select -r ($curve[0]+"loc1");
+select -add ($curve[0]+"Con1");
+parent;
+
+
+select -r ($curve[0]+"ConGrpA1");
+select -add ($curve[0]+"Con0");
+parent;
+setAttr ($curve[0]+"loc1.visibility") 0;
+setAttr -lock true ($curve[0]+"loc1.v");
+
+setAttr -lock true ($curve[0]+"Con1.sx");
+setAttr -lock true ($curve[0]+"Con1.sy");
+setAttr -lock true ($curve[0]+"Con1.sz");
+setAttr -lock true ($curve[0]+"Con1.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con1")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }   
+/////////////////////////////////////
+ select -r ($curve[0]+".cv[3]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster2");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc2");
+select -r ($curve[0]+"cluster2");
+select -add ($curve[0]+"loc2");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster2");
+select -add ($curve[0]+"loc2");
+parent;
+
+ curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con2");
+group -n ($curve[0]+"ConGrp2");
+group -n ($curve[0]+"ConGrpA2");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA2.sz") -1;
+    setAttr ($curve[0]+"ConGrpA2.sx") -1;
+    setAttr ($curve[0]+"ConGrpA2.sy") -1;
+}
+select -r ($curve[0]+"tempBn1") ; 
+select -add ($curve[0]+"tempBn2") ; 
+select -add ($curve[0]+"ConGrpA2");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"loc2");
+select -add ($curve[0]+"ConGrpA2");
+delete `pointConstraint`;
+
+select -r ($curve[0]+"loc2");
+select -add ($curve[0]+"Con2");
+parent;
+
+select -r ($curve[0]+"ConGrpA2");
+select -add ($curve[0]+"Con1");
+parent;
+setAttr ($curve[0]+"loc2.visibility") 0;
+setAttr -lock true ($curve[0]+"loc2.v");
+
+setAttr -lock true ($curve[0]+"Con2.sx");
+setAttr -lock true ($curve[0]+"Con2.sy");
+setAttr -lock true ($curve[0]+"Con2.sz");
+setAttr -lock true ($curve[0]+"Con2.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con2")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }      
+/////////////////////////
+ select -r ($curve[0]+".cv[4]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster3");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc3");
+select -r ($curve[0]+"cluster3");
+select -add ($curve[0]+"loc3");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster3");
+select -add ($curve[0]+"loc3");
+parent;
+
+ curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con3");
+group -n ($curve[0]+"ConGrp3");
+group -n ($curve[0]+"ConGrpA3");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA3.sz") -1;
+    setAttr ($curve[0]+"ConGrpA3.sx") -1;
+    setAttr ($curve[0]+"ConGrpA3.sy") -1;
+}
+select -r ($curve[0]+"tempBn2") ; 
+select -add ($curve[0]+"tempBn3") ; 
+select -add ($curve[0]+"ConGrpA3");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"loc3");
+select -add ($curve[0]+"ConGrpA3");
+delete `pointConstraint`;
+
+select -r ($curve[0]+"loc3");
+select -add ($curve[0]+"Con3");
+parent;
+
+select -r ($curve[0]+"ConGrpA3");
+select -add ($curve[0]+"Con2");
+parent;
+setAttr ($curve[0]+"loc3.visibility") 0;
+setAttr -lock true ($curve[0]+"loc3.v");
+
+setAttr -lock true ($curve[0]+"Con3.sx");
+setAttr -lock true ($curve[0]+"Con3.sy");
+setAttr -lock true ($curve[0]+"Con3.sz");
+setAttr -lock true ($curve[0]+"Con3.v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con3")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }        
+///////////////////////////////////////////
+   select -r ($curve[0]+".cv[5:6]") ;
+newCluster " -envelope 1";
+
+rename ($curve[0]+"cluster4");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc4");
+select -r ($curve[0]+"cluster4");
+select -add ($curve[0]+"loc4");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster4");
+select -add ($curve[0]+"loc4");
+parent;
+
+ curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con4");
+group -n ($curve[0]+"ConGrp4");
+group -n ($curve[0]+"ConGrpA4");
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA4.sz") -1;
+    setAttr ($curve[0]+"ConGrpA4.sx") -1;
+    setAttr ($curve[0]+"ConGrpA4.sy") -1;
+}
+select -r ($endbn);
+select -add ($curve[0]+"ConGrpA4");
+delete `parentConstraint`;
+
+select -r ($curve[0]+"loc4");
+select -add ($curve[0]+"Con4");
+parent;
+
+select -r ($curve[0]+"ConGrpA4");
+select -add ($curve[0]+"Con3");
+parent;
+setAttr ($curve[0]+"loc4.visibility") 0;
+setAttr -lock true ($curve[0]+"loc4.v");
+
+setAttr -lock true ($curve[0]+"Con4.sx");
+setAttr -lock true ($curve[0]+"Con4.sy");
+setAttr -lock true ($curve[0]+"Con4.sz");
+setAttr -lock true ($curve[0]+"Con4.v");
+
+string $shape[]=`listRelatives -s ($curve[0]+"Con4")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }    
+select -r ($curve[0]+"tempBn0") ;   
+select -add ($curve[0]+"temp") ;  
+select -add   ($curve[0]+"locTemp0") ; 
+select -add   ($curve[0]+"locTemp1") ; 
+select -add   ($curve[0]+"locTemp2") ; 
+
+delete;                
+}
+/////////////////////////////////////////////
+select -r ($curve[0]);
+arclen -ch 1;
+
+string $shapeAA[]=`listRelatives -s ($curve[0])`;
+string $infoA[]=`listConnections -s 0 -d 1 ($shapeAA[0]+".worldSpace[0]")`;
+float $legUplen=`getAttr ($infoA[0]+".arcLength")`;
+
+shadingNode -asUtility multiplyDivide -n ($curve[0]+"disMulF") ;
+
+string $conN=`textField -q -tx ttgRigConName`;
+int $exsitcon=`objExists ($conN)`;
+if($exsitcon==1){
+    connectAttr -f ($conN+".sy") ($curve[0]+"disMulF.input1X");
+}else{
+setAttr ($curve[0]+"disMulF.input1X") 1;}
+
+setAttr ($curve[0]+"disMulF.input2X") $legUplen ;
+
+shadingNode -asUtility multiplyDivide -n ($curve[0]+"disMul") ;
+shadingNode -asUtility condition -n ($curve[0]+"disCnd") ;
+connectAttr -f ($infoA[0]+".arcLength") ($curve[0]+"disMul.input1X");
+setAttr ($curve[0]+"disMul.operation") 2;
+
+connectAttr -f  ($curve[0]+"disMulF.outputX") ($curve[0]+"disMul.input2X");
+
+connectAttr -f ($curve[0]+"disMul.outputX") ($curve[0]+"disCnd.firstTerm");
+connectAttr -f ($curve[0]+"disMul.outputX") ($curve[0]+"disCnd.colorIfTrueR");
+
+setAttr ($curve[0]+"disCnd.secondTerm") 1;
+setAttr ($curve[0]+"disCnd.operation") 2;
+
+shadingNode -asUtility condition -n ($curve[0]+"disclampCnd") ;
+connectAttr -f ($curve[0]+"disCnd.outColorR")  ($curve[0]+"disclampCnd.firstTerm");
+connectAttr -f ($curve[0]+"disCnd.outColorR")  ($curve[0]+"disclampCnd.colorIfTrueR");
+
+setAttr ($curve[0]+"disclampCnd.operation") 4;
+
+select -r ($curve[0]);
+addAttr -ln "strech"  -at double  -min 1 -max 10 -dv 1.2 -k 1;
+addAttr -ln "shortlength"  -at double  -min 0.01 -max 10 -dv 1 -k 1;
+
+connectAttr -f ($curve[0]+".shortlength") ($curve[0]+"disCnd.secondTerm");
+connectAttr -f ($curve[0]+".shortlength") ($curve[0]+"disCnd.colorIfFalseR");
+
+connectAttr -f ($curve[0]+".strech")  ($curve[0]+"disclampCnd.secondTerm");
+connectAttr -f ($curve[0]+".strech")  ($curve[0]+"disclampCnd.colorIfFalseR");
+string $ik[]=`listConnections -s 0 -d 1 ($shapeAA[0]+".worldSpace[0]")`;
+
+string $ikHandle=$ik[1];
+string $startjoint[]=`listConnections -s 1 -d 0 ($ikHandle+".startJoint")`;
+string $endeffector[]=`listConnections -s 1 -d 0 ($ikHandle+".endEffector")`;
+select -r ($endeffector);
+pickWalk -d up;
+string $endjoint[]=`ls -sl`;
+
+string $curentjoint=($startjoint[0]);
+string $selectbn="select -r ";
+while($curentjoint != $endjoint[0]){
+    $selectbn+=($curentjoint+" ");
+    select -r $curentjoint;
+    pickWalk -d down;
+    string $joint[]=`ls -sl`;
+    $curentjoint=$joint[0];
+}
+    $selectbn+=($endjoint[0]+";");
+eval $selectbn;
+string $bn[]=`ls -sl`;
+for($i=0;$i<size($bn);$i++){
+    connectAttr -f ($curve[0]+"disclampCnd.outColorR") ($bn[$i]+".scaleX");
+}
+/////////////////////////
+if($cv==1){
+select -r ($curve[0]+"Con1");     
+}
+if($cv==2){
+select -r ($curve[0]+"Con2"); }
+if($cv==3){
+select -r ($curve[0]+"Con3"); }
+if($cv==4){
+select -r ($curve[0]+"Con4"); }
+
+string $rollCon[]=`ls -sl`;
+setAttr -lock 0 ($rollCon[0]+".rx");
+setAttr -lock 0 ($rollCon[0]+".ry");
+setAttr -lock 0 ($rollCon[0]+".rz");
+select -r ($rollCon[0]);
+
+addAttr -ln "twistMulti"  -at double  -min 0.1 -max 5 -dv 1 -k 0;
+addAttr -ln "strech"  -at double  -min 1 -max 10 -dv 1.2 -k 1;
+addAttr -ln "shortlength"  -at double  -min 0.01 -max 10 -dv 1 -k 1;
+
+shadingNode -asUtility plusMinusAverage -n  ($sel[$ii]+"iksplinetwistPlus");
+connectAttr -f ($rollCon[0]+".rx") ($sel[$ii]+"iksplinetwistPlus.input1D[0]");
+print ($cv);
+for($j=1;$j<$cv;$j++){
+    connectAttr -f ($curve[0]+"Con"+$j+".rx") ($sel[$ii]+"iksplinetwistPlus.input1D["+$j+"]");
+}
+shadingNode -asUtility multiplyDivide -n ($sel[$ii]+"iksplinetwistmul");
+connectAttr -f  ($sel[$ii]+"iksplinetwistPlus.output1D") ($sel[$ii]+"iksplinetwistmul.input1X");
+connectAttr -f ($rollCon[0]+".twistMulti") ($sel[$ii]+"iksplinetwistmul.input2X");
+connectAttr -f ($sel[$ii]+"iksplinetwistmul.outputX") ($ikHandle+".twist");
+connectAttr -f   ($curve[0]+"Con0.rx") ($ikHandle+".roll");
+connectAttr -f ($rollCon[0]+".strech") ($curve[0]+".strech");
+connectAttr -f ($rollCon[0]+".shortlength") ($curve[0]+".shortlength");
+///////////////////
+select -r ($ikHandle) ;
+select -add ($curve[0]) ;
+group -n ($sel[$ii]+"iksplineGrp");
+group -n  ($sel[$ii]+"DonotmoveConGrp");
+setAttr ($sel[$ii]+"iksplineGrp.visibility") 0;
+setAttr -lock true ($sel[$ii]+"iksplineGrp.v");
+    }    
+print "......................IK CON DONW...........................";
+}
+/////////////////////////
+gtSimpleSplineIksetupWin;

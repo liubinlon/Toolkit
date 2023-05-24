@@ -1,0 +1,1893 @@
+//start Proc
+CreateWindow;
+
+proc CreateWindow() {
+	//create user interface
+	if ( `window -exists TreadCreator` ) {
+		deleteUI TreadCreator;
+	}
+	if ( `dockControl -ex TreadCreator` ) {
+		deleteUI -control TreadCreator;
+	}
+	
+	//Make String Values
+	global string $groundObj[];
+	global string $treadObj[];
+	global string $treadObj2[];
+	global string $treadObj3[];
+	global string $treadObj4[];
+	global string $treadObj5[];
+	global string $treadObj6[];
+	global string $treadObj7[];
+	global string $treadObj8[];
+	global string $treadObj9[];
+	global string $treadObj10[];
+	global string $curvePath[];
+	global float $meshObjects = 1;
+	global float $dockExist;
+	float $dockExist = 0;
+
+	global int $vector1;
+	global int $vector2;
+	global int $vector3;
+
+	//Black
+	float $Colour1 = 0;
+	float $Colour2 = 0;
+	float $Colour3 = 0;
+
+	//DarkGrey (NewMeshLoad)
+	float $Colour16 = .1;
+	float $Colour17 = .1;
+	float $Colour18 = .1;
+
+	//Grey
+	float $Colour20 = .25;
+	float $Colour21 = .25;
+	float $Colour22 = .25;
+
+	// +- Button
+	float $Colour13 = .2;
+	float $Colour14 = .35;
+	float $Colour15 = .3;
+
+	//DropdownMenues
+	float $Colour40 = .2;
+	float $Colour41 = .3;
+	float $Colour42 = .3;
+
+	//DarkGreen (CreateTreads!)
+	float $Colour7 = 0;
+	float $Colour8 = .2;
+	float $Colour9 = 0;
+
+	//DarkRead (Exit)
+	float $Colour10 = .3;
+	float $Colour11 = 0;
+	float $Colour12 = 0;
+
+	int $Pos_01 = -30;
+	int $Pos_02 = -11;
+	int $Val_01 = 282;
+
+	//Make window
+	window -mxb false -menuBar true -bgc $Colour20 $Colour21 $Colour22 -tlb false -title "TreadCreator" TreadCreator;
+	
+	menu -label "Window" -tearOff true;
+		// add the menu items
+		menuItem -label "Dock" -c "windowDock" dockButton;
+		menuItem -label "Float" -c "windowFloat" -en false floatButton;
+		menuItem -divider true;
+		menuItem -label "Exit" -c "exit";
+
+	menu -label "Help" -tearOff true;
+			menuItem -label "Show Help" -c "helpWin";
+	menu -label "Info" -tearOff true;
+			menuItem -label "version 0.1.2" -c "webPage01";
+			menuItem -label "Creativecrash.com" -c "webPage01";
+			menuItem -label "By Håvard Dalen";
+			menuItem -label "haavard_kd@hotmail.com";
+
+	columnLayout;
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 myFormMain;
+		//load Mesh
+		textField -bgc $Colour1 $Colour2 $Colour3  -text "" -w 191 -h 25 -editable false -it $treadObj treadObjName;
+		button -bgc $Colour1 $Colour2 $Colour3 -label "LoadMesh" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$treadObj = `ls -sl`; textField -e -text $treadObj[0] treadObjName; AutoChange_func;" loadMeshObjButton;
+		button -bgc $Colour13 $Colour14 $Colour15 -h 23 -w 28 -l "+" -c "AddLoadButton;" AddLoadButton;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm AddLoadButton "top" 1								-attachForm AddLoadButton "left" 255
+			-attachForm loadMeshObjButton "top" 0
+			-attachForm treadObjName "top" 0							-attachForm treadObjName "left" (99 + $Pos_01)
+		myFormMain;
+	setParent ..;
+
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 -visible true myFormMainLoadButton02;
+		//load Mesh
+		textField -bgc $Colour16 $Colour17 $Colour18  -text "" -w 186 -h 25 -editable false -it $treadObj2 treadObjName2;
+		button -bgc $Colour16 $Colour17 $Colour18 -label "LoadMesh" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$treadObj2 = `ls -sl`; textField -e -text $treadObj2[0] treadObjName2; AutoChange_func;" loadMeshObjButton2;
+
+		button -bgc $Colour13 $Colour14 $Colour15 -h 23 -w 28 -l "-" -c "RemoveLoadButton;" removeLoadButton;
+
+		formLayout -edit
+			//MenuLoadMesh
+
+			-attachForm removeLoadButton "top" -26								-attachForm removeLoadButton "left" 255
+
+			-attachForm loadMeshObjButton2 "top" -25
+			-attachForm treadObjName2 "top" -25							-attachForm treadObjName2 "left" (99 + $Pos_01)
+		myFormMainLoadButton02;
+	setParent ..;
+
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 -visible true myFormMainLoadButton03;
+		//load Mesh
+		textField -bgc $Colour16 $Colour17 $Colour18  -text "" -w 186 -h 25 -editable false -it $treadObj3 treadObjName3;
+		button -bgc $Colour16 $Colour17 $Colour18 -label "LoadMesh" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$treadObj3 = `ls -sl`; textField -e -text $treadObj3[0] treadObjName3; AutoChange_func;" loadMeshObjButton3;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton3 "top" -25
+			-attachForm treadObjName3 "top" -25							-attachForm treadObjName3 "left" (99 + $Pos_01)
+		myFormMainLoadButton03;
+	setParent ..;
+
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 -visible true myFormMainLoadButton04;
+		//load Mesh
+		textField -bgc $Colour16 $Colour17 $Colour18  -text "" -w 186 -h 25 -editable false -it $treadObj4 treadObjName4;
+		button -bgc $Colour16 $Colour17 $Colour18 -label "LoadMesh" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$treadObj4 = `ls -sl`; textField -e -text $treadObj4[0] treadObjName4; AutoChange_func;" loadMeshObjButton4;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton4 "top" -25
+			-attachForm treadObjName4 "top" -25							-attachForm treadObjName4 "left" (99 + $Pos_01)
+		myFormMainLoadButton04;
+	setParent ..;
+	
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 -visible true myFormMainLoadButton05;
+		//load Mesh
+		textField -bgc $Colour16 $Colour17 $Colour18  -text "" -w 186 -h 25 -editable false -it $treadObj5 treadObjName5;
+		button -bgc $Colour16 $Colour17 $Colour18 -label "LoadMesh" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$treadObj5 = `ls -sl`; textField -e -text $treadObj5[0] treadObjName5; AutoChange_func;" loadMeshObjButton5;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton5 "top" -25
+			-attachForm treadObjName5 "top" -25							-attachForm treadObjName5 "left" (99 + $Pos_01)
+		myFormMainLoadButton05;
+	setParent ..;
+
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 -visible true myFormMainLoadButton06;
+		//load Mesh
+		textField -bgc $Colour16 $Colour17 $Colour18  -text "" -w 186 -h 25 -editable false -it $treadObj6 treadObjName6;
+		button -bgc $Colour16 $Colour17 $Colour18 -label "LoadMesh" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$treadObj6 = `ls -sl`; textField -e -text $treadObj6[0] treadObjName6; AutoChange_func;" loadMeshObjButton6;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton6 "top" -25
+			-attachForm treadObjName6 "top" -25							-attachForm treadObjName6 "left" (99 + $Pos_01)
+		myFormMainLoadButton06;
+	setParent ..;
+	
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 -visible true myFormMainLoadButton07;
+		//load Mesh
+		textField -bgc $Colour16 $Colour17 $Colour18  -text "" -w 186 -h 25 -editable false -it $treadObj7 treadObjName7;
+		button -bgc $Colour16 $Colour17 $Colour18 -label "LoadMesh" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$treadObj7 = `ls -sl`; textField -e -text $treadObj7[0] treadObjName7; AutoChange_func;" loadMeshObjButton7;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton7 "top" -25
+			-attachForm treadObjName7 "top" -25							-attachForm treadObjName7 "left" (99 + $Pos_01)
+		myFormMainLoadButton07;
+	setParent ..;
+
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 -visible true myFormMainLoadButton08;
+		//load Mesh
+		textField -bgc $Colour16 $Colour17 $Colour18  -text "" -w 186 -h 25 -editable false -it $treadObj5 treadObjName8;
+		button -bgc $Colour16 $Colour17 $Colour18 -label "LoadMesh" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$treadObj8 = `ls -sl`; textField -e -text $treadObj8[0] treadObjName8; AutoChange_func;" loadMeshObjButton8;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton8 "top" -25
+			-attachForm treadObjName8 "top" -25							-attachForm treadObjName8 "left" (99 + $Pos_01)
+		myFormMainLoadButton08;
+	setParent ..;
+
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 -visible true myFormMainLoadButton09;
+		//load Mesh
+		textField -bgc $Colour16 $Colour17 $Colour18  -text "" -w 186 -h 25 -editable false -it $treadObj9 treadObjName9;
+		button -bgc $Colour16 $Colour17 $Colour18 -label "LoadMesh" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$treadObj9 = `ls -sl`; textField -e -text $treadObj9[0] treadObjName9; AutoChange_func;" loadMeshObjButton9;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton9 "top" -25
+			-attachForm treadObjName9 "top" -25							-attachForm treadObjName9 "left" (99 + $Pos_01)
+		myFormMainLoadButton09;
+	setParent ..;
+
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 -visible true myFormMainLoadButton10;
+		//load Mesh
+		textField -bgc $Colour16 $Colour17 $Colour18  -text "" -w 186 -h 25 -editable false -it $treadObj10 treadObjName10;
+		button -bgc $Colour16 $Colour17 $Colour18 -label "LoadMesh" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$treadObj10 = `ls -sl`; textField -e -text $treadObj10[0] treadObjName10; AutoChange_func;" loadMeshObjButton10;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton10 "top" -25
+			-attachForm treadObjName10 "top" -25							-attachForm treadObjName10 "left" (99 + $Pos_01)
+		myFormMainLoadButton10;
+	setParent ..;
+
+	frameLayout -w ($Val_01 - 28) -vis false -bgc $Colour16 $Colour17 $Colour18 -collapsable true -cl true -cc "resizeWindow;" -label "Options" MeshDistributeMenu;
+			formLayout -w $Val_01 -vis false -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 myFormMeshX2;
+
+			$radio1 = `radioCollection`;
+
+				$X = `radioButton -select -label "Change after" ChangeEvery02`;
+				radioCollection -edit -select $X $radio1;
+				$Y = `radioButton -label "UseRandom" -cc "AutoChange_func;" randomDispOrder01`;
+				intField -w 40 -bgc $Colour16 $Colour17 $Colour18 -editable true -cc "AutoChange_func;" -minValue 1 -v 1 ChangeEvery01;
+
+				formLayout -edit
+					-attachForm ChangeEvery02 "top" (1)			-attachForm ChangeEvery02 "left" (100 + $Pos_01)
+					-attachForm ChangeEvery01 "top" (1)			-attachForm ChangeEvery01 "left" (256 + $Pos_02 + $Pos_01)
+					-attachForm randomDispOrder01 "top" (21)	-attachForm randomDispOrder01 "left" (100 + $Pos_01)
+				myFormMeshX2;
+
+			setParent ..;
+		setParent ..;
+
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 myFormMainLoadCurve;
+
+		//load Curve
+		textField -bgc $Colour1 $Colour2 $Colour3 -text "" -w 214 -h 25 -editable false -it $curvePath curveName;
+		button -bgc $Colour1 $Colour2 $Colour3 -label "LoadCurve" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$curvePath = `ls -sl`; textField -e -text $curvePath[0] curveName; AutoChange_func;"  loadCurveButton;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadCurveButton "top" 0
+			-attachForm curveName "top" 0 								-attachForm curveName "left" (99 + $Pos_01)
+		myFormMainLoadCurve;
+	setParent ..;
+	
+	// create a collapsible frame layout
+	frameLayout -w $Val_01 -collapsable true -cl false -cc "resizeWindow" -label "MainOptions";
+		formLayout -w $Val_01 -bgc $Colour40 $Colour41 $Colour42 -numberOfDivisions 100 myFormOptions;
+			//TankTreads choose number slide
+			intSliderGrp -label "Amount" -w 358 -minValue 1 -maxValue 300 -fieldMaxValue 9999 -field true -cc "AutoChange_func" -v 25 refle1;
+
+			text -label "Rotate" rotateText;
+			text -label "X" rotateXText;
+			text -label "Y" rotateYText;
+			text -label "Z" rotateZText;
+			floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 refle2;
+			floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 refle3;
+			floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 refle4;
+
+			text -label "+/-" OffsetAmmountText;
+			$e = `checkBox -label "CalculateAmount" -cc "MessureTreadDistance" refl7`;
+			intField -w 40 -editable true -cc "AutoChange_func" -v 0 treadCalcOffset;
+
+			//colum GRP possition
+			int $MenuMotionPath =		(0);
+			int $MenuRotateTranslate =	(0 + $MenuMotionPath);
+
+			floatSliderGrp -label "Scale" -w 358 -minValue 0 -maxValue 5 -fieldMinValue -9999 -fieldMaxValue 9999 -pre 2 -field true -cc "AutoChange_func" -v 1 refle5;
+
+			text -label "Translate" translateText;
+			text -label "X" translateXText;
+			text -label "Y" translateYText;
+			text -label "Z" translateZText;
+			floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 translateX;
+			floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 translateY;
+			floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 translateZ;
+
+			text -label "Twist" twistText;
+			text -label "X" twistXText;
+			text -label "Y" twistYText;
+			text -label "Z" twistZText;
+			floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 TwistX;
+			floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 TwistY;
+			floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 TwistZ;
+
+			//Bank
+			text -label "Val" BankScaleText;
+			text -label "Lim" BankAngleText;
+			$h = `checkBox -label "Bank" -cc "AutoChange_func" -v 0 Bank`;
+			floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 1 BankScale;
+			floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 90 BankAngle;
+
+			$e = `checkBox -label "InvDriveDirection" -cc "AutoChange_func" -v 0 DriveDirection`;
+			$f = `checkBox -label "InvUp" -cc "AutoChange_func" -v 0 InverseUp`;
+			$g = `checkBox -label "InvFront" -cc "AutoChange_func" -v 0 InverseFront`;
+
+			$d = `checkBox -label "Instance" -cc "AutoChange_func" -v 1 UseInstance`;
+
+			//optionMenuGrp worldUpVector
+			optionMenuGrp -label "FixFlipping" -cc "AutoChange_func" optionMenu1;
+				menuItem -label "0 0 1";
+				menuItem -label "0 1 0";
+				menuItem -label "1 0 0";
+			optionMenuGrp -e -v "0 1 0" optionMenu1;
+
+			int $val16 = 60;
+			int $val17 = ($val16 + 60);
+			formLayout -edit
+				//MenuMotionPathSettings
+				-attachForm refle1 "top" ($MenuMotionPath)					-attachForm refle1 "left" (-44 + $Pos_01)
+				-attachForm treadCalcOffset "top" ($MenuMotionPath+20)		-attachForm treadCalcOffset "left" (276 + $Pos_02 -20 + $Pos_01)
+				-attachForm OffsetAmmountText "top" ($MenuMotionPath+23)	-attachForm OffsetAmmountText "left" (317 + $Pos_02 -20 + $Pos_01)
+				-attachForm refl7 "top" ($MenuMotionPath+23)			-attachForm refl7 "left" (100 + $Pos_01)
+				
+				-attachForm refle2 "top" ($MenuMotionPath+40)			-attachForm refle2 "left" 69
+				-attachForm refle3 "top" ($MenuMotionPath+40)			-attachForm refle3 "left" 149
+				-attachForm refle4 "top" ($MenuMotionPath+40)		-attachForm refle4 "left" 215
+
+				-attachForm rotateText "top" ($MenuMotionPath+40+3)			-attachForm rotateText "left" (32)
+				-attachForm rotateXText "top" ($MenuMotionPath+40+3)			-attachForm rotateXText "left" (69+42)
+				-attachForm rotateYText "top" ($MenuMotionPath+40+3)			-attachForm rotateYText "left" (149+42)
+				-attachForm rotateZText "top" ($MenuMotionPath+40+3)			-attachForm rotateZText "left" (215+42)
+								
+				-attachForm translateX "top" ($val16)			-attachForm translateX "left" 69
+				-attachForm translateY "top" ($val16)			-attachForm translateY "left" 149
+				-attachForm translateZ "top" ($val16)			-attachForm translateZ "left" 215
+
+				-attachForm translateText "top" ($val16+3)			-attachForm translateText "left" (22)
+				-attachForm translateXText "top" ($val16+3)			-attachForm translateXText "left" (69+42)
+				-attachForm translateYText "top" ($val16+3)			-attachForm translateYText "left" (149+42)
+				-attachForm translateZText "top" ($val16+3)			-attachForm translateZText "left" (215+42)
+
+				-attachForm TwistX "top" ($val16+20)				-attachForm TwistX "left" 69
+				-attachForm TwistY "top" ($val16+20)				-attachForm TwistY "left" 149
+				-attachForm TwistZ "top" ($val16+20)				-attachForm TwistZ "left" 215
+
+				-attachForm twistText "top" ($val16+20+3)			-attachForm twistText "left" (42)
+				-attachForm twistXText "top" ($val16+20+3)			-attachForm twistXText "left" (69+42)
+				-attachForm twistYText "top" ($val16+20+3)			-attachForm twistYText "left" (149+42)
+				-attachForm twistZText "top" ($val16+20+3)			-attachForm twistZText "left" (215+42)
+
+				-attachForm refle5 "top" ($val16+40)				-attachForm refle5 "left" (-44 + $Pos_01)
+				
+				//MotionPathSettings
+				-attachForm Bank "top" ($val17+2)					-attachForm Bank "left" (100 + $Pos_01)
+				-attachForm BankScale "top" ($val17)			-attachForm BankScale "left" (200 + $Pos_02 -10 + $Pos_01)
+				-attachForm BankScaleText "top" ($val17+4)		-attachForm BankScaleText "left" (242 + $Pos_02 -10 + $Pos_01)
+				-attachForm BankAngle "top" ($val17)			-attachForm BankAngle "left" (275 + $Pos_02 -20 + $Pos_01)
+				-attachForm BankAngleText "top" ($val17+4)		-attachForm BankAngleText "left" (317 + $Pos_02 -20 + $Pos_01)
+
+				-attachForm optionMenu1 "top" ($val17+37)			-attachForm optionMenu1 "left" (-45 + $Pos_01)
+
+				-attachForm DriveDirection "top" ($val17+20)		-attachForm DriveDirection "left" (100 + $Pos_01)
+				-attachForm InverseFront "top" ($val17+40)			-attachForm InverseFront "left" (256 + $Pos_02 + $Pos_01)
+				-attachForm InverseUp "top" ($val17+40)			-attachForm InverseUp "left" (191 + $Pos_02 + $Pos_01)
+
+				-attachForm UseInstance "top" ($val17+22)		-attachForm UseInstance "left" (256 + $Pos_02 + $Pos_01)
+			myFormOptions;
+		setParent ..;
+	setParent ..;
+
+			// create a collapsible frame layout
+			frameLayout -w $Val_01 -collapsable true -cl true -cc "resizeWindow" -label "ArrayOffset";
+				formLayout -w $Val_01 -bgc $Colour40 $Colour41 $Colour42 -numberOfDivisions 100 myFormArray;
+
+					//Sliders
+					text -label "Rotate" rotateText;
+					text -label "X" rotateXText;
+					text -label "Y" rotateYText;
+					text -label "Z" rotateZText;
+					floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 refle11;
+					floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 refle12;
+					floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 refle13;
+
+					text -label "Twist" twistText;
+					text -label "X" twistXText;
+					text -label "Y" twistYText;
+					text -label "Z" twistZText;
+					floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 ArrayOfsTwistX;
+					floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 ArrayOfsTwistY;
+					floatField -w 40 -pre 2 -editable true -cc "AutoChange_func" -v 0 ArrayOfsTwistZ;
+
+					floatSliderGrp -label "Scale" -w 358 -minValue -0.2 -maxValue 0.2 -fieldMinValue -9999 -fieldMaxValue 9999 -pre 2 -field true -cc "AutoChange_func" -v 0 refle14;
+
+					formLayout -edit
+						//ArrayOffsetSettings
+						-attachForm refle11 "top" (0)			-attachForm refle11 "left" 69
+						-attachForm refle12 "top" (0)			-attachForm refle12 "left" 149
+						-attachForm refle13 "top" (0)			-attachForm refle13 "left" 215
+
+						-attachForm rotateText "top" (0+3)			-attachForm rotateText "left" (33)
+						-attachForm rotateXText "top" (0+3)			-attachForm rotateXText "left" (69+43)
+						-attachForm rotateYText "top" (0+3)			-attachForm rotateYText "left" (149+43)
+						-attachForm rotateZText "top" (0+3)			-attachForm rotateZText "left" (215+43)
+
+						-attachForm ArrayOfsTwistX "top" (20)				-attachForm ArrayOfsTwistX "left" 69
+						-attachForm ArrayOfsTwistY "top" (20)				-attachForm ArrayOfsTwistY "left" 149
+						-attachForm ArrayOfsTwistZ "top" (20)				-attachForm ArrayOfsTwistZ "left" 215
+
+						-attachForm twistText "top" (20+3)			-attachForm twistText "left" (42)
+						-attachForm twistXText "top" (20+3)			-attachForm twistXText "left" (69+43)
+						-attachForm twistYText "top" (20+3)			-attachForm twistYText "left" (149+43)
+						-attachForm twistZText "top" (20+3)			-attachForm twistZText "left" (215+43)
+
+						-attachForm refle14 "top" 40			-attachForm refle14 "left" (-44 + $Pos_01)
+					myFormArray;
+
+			setParent ..;
+		setParent ..;
+
+			// create a collapsible frame layout
+			frameLayout -w $Val_01 -collapsable true -cl true -cc "resizeWindow" -label "Randomize";
+
+				formLayout -w $Val_01 -bgc $Colour40 $Colour41 $Colour42 -numberOfDivisions 100 myFormRandomize;
+
+					//Sliders
+					floatSliderGrp -label "Position" -w 358 -minValue 0 -maxValue 15 -pre 2 -fieldMaxValue 100 -field true -cc "AutoChange_func" -v 0 RandomPositionOnPath;
+
+					text -label "Rotate" rotateText;
+					text -label "Translate" translateText;
+					text -label "Twist" twistText;
+
+					text -label "Min" RandomTwistXTextMin;
+					text -label "Max" RandomTwistXTextMax;
+					$t = `checkBox -label "X" -cc "AutoChange_func" -v 0 RandomTwistX`;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v -180 RandomTwistXMin;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 180 RandomTwistXMax;
+
+					text -label "Min" RandomTwistYTextMin;
+					text -label "Max" RandomTwistYTextMax;
+					$t = `checkBox -label "Y" -cc "AutoChange_func" -v 0 RandomTwistY`;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v -180 RandomTwistYMin;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 180 RandomTwistYMax;
+
+					text -label "Min" RandomTwistZTextMin;
+					text -label "Max" RandomTwistZTextMax;
+					$t = `checkBox -label "Z" -cc "AutoChange_func" -v 0 RandomTwistZ`;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v -180 RandomTwistZMin;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 180 RandomTwistZMax;
+
+					text -label "Min" RandomRotateXTextMin;
+					text -label "Max" RandomRotateXTextMax;
+					$t = `checkBox -label "X" -cc "AutoChange_func" -v 0 RandomRotateX`;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v -180 RandomRotateXMin;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 180 RandomRotateXMax;
+
+					text -label "Min" RandomRotateYTextMin;
+					text -label "Max" RandomRotateYTextMax;
+					$t = `checkBox -label "Y" -cc "AutoChange_func" -v 0 RandomRotateY`;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v -180 RandomRotateYMin;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 180 RandomRotateYMax;
+
+					text -label "Min" RandomRotateZTextMin;
+					text -label "Max" RandomRotateZTextMax;
+					$t = `checkBox -label "Z" -cc "AutoChange_func" -v 0 RandomRotateZ`;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v -180 RandomRotateZMin;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 180 RandomRotateZMax;
+
+					text -label "Min" RandomTranslateXTextMin;
+					text -label "Max" RandomTranslateXTextMax;
+					$t = `checkBox -label "X" -cc "AutoChange_func" -v 0 RandomTranslateX`;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v -5 RandomTranslateXMin;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 5 RandomTranslateXMax;
+
+					text -label "Min" RandomTranslateYTextMin;
+					text -label "Max" RandomTranslateYTextMax;
+					$t = `checkBox -label "Y" -cc "AutoChange_func" -v 0 RandomTranslateY`;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v -5 RandomTranslateYMin;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 5 RandomTranslateYMax;
+
+					text -label "Min" RandomTranslateZTextMin;
+					text -label "Max" RandomTranslateZTextMax;
+					$t = `checkBox -label "Z" -cc "AutoChange_func" -v 0 RandomTranslateZ`;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v -5 RandomTranslateZMin;
+					floatField -w 40 -editable true -pre 1 -cc "AutoChange_func" -v 5 RandomTranslateZMax;
+
+					text -label "Min" RandomScaleTextMin;
+					text -label "Max" RandomScaleTextMax;
+					$t = `checkBox -label "Scale" -cc "AutoChange_func" -v 0 RandomScale`;
+					floatField -w 40 -editable true -pre 2 -cc "AutoChange_func" -v -0.5 RandomScaleMin;
+					floatField -w 40 -editable true -pre 2 -cc "AutoChange_func" -v 0.5 RandomScaleMax;
+
+					text -label "ID" SeedNrText;
+					$w = `checkBox -label "UseSeed" -cc "AutoChange_func" -v 0 UseSeed`;
+					intField -w 40 -editable true -cc "AutoChange_func" -v 0 SeedNr;
+
+			int $MenuRotate =	21;
+			int $MenuTwist =	121;
+			int $MenuTranslate =	(40 + $MenuRotate);
+
+				formLayout -edit
+					-attachForm rotateText "top" (2 + $MenuRotate)		-attachForm rotateText "left" (33)
+					-attachForm translateText "top" (22 + $MenuTranslate)		-attachForm translateText "left" (22)
+					-attachForm twistText "top" (22 + $MenuTwist)				-attachForm twistText "left" (41)
+
+					-attachForm RandomPositionOnPath "top" 0			-attachForm RandomPositionOnPath "left" (-44 + $Pos_01)
+
+					-attachForm RandomTwistXTextMin "top" (23 + $MenuTwist)		-attachForm RandomTwistXTextMin "left" (242 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTwistXTextMax "top" (23 + $MenuTwist)		-attachForm RandomTwistXTextMax "left" (317 + $Pos_02 -20 + $Pos_01)
+					-attachForm RandomTwistX "top" (21 + $MenuTwist)				-attachForm RandomTwistX "left" (100 + $Pos_01)
+					-attachForm RandomTwistXMin "top" (19 + $MenuTwist)			-attachForm RandomTwistXMin "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTwistXMax "top" (19 + $MenuTwist)			-attachForm RandomTwistXMax "left" (275 + $Pos_02 -20 + $Pos_01)
+
+					-attachForm RandomTwistYTextMin "top" (43 + $MenuTwist)			-attachForm RandomTwistYTextMin "left" (242 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTwistYTextMax "top" (43 + $MenuTwist)			-attachForm RandomTwistYTextMax "left" (317 + $Pos_02 -20 + $Pos_01)
+					-attachForm RandomTwistY "top" (41 + $MenuTwist)					-attachForm RandomTwistY "left" (100 + $Pos_01)
+					-attachForm RandomTwistYMin "top" (39 + $MenuTwist)				-attachForm RandomTwistYMin "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTwistYMax "top" (39 + $MenuTwist)				-attachForm RandomTwistYMax "left" (275 + $Pos_02 -20 + $Pos_01)
+
+					-attachForm RandomTwistZTextMin "top" (63 + $MenuTwist)			-attachForm RandomTwistZTextMin "left" (242 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTwistZTextMax "top" (63 + $MenuTwist)			-attachForm RandomTwistZTextMax "left" (317 + $Pos_02 -20 + $Pos_01)
+					-attachForm RandomTwistZ "top" (61 + $MenuTwist)				-attachForm RandomTwistZ "left" (100 + $Pos_01)
+					-attachForm RandomTwistZMin "top" (59 + $MenuTwist)			-attachForm RandomTwistZMin "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTwistZMax "top" (59 + $MenuTwist)				-attachForm RandomTwistZMax "left" (275 + $Pos_02 -20 + $Pos_01)
+
+					-attachForm RandomRotateXTextMin "top" (3 + $MenuRotate)			-attachForm RandomRotateXTextMin "left" (242 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomRotateXTextMax "top" (3 + $MenuRotate)			-attachForm RandomRotateXTextMax "left" (317 + $Pos_02 -20 + $Pos_01)
+					-attachForm RandomRotateX "top" (1 + $MenuRotate)					-attachForm RandomRotateX "left" (100 + $Pos_01)
+					-attachForm RandomRotateXMin "top" (-1 + $MenuRotate)				-attachForm RandomRotateXMin "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomRotateXMax "top" (-1 + $MenuRotate)				-attachForm RandomRotateXMax "left" (275 + $Pos_02 -20 + $Pos_01)
+
+					-attachForm RandomRotateYTextMin "top" (23 + $MenuRotate)			-attachForm RandomRotateYTextMin "left" (242 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomRotateYTextMax "top" (23 + $MenuRotate)			-attachForm RandomRotateYTextMax "left" (317 + $Pos_02 -20 + $Pos_01)
+					-attachForm RandomRotateY "top" (21 + $MenuRotate)					-attachForm RandomRotateY "left" (100 + $Pos_01)
+					-attachForm RandomRotateYMin "top" (19 + $MenuRotate)				-attachForm RandomRotateYMin "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomRotateYMax "top" (19 + $MenuRotate)				-attachForm RandomRotateYMax "left" (275 + $Pos_02 -20 + $Pos_01)
+
+					-attachForm RandomRotateZTextMin "top" (43 + $MenuRotate)			-attachForm RandomRotateZTextMin "left" (242 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomRotateZTextMax "top" (43 + $MenuRotate)			-attachForm RandomRotateZTextMax "left" (317 + $Pos_02 -20 + $Pos_01)
+					-attachForm RandomRotateZ "top" (41 + $MenuRotate)					-attachForm RandomRotateZ "left" (100 + $Pos_01)
+					-attachForm RandomRotateZMin "top" (39 + $MenuRotate)				-attachForm RandomRotateZMin "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomRotateZMax "top" (39 + $MenuRotate)				-attachForm RandomRotateZMax "left" (275 + $Pos_02 -20 + $Pos_01)
+
+					-attachForm RandomTranslateXTextMin "top" (23 + $MenuTranslate)		-attachForm RandomTranslateXTextMin "left" (242 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTranslateXTextMax "top" (23 + $MenuTranslate)		-attachForm RandomTranslateXTextMax "left" (317 + $Pos_02 -20 + $Pos_01)
+					-attachForm RandomTranslateX "top" (21	 + $MenuTranslate)			-attachForm RandomTranslateX "left" (100 + $Pos_01)
+					-attachForm RandomTranslateXMin "top" (19 + $MenuTranslate)			-attachForm RandomTranslateXMin "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTranslateXMax "top" (19 + $MenuTranslate)			-attachForm RandomTranslateXMax "left" (275 + $Pos_02 -20 + $Pos_01)
+
+					-attachForm RandomTranslateYTextMin "top" (43 + $MenuTranslate)		-attachForm RandomTranslateYTextMin "left" (242 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTranslateYTextMax "top" (43 + $MenuTranslate)		-attachForm RandomTranslateYTextMax "left" (317 + $Pos_02 -20 + $Pos_01)
+					-attachForm RandomTranslateY "top" (41 + $MenuTranslate)				-attachForm RandomTranslateY "left" (100 + $Pos_01)
+					-attachForm RandomTranslateYMin "top" (39 + $MenuTranslate)			-attachForm RandomTranslateYMin "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTranslateYMax "top" (39 + $MenuTranslate)			-attachForm RandomTranslateYMax "left" (275 + $Pos_02 -20 + $Pos_01)
+
+					-attachForm RandomTranslateZTextMin "top" (63 + $MenuTranslate)		-attachForm RandomTranslateZTextMin "left" (242 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTranslateZTextMax "top" (63 + $MenuTranslate)		-attachForm RandomTranslateZTextMax "left" (317 + $Pos_02 -20 + $Pos_01)
+					-attachForm RandomTranslateZ "top" (61 + $MenuTranslate)				-attachForm RandomTranslateZ "left" (100 + $Pos_01)
+					-attachForm RandomTranslateZMin "top" (59 + $MenuTranslate)			-attachForm RandomTranslateZMin "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomTranslateZMax "top" (59 + $MenuTranslate)			-attachForm RandomTranslateZMax "left" (275 + $Pos_02 -20 + $Pos_01)
+
+					-attachForm RandomScaleTextMin "top" (83 + $MenuTranslate + 60)				-attachForm RandomScaleTextMin "left" (242 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomScaleTextMax "top" (83 + $MenuTranslate + 60)				-attachForm RandomScaleTextMax "left" (317 + $Pos_02 -20 + $Pos_01)
+					-attachForm RandomScale "top" (81 + $MenuTranslate + 60)					-attachForm RandomScale "left" (100 + $Pos_01)
+					-attachForm RandomScaleMin "top" (79	 + $MenuTranslate + 60)				-attachForm RandomScaleMin "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm RandomScaleMax "top" (79 + $MenuTranslate + 60)					-attachForm RandomScaleMax "left" (275 + $Pos_02 -20 + $Pos_01)
+
+					-attachForm UseSeed "top" (101 + $MenuTranslate + 60)						-attachForm UseSeed "left" (100 + $Pos_01)
+					-attachForm SeedNr "top" (99	 + $MenuTranslate + 60)						-attachForm SeedNr "left" (200 + $Pos_02 -10 + $Pos_01)
+					-attachForm SeedNrText "top" (103 + $MenuTranslate + 60)					-attachForm SeedNrText "left" (242 + $Pos_02 -10 + $Pos_01)
+				myFormRandomize;
+
+			setParent ..;
+		setParent ..;
+		
+	// create a collapsible frame layout
+	frameLayout -w $Val_01 -collapsable true -cl true -cc "resizeWindow" -label "FollowGround (experimental)";
+		formLayout -w $Val_01 -bgc $Colour40 $Colour41 $Colour42 -numberOfDivisions 100 myFormFollowGround;
+
+		//load Ground
+		textField -bgc $Colour1 $Colour2 $Colour3 -text "" -w 214 -h 25 -editable false -it $groundObj groundName;
+		button -bgc $Colour1 $Colour2 $Colour3 -label "LoadGround" -w (98 + $Pos_01) -h 25 -align "center"
+		-c "$groundObj = `ls -sl`; textField -e -text $groundObj[0] groundName; AutoChange_func;"  loadGroundButton;
+		
+		$m = `checkBox -label "FollowNormal" -cc "AutoChange_func" followRot`;
+		$n = `checkBox -label "Enable" -cc "AutoChange_func" enableFollowGround`;
+
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm enableFollowGround "top" (0)			-attachForm enableFollowGround "left" (100 + $Pos_01)
+			-attachForm followRot "top" 20			-attachForm followRot "left" (100 + $Pos_01)
+			-attachForm loadGroundButton "top" 40
+			-attachForm groundName "top" 40 								-attachForm groundName "left" (99 + $Pos_01)
+			myFormFollowGround;
+		setParent ..;
+	setParent ..;
+	
+		// create a collapsible frame layout
+		frameLayout -w $Val_01 -collapsable true -cl false -cc "resizeWindow" -label "Performance";
+			formLayout -w $Val_01 -bgc $Colour40 $Colour41 $Colour42 -numberOfDivisions 100 myFormComputeSettings;
+
+			//checkbox
+			$c = `checkBox -label "FastMode" -cc "AutoChange_func" refl5`;
+			$e = `checkBox -label "AutoUpdate" refl6`;
+
+			formLayout -edit
+				//Checkboxs
+				-attachForm refl5 "top" (0)				-attachForm refl5 "left" (100 + $Pos_01)
+				-attachForm refl6 "top" (18)			-attachForm refl6 "left" (100 + $Pos_01)
+			myFormComputeSettings;
+		setParent ..;
+	setParent ..;
+
+	formLayout -w $Val_01 -bgc $Colour20 $Colour21 $Colour22 -numberOfDivisions 100 myForm2;
+
+		textField -bgc $Colour1 $Colour2 $Colour3 -text "NewTread" 	-w 213 -h 25 -editable true NewTreadName;
+		textField -bgc $Colour1 $Colour2 $Colour3 -text "NewCurve" 	-w 213 -h 25 -editable true NewCurveName;
+
+		text -label "TreadName" Text2;
+		text -label "CurveName" Text3;
+
+		//MakeTreads! Delete, Exit buttons
+		button -bgc $Colour7 $Colour8 $Colour9 -h 25 -w 100 -l "CreateTreads!" -c "MakeTreads" MakeTreads;
+		button -bgc .2 .2 .3 -h 25 -w 50 -l "Delete" -c "deleteTreads" deleteTreadGRP;
+		button -bgc .2 .2 .3 -h 25 -w 70 -l "->original " -c "deleteOriginalTreads" deleteOriginal;
+		button -bgc $Colour10 $Colour11 $Colour12 -h 27 -l "EXIT" -c "exit" exit;
+
+		int $ButtonsEnd = (40);
+
+	formLayout -edit
+		//NameNewOBJ
+		-attachForm NewTreadName "top" 0					-attachForm NewTreadName "left" (99 + $Pos_01)
+		-attachForm NewCurveName "top" 25					-attachForm NewCurveName "left" (99 + $Pos_01)
+		-attachForm Text2 "top" 6							-attachForm Text2 "left" (41 + $Pos_01)
+		-attachForm Text3 "top" 31							-attachForm Text3 "left" (38 + $Pos_01)
+
+		//ButtonsEnd
+		-attachForm MakeTreads "top" ($ButtonsEnd+11)		-attachForm MakeTreads "left" 0
+		-attachForm deleteTreadGRP "top" ($ButtonsEnd+11)	-attachForm deleteTreadGRP "left" 102
+		-attachForm deleteOriginal "top" ($ButtonsEnd+11)	-attachForm deleteOriginal "left" 150
+		-attachForm exit "top" ($ButtonsEnd+10)				-attachForm exit "left" (281 + $Pos_01)
+	myForm2;
+
+	//stopp ProgressBar
+	stopProgressBar;
+	
+	//show and resize window
+	showWindow TreadCreator;
+	resizeWindow;
+};
+
+proc AddLoadButton() {
+	global float $meshObjects;
+	$meshObjects = $meshObjects + 1;
+
+	if ($meshObjects == 2) {
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm removeLoadButton "top" 1						-attachForm removeLoadButton "left" 255
+			-attachForm loadMeshObjButton2 "top" 0
+			-attachForm treadObjName2 "top" 0							-attachForm treadObjName2 "left" (69)
+		myFormMainLoadButton02;
+		frameLayout -edit -vis true MeshDistributeMenu;
+	}
+	if ($meshObjects == 3) {
+		formLayout -edit
+			-attachForm loadMeshObjButton3 "top" 0
+			-attachForm treadObjName3 "top" 0							-attachForm treadObjName3 "left" (69)
+		myFormMainLoadButton03;
+	}
+	if ($meshObjects == 4) {
+		formLayout -edit
+			-attachForm loadMeshObjButton4 "top" 0
+			-attachForm treadObjName4 "top" 0							-attachForm treadObjName4 "left" (69)
+		myFormMainLoadButton04;
+	}
+	if ($meshObjects == 5) {
+		formLayout -edit
+			-attachForm loadMeshObjButton5 "top" 0
+			-attachForm treadObjName5 "top" 0							-attachForm treadObjName5 "left" (69)
+		myFormMainLoadButton05;
+	}
+	if ($meshObjects == 6) {
+		formLayout -edit
+			-attachForm loadMeshObjButton6 "top" 0
+			-attachForm treadObjName6 "top" 0							-attachForm treadObjName6 "left" (69)
+		myFormMainLoadButton06;
+	}
+	if ($meshObjects == 7) {
+		formLayout -edit
+			-attachForm loadMeshObjButton7 "top" 0
+			-attachForm treadObjName7 "top" 0							-attachForm treadObjName7 "left" (69)
+		myFormMainLoadButton07;
+	}
+	if ($meshObjects == 8) {
+		formLayout -edit
+			-attachForm loadMeshObjButton8 "top" 0
+			-attachForm treadObjName8 "top" 0							-attachForm treadObjName8 "left" (69)
+		myFormMainLoadButton08;
+	}
+	if ($meshObjects == 9) {
+		formLayout -edit
+			-attachForm loadMeshObjButton9 "top" 0
+			-attachForm treadObjName9 "top" 0							-attachForm treadObjName9 "left" (69)
+		myFormMainLoadButton09;
+	}
+	if ($meshObjects == 10) {
+		formLayout -edit
+			-attachForm loadMeshObjButton10 "top" 0
+			-attachForm treadObjName10 "top" 0							-attachForm treadObjName10 "left" (69)
+		myFormMainLoadButton10;
+	}
+
+	if ($meshObjects == 11) {
+		$meshObjects = 10;
+	} else {
+		AutoChange_func;
+	resizeWindow;
+	}
+};
+
+proc RemoveLoadButton() {
+	global float $meshObjects;
+	if ($meshObjects == 2) {
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm removeLoadButton "top" -26								-attachForm removeLoadButton "left" 260
+			-attachForm loadMeshObjButton2 "top" -25
+			-attachForm treadObjName2 "top" -25							-attachForm treadObjName2 "left" (69)
+		myFormMainLoadButton02;
+		frameLayout -edit -vis false MeshDistributeMenu;
+	}
+
+	if ($meshObjects == 3) {
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton3 "top" -25
+			-attachForm treadObjName3 "top" -25							-attachForm treadObjName3 "left" (69)
+		myFormMainLoadButton03;
+	}
+
+	if ($meshObjects == 4) {
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton4 "top" -25
+			-attachForm treadObjName4 "top" -25							-attachForm treadObjName4 "left" (69)
+		myFormMainLoadButton04;
+	}
+
+	if ($meshObjects == 5) {
+		formLayout -edit
+			//MenuLoadMesh
+			-attachForm loadMeshObjButton5 "top" -25
+			-attachForm treadObjName5 "top" -25							-attachForm treadObjName5 "left" (69)
+		myFormMainLoadButton05;
+	}
+
+	if ($meshObjects == 6) {
+		formLayout -edit
+			-attachForm loadMeshObjButton6 "top" -25
+			-attachForm treadObjName6 "top" -25							-attachForm treadObjName6 "left" (69)
+		myFormMainLoadButton06;
+	}
+	if ($meshObjects == 7) {
+		formLayout -edit
+			-attachForm loadMeshObjButton7 "top" -25
+			-attachForm treadObjName7 "top" -25							-attachForm treadObjName7 "left" (69)
+		myFormMainLoadButton07;
+	}
+	if ($meshObjects == 8) {
+		formLayout -edit
+			-attachForm loadMeshObjButton8 "top" -25
+			-attachForm treadObjName8 "top" -25							-attachForm treadObjName8 "left" (69)
+		myFormMainLoadButton08;
+	}
+	if ($meshObjects == 9) {
+		formLayout -edit
+			-attachForm loadMeshObjButton9 "top" -25
+			-attachForm treadObjName9 "top" -25							-attachForm treadObjName9 "left" (69)
+		myFormMainLoadButton09;
+	}
+	if ($meshObjects == 10) {
+		formLayout -edit
+			-attachForm loadMeshObjButton10 "top" -25
+			-attachForm treadObjName10 "top" -25							-attachForm treadObjName10 "left" (69)
+		myFormMainLoadButton10;
+	}
+
+	$meshObjects = $meshObjects - 1;
+
+	AutoChange_func;
+
+	resizeWindow;
+};
+
+proc MessureTreadDistance() {
+	//import values
+	global string $treadObj[];
+	int $CheckState = `checkBox -query -value refl7`;
+
+	//delete if old group exist
+	if( `objExists CheckDistance_GRP` ) {
+		select -r CheckDistance_GRP;
+		delete;
+	}
+
+	//Add messureDistanceNodes
+	if ($CheckState == 1) {
+		//add and rename locators/messure
+		spaceLocator -p 0 0 0;
+		rename "MessurePoint_01";
+		duplicate -smartTransform;
+		rename "MessurePoint_02";
+		move -r 6 0 0 ;
+		distanceDimension -sp 0 0 0 -ep 6 0 0 ;
+		//rename "distanceDimension_01;
+
+		//set limit
+		transformLimits -tz 0 0 -etz 1 1 MessurePoint_02;
+		transformLimits -ty 0 0 -ety 1 1 MessurePoint_02;
+		setAttr -lock true "MessurePoint_02.ty";
+		setAttr -lock true "MessurePoint_02.tz";
+
+		//make group
+		select -r MessurePoint_01;
+		select -tgl MessurePoint_02;
+		select -tgl distanceDimension1;
+
+		doGroup 0 1 1;
+		rename CheckDistance_GRP;
+
+		//parent locators
+		select -r MessurePoint_02 ;
+		select -tgl MessurePoint_01 ;
+		parent;
+
+		//select first locator
+		select -r MessurePoint_01;
+
+		//make Displaytype Reference
+		setAttr "distanceDimension1.overrideEnabled" 1;
+		setAttr "distanceDimension1.overrideDisplayType" 2;
+
+		//move GRP to Loaded Mesh
+   		if ( `objExists $treadObj[0]` ) {		
+				setAttr CheckDistance_GRP.translateX (getAttr ($treadObj[0] + ".translateX"));
+				setAttr CheckDistance_GRP.translateY (getAttr ($treadObj[0] + ".translateY"));
+				setAttr CheckDistance_GRP.translateZ (getAttr ($treadObj[0] + ".translateZ"));
+		}
+	}
+};
+
+proc resizeWindow() {
+	if (`menuItem -q -en dockButton`) {
+		window -e -width 285 -height 200 TreadCreator;
+		window -e -width 285 -height 200 TreadCreator;
+		window -e -width 285 -height 200 TreadCreator;
+	}
+};
+
+proc AutoChange_func() {
+
+	//stopp ProgressBar
+	stopProgressBar;
+	
+	//Import values 
+	int $AutoChangeValue = `checkBox -query -value refl6`;
+
+	if ($AutoChangeValue == 1) {
+		MakeTreads;
+	}
+};
+
+proc stopProgressBar() {
+	global string $gMainProgressBar;
+	progressBar -edit -endProgress $gMainProgressBar;
+};
+
+proc MakeTreads() {
+	global string $groundObj[];
+	global string $treadObj[];
+	global string $treadObj2[];
+	global string $treadObj3[];
+	global string $treadObj4[];
+	global string $treadObj5[];
+	global string $treadObj6[];
+	global string $treadObj7[];
+	global string $treadObj8[];
+	global string $treadObj9[];
+	global string $treadObj10[];
+	global string $curvePath[];
+	global float $meshObjects;
+	string $getObjType[];
+	int $enableFollowGround = `checkBox -q -v enableFollowGround`;
+	
+	string $NewTreadName = (`textField -q -tx NewTreadName` + "_");
+	string $NewCurveName = `textField -q -tx NewCurveName`;
+	
+	//Check if nessesary imputs exist/is valid
+	if (!size($treadObj)) {
+		print "Mesh not found!";
+	}else {
+	if ($meshObjects > 1 && !size($treadObj2)) {
+		print "Mesh02 not found!";
+	} else {
+	if ($meshObjects > 2 && !size($treadObj3)) {
+		print "Mesh03 not found!";
+	} else {
+	if ($meshObjects > 3 && !size($treadObj4)) {
+		print "Mesh04 not found!";
+	} else {
+	if ($meshObjects > 4 && !size($treadObj5)) {
+		print "Mesh05 not found!";
+	} else {
+	if ($meshObjects > 5 && !size($treadObj6)) {
+		print "Mesh06 not found!";
+	} else {
+	if ($meshObjects > 6 && !size($treadObj7)) {
+		print "Mesh07 not found!";
+	} else {
+	if ($meshObjects > 7 && !size($treadObj8)) {
+		print "Mesh08 not found!";
+	} else {
+	if ($meshObjects > 8 && !size($treadObj9)) {
+		print "Mesh09 not found!";
+	} else {
+	if ($meshObjects > 9 && !size($treadObj10)) {
+		print "Mesh10 not found!";
+	} else {
+	if ($enableFollowGround == 1 && !size($groundObj)) {
+		print "GroundObj not found";
+	} else {
+	if (!size($curvePath)) {
+		print "Curve not found!";
+	}else {
+		//get "Load Curve" type
+		$getObjType = `listRelatives -s $curvePath`;
+	if (`objectType $getObjType` != "nurbsCurve") {
+		print "Loaded Curve is not a nurbsCurve!";
+	} else {
+	if ($NewTreadName == "_") {
+		print "Insert TreadName!";
+	}else {
+	if ($NewCurveName == "") {
+		print "Insert CurveName!";
+	}else {
+		MakeTreadsMain;
+	}
+	}
+	}
+	}
+	}
+	}
+	}
+	}
+	}
+	}
+	}
+	}
+	}
+	}
+	}
+};
+
+proc MakeTreadsMain() {
+	SelectTool;
+	print "";
+
+	//Import, bind and make values
+	global float $meshObjects;
+	global string $groundObj[];
+	global string $treadObj[];
+	global string $treadObj2[];
+	global string $treadObj3[];
+	global string $treadObj4[];
+	global string $treadObj5[];
+	global string $treadObj6[];
+	global string $treadObj7[];
+	global string $treadObj8[];
+	global string $treadObj9[];
+	global string $treadObj10[];
+	global string $curvePath[];
+	global int $vector1;
+	global int $vector2;
+	global int $vector3;
+	
+	int $enableFollowGround = `checkBox -q -v enableFollowGround`;
+	int $followRot = `checkBox -q -v followRot`;
+	
+	int $ChangeEvery01 = `intField -q -v ChangeEvery01`;
+	int $randomDispOrder01 = `radioButton -q -select randomDispOrder01`;
+
+	int $NrOfTreads = `intSliderGrp -q -v refle1`;
+
+	float $TwistX = `floatField -q -v TwistX`;
+	float $TwistY = `floatField -q -v TwistY`;
+	float $TwistZ = `floatField -q -v TwistZ`;
+
+	int $RandomTwistX = `checkBox -q -v RandomTwistX`;
+	float $RandomTwistXMin = `floatField -q -v RandomTwistXMin`;
+	float $RandomTwistXMax = `floatField -q -v RandomTwistXMax`;
+
+	int $RandomTwistY = `checkBox -q -v RandomTwistY`;
+	float $RandomTwistYMin = `floatField -q -v RandomTwistYMin`;
+	float $RandomTwistYMax = `floatField -q -v RandomTwistYMax`;
+
+	int $RandomTwistZ = `checkBox -q -v RandomTwistZ`;
+	float $RandomTwistZMin = `floatField -q -v RandomTwistZMin`;
+	float $RandomTwistZMax = `floatField -q -v RandomTwistZMax`;
+
+	float $RotateX = `floatField -q -v refle2`;
+	float $RotateY = `floatField -q -v refle3`;
+	float $RotateZ = `floatField -q -v refle4`;
+
+	float $TranslateX = `floatField -q -v translateX`;
+	float $TranslateY = `floatField -q -v translateY`;
+	float $TranslateZ = `floatField -q -v translateZ`;
+
+	float $Scale = `floatSliderGrp -q -v refle5`;
+	int $fastMode = `checkBox -q -v refl5`;
+	int $CheckState = `checkBox -q -v refl7`;
+
+	float $offsetTwistX = `floatField -q -v ArrayOfsTwistX`;
+	float $offsetTwistY = `floatField -q -v ArrayOfsTwistY`;
+	float $offsetTwistZ = `floatField -q -v ArrayOfsTwistZ`;
+
+	float $offsetRotateX = `floatField -q -v refle11`;
+	float $offsetRotateY = `floatField -q -v refle12`;
+	float $offsetRotateZ = `floatField -q -v refle13`;
+	float $offsetScale = `floatSliderGrp -q -v refle14`;
+
+	int $UseInstance = `checkBox -q -v UseInstance`;
+	int $treadCalcOffset = `intField -q -v treadCalcOffset`;
+	int $DriveDirection = `checkBox -q -v DriveDirection`;
+	float $RandomPositionOnPath = `floatSliderGrp -q -v RandomPositionOnPath`;
+	int $UseSeed = `checkBox -q -v UseSeed`;
+	int $SeedNr = `intField -q -v SeedNr`;
+
+	int $RandomRotateX = `checkBox -q -v RandomRotateX`;
+	float $RandomRotateXMin = `floatField -q -v RandomRotateXMin`;
+	float $RandomRotateXMax = `floatField -q -v RandomRotateXMax`;
+
+	int $RandomRotateY = `checkBox -q -v RandomRotateY`;
+	float $RandomRotateYMin = `floatField -q -v RandomRotateYMin`;
+	float $RandomRotateYMax = `floatField -q -v RandomRotateYMax`;
+
+	int $RandomRotateZ = `checkBox -q -v RandomRotateZ`;
+	float $RandomRotateZMin = `floatField -q -v RandomRotateZMin`;
+	float $RandomRotateZMax = `floatField -q -v RandomRotateZMax`;
+
+	int $RandomTranslateX = `checkBox -q -v RandomTranslateX`;
+	float $RandomTranslateXMin = `floatField -q -v RandomTranslateXMin`;
+	float $RandomTranslateXMax = `floatField -q -v RandomTranslateXMax`;
+
+	int $RandomTranslateY = `checkBox -q -v RandomTranslateY`;
+	float $RandomTranslateYMin = `floatField -q -v RandomTranslateYMin`;
+	float $RandomTranslateYMax = `floatField -q -v RandomTranslateYMax`;
+
+	int $RandomTranslateZ = `checkBox -q -v RandomTranslateZ`;
+	float $RandomTranslateZMin = `floatField -q -v RandomTranslateZMin`;
+	float $RandomTranslateZMax = `floatField -q -v RandomTranslateZMax`;
+
+	int $RandomScale = `checkBox -q -v RandomScale`;
+	float $RandomScaleMin = `floatField -q -v RandomScaleMin`;
+	float $RandomScaleMax = `floatField -q -v RandomScaleMax`;
+
+	int $Bank = `checkBox -q -v Bank`;
+	float $BankScaleValue = `floatField -q -v BankScale`;
+	float $BankScale = ($BankScaleValue * $Bank);
+	float $BankAngle = `floatField -q -v BankAngle`;
+
+	int $InverseUp = `checkBox -q -v InverseUp`;
+	int $InverseFront = `checkBox -q -v InverseFront`;
+
+	string $worldUpVector = `optionMenuGrp -q -v optionMenu1`;
+	string $NewTreadName = (`textField -q -tx NewTreadName` + "_");
+	string $NewCurveName = `textField -q -tx NewCurveName`;
+	string $NewGroupName = (`textField -q -tx NewTreadName` + "_GRP");
+
+	//disable instance if fastmode
+	if ($fastMode == 1) {
+		$UseInstance = 0;
+	}
+
+	//delete old
+   	if( `objExists $NewGroupName` ) {		
+		select -r $NewGroupName;
+		delete;
+	}
+
+   	if( `objExists $NewCurveName` ) {		
+		select -r $NewCurveName;
+		delete;
+	}
+
+	if ($fastMode == 1)	{
+		autoKeyframe -state on;
+	} else {
+	autoKeyframe -state off;
+	}
+
+	//convert worldUpVectorMenu1 to three vectors
+	if (`optionMenuGrp -q -v optionMenu1` == "0 0 1") {
+		global int $vector1;
+		global int $vector2;
+		global int $vector3;
+		int $vector1 = 0;
+		int $vector2 = 0;
+		int $vector3 = 1;
+	}
+	if (`optionMenuGrp -q -v optionMenu1` == "0 1 0") {
+		global int $vector1;
+		global int $vector2;
+		global int $vector3;
+		int $vector1 = 0;
+		int $vector2 = 1;
+		int $vector3 = 0;
+	}
+		if (`optionMenuGrp -q -v optionMenu1` == "1 0 0") {
+		global int $vector1;
+		global int $vector2;
+		global int $vector3;
+		int $vector1 = 1;
+		int $vector2 = 0;
+		int $vector3 = 0;
+	}
+
+		//create float values
+		float $OriginalScaleX = getAttr ($treadObj[0] + ".scaleX");
+		float $OriginalScaleY = getAttr ($treadObj[0] + ".scaleY");
+		float $OriginalScaleZ = getAttr ($treadObj[0] + ".scaleZ");
+
+		if ($UseSeed == 1) {
+			seed($SeedNr);
+		}
+
+		select -r;
+
+		//create intreager and reset time
+		int $arrayNr = 0;
+		currentTime 1 ;
+
+		//calculate number of treads based on lokator distance
+		if ($CheckState == 1) {
+
+			//set int based on imported values
+			float $TreadMessureDistance = `getAttr distanceDimension1.distance`;
+			//find arclengt
+			arclen $curvePath;
+			float $arclengt = `arclen -ch off $curvePath`;
+
+			//find number of treads
+			$NrOfTreads = ($arclengt / $TreadMessureDistance + $treadCalcOffset);
+		}
+		for( $i=0; $i<$NrOfTreads; ++$i ) {
+			//make int $arrayNr is the number of array itterations(since $i starts with 0)
+			int $arrayNr = $arrayNr + 1;
+
+			//Progress bar
+			global string $gMainProgressBar;
+			progressBar -edit -status "Creating treads..." -beginProgress -isInterruptable true -maxValue $NrOfTreads $gMainProgressBar;
+
+ 			if(`progressBar -query -isCancelled $gMainProgressBar`) {
+				progressBar -edit -endProgress $gMainProgressBar;
+				print "aborted";
+		        break;
+			}
+
+		    progressBar -edit -step 1 $gMainProgressBar;
+
+			select -r $treadObj;
+			float $randomDispNumber = (rand(0,100));
+
+			//if 2-10 load mesh objects
+			if ($meshObjects > 1) {
+				if ($randomDispOrder01 == 0) {
+					if (($arrayNr + ($meshObjects - 2)) % (($meshObjects - 1) + $ChangeEvery01) == 0 && $meshObjects > 1) {select -r $treadObj2;}
+					if (($arrayNr + ($meshObjects - 3)) % (($meshObjects - 1) + $ChangeEvery01) == 0 && $meshObjects > 2) {select -r $treadObj3;}
+					if (($arrayNr + ($meshObjects - 4)) % (($meshObjects - 1) + $ChangeEvery01) == 0 && $meshObjects > 3) {select -r $treadObj4;}
+					if (($arrayNr + ($meshObjects - 5)) % (($meshObjects - 1) + $ChangeEvery01) == 0 && $meshObjects > 4) {select -r $treadObj5;}
+					if (($arrayNr + ($meshObjects - 6)) % (($meshObjects - 1) + $ChangeEvery01) == 0 && $meshObjects > 5) {select -r $treadObj6;}
+					if (($arrayNr + ($meshObjects - 7)) % (($meshObjects - 1) + $ChangeEvery01) == 0 && $meshObjects > 6) {select -r $treadObj7;}
+					if (($arrayNr + ($meshObjects - 8)) % (($meshObjects - 1) + $ChangeEvery01) == 0 && $meshObjects > 7) {select -r $treadObj8;}
+					if (($arrayNr + ($meshObjects - 9)) % (($meshObjects - 1) + $ChangeEvery01) == 0 && $meshObjects > 8) {select -r $treadObj9;}
+					if (($arrayNr + ($meshObjects -10)) % (($meshObjects - 1) + $ChangeEvery01) == 0 && $meshObjects > 9) {select -r $treadObj10;}
+				} else {
+					if ($randomDispNumber > (100 / $meshObjects    ) && $meshObjects > 1) {select -r $treadObj2;}
+					if ($randomDispNumber > (100 / $meshObjects * 2) && $meshObjects > 2) {select -r $treadObj3;}
+					if ($randomDispNumber > (100 / $meshObjects * 3) && $meshObjects > 3) {select -r $treadObj4;}
+					if ($randomDispNumber > (100 / $meshObjects * 4) && $meshObjects > 4) {select -r $treadObj5;}
+					if ($randomDispNumber > (100 / $meshObjects * 5) && $meshObjects > 5) {select -r $treadObj6;}
+					if ($randomDispNumber > (100 / $meshObjects * 6) && $meshObjects > 6) {select -r $treadObj7;}
+					if ($randomDispNumber > (100 / $meshObjects * 7) && $meshObjects > 7) {select -r $treadObj8;}
+					if ($randomDispNumber > (100 / $meshObjects * 8) && $meshObjects > 8) {select -r $treadObj9;}
+					if ($randomDispNumber > (100 / $meshObjects * 9) && $meshObjects > 9) {select -r $treadObj10;}
+				}
+			}
+			
+			string $selectObj[] = `ls -sl`;
+
+			if ($arrayNr == 1) {
+				//duplicate and rename original Obj/Curve
+				//Use Instance if
+				select -r $selectObj ;
+				if ($UseInstance == 1) {
+					instance;
+				}else {
+					duplicate -smartTransform ;
+				}
+
+				rename ($NewTreadName + "1_GEO");
+
+				setAttr ($NewTreadName + "1_GEO" + ".translateX") 0;
+				setAttr ($NewTreadName + "1_GEO" + ".translateY") 0;
+				setAttr ($NewTreadName + "1_GEO" + ".translateZ") 0;
+
+				doGroup 0 1 1;
+
+				rename ($NewTreadName + "1");
+
+				select -r $curvePath ;
+				duplicate -smartTransform ;
+				rename $NewCurveName ;
+				makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1;
+
+				//Create new empty GRP
+				select -cl;
+				doGroup 0 1 1;
+				rename $NewGroupName ;
+
+				//group the new objects
+				parent $NewCurveName $NewGroupName ;
+				parent ($NewTreadName + "1") $NewGroupName ;
+
+				//Unparrent
+				select -r $NewCurveName;
+				parent -w -r;
+
+				//add attribute to TreadGRP
+				select -r $NewCurveName ;
+				addAttr -ln "______"  -at "enum" -en "______:"  ("|" + $NewCurveName);
+				setAttr -e-channelBox true ("|" + $NewCurveName + ".______");
+
+				if ($fastMode != 1) {
+					addAttr -ln "DistanceDriven"  -at double  -dv 0 ("|" + $NewCurveName);
+					setAttr -e-keyable true ("|" + $NewCurveName + ".DistanceDriven");
+				}
+				
+				addAttr -ln "RotateX"  -at double  -dv $RotateX ("|" + $NewCurveName);
+				addAttr -ln "RotateY"  -at double  -dv $RotateY ("|" + $NewCurveName);
+				addAttr -ln "RotateZ"  -at double  -dv $RotateZ ("|" + $NewCurveName);
+
+				addAttr -ln "TwistX"  -at double  -dv $TwistX ("|" + $NewCurveName);
+				addAttr -ln "TwistY"  -at double  -dv $TwistY ("|" + $NewCurveName);
+				addAttr -ln "TwistZ"  -at double  -dv $TwistZ ("|" + $NewCurveName);
+				
+				if ($TwistX != 0 	 || $TwistY != 0 		|| $TwistZ != 0 			|| $offsetTwistX != 0 	|| $offsetTwistY != 0 		|| $offsetTwistZ != 0
+									 || $RandomTwistX != 0 	|| $RandomTwistZ != 0 	|| $RandomTwistY != 0 		|| $RandomTranslateX != 0	|| $RandomTranslateY != 0 
+									 || $RandomTranslateZ != 0 	|| $RandomScale != 0 		|| $TranslateX != 0 		|| $TranslateY != 0 		|| $TranslateZ != 0) {
+					setAttr -e-keyable true ("|" + $NewCurveName + ".TwistX");
+					setAttr -e-keyable true ("|" + $NewCurveName + ".TwistY");
+					setAttr -e-keyable true ("|" + $NewCurveName + ".TwistZ");
+				}
+				
+				if ($Bank == 1) {
+					addAttr -ln "BankScale"  -at double  -dv $BankScale ("|" + $NewCurveName);
+					addAttr -ln "BankAngle"  -at double  -dv $BankAngle ("|" + $NewCurveName);
+					setAttr -e-keyable true ("|" + $NewCurveName + ".BankScale");
+					setAttr -e-keyable true ("|" + $NewCurveName + ".BankAngle");
+				}
+
+				addAttr -ln "ScaleX"  -at double  -dv ($OriginalScaleX * $Scale) ("|" + $NewCurveName);
+				addAttr -ln "ScaleY"  -at double  -dv ($OriginalScaleY * $Scale) ("|" + $NewCurveName);
+				addAttr -ln "ScaleZ"  -at double  -dv ($OriginalScaleZ * $Scale) ("|" + $NewCurveName);
+				setAttr -e-keyable true ("|" + $NewCurveName + ".ScaleX");
+				setAttr -e-keyable true ("|" + $NewCurveName + ".ScaleY");
+				setAttr -e-keyable true ("|" + $NewCurveName + ".ScaleZ");
+				addAttr -ln "DisplayType"  -at "enum" -en "Normal:Template:Reference:"  ("|" + $NewCurveName);;
+				addAttr -ln "LevelOfDetail"  -at "enum" -en "Full:BoundingBox:"  ("|" + $NewCurveName);;
+				setAttr -e-keyable true ("|" + $NewCurveName + ".RotateX");
+				setAttr -e-keyable true ("|" + $NewCurveName + ".RotateY");
+				setAttr -e-keyable true ("|" + $NewCurveName + ".RotateZ");
+				setAttr -e-keyable true ("|" + $NewCurveName + ".DisplayType");
+				setAttr -e-keyable true ("|" + $NewCurveName + ".LevelOfDetail");
+			}
+
+			if (($arrayNr > 1) && ($arrayNr < ($NrOfTreads + 1))){
+
+				//duplicate Obj
+				select -r $selectObj ;
+
+				//Use Instance if
+				if ($UseInstance == 1) {
+					instance;
+				}else {
+					duplicate -smartTransform ;
+				}
+
+				rename ($NewTreadName + $arrayNr + "_GEO");
+
+				setAttr ($NewTreadName + $arrayNr + "_GEO" + ".translateX") 0;
+				setAttr ($NewTreadName + $arrayNr + "_GEO" + ".translateY") 0;
+				setAttr ($NewTreadName + $arrayNr + "_GEO" + ".translateZ") 0;
+
+				doGroup 0 1 1;
+
+				rename ($NewTreadName + $arrayNr);
+
+				parent ($NewTreadName + $arrayNr) $NewGroupName ;
+
+			}
+			if ($fastMode == 0) {
+				//attatch to motion path
+				select -r ($NewTreadName + $arrayNr) ;
+				select -tgl $NewCurveName ;
+
+				pathAnimation 	-n ($NewTreadName + $arrayNr + "motionPath") -fractionMode true -follow true -followAxis x -upAxis y
+								-worldUpType "objectrotation" -worldUpVector $vector1 $vector2 $vector3 -worldUpObject $NewCurveName
+								-inverseUp $InverseUp -inverseFront $InverseFront -bank $Bank -bs $BankScale -bt $BankAngle
+								-startTimeU 1 -endTimeU 10000;
+
+				//rotate chain link
+				setAttr ($NewTreadName + $arrayNr + "motionPath" + ".rotateX") $RotateX;
+				setAttr ($NewTreadName + $arrayNr + "motionPath" + ".rotateY") $RotateY;
+				setAttr ($NewTreadName + $arrayNr + "motionPath" + ".rotateZ") $RotateZ;
+
+				//convert to linear + add cycle animation
+				selectKey -r -k -t 1 -t 10000 ($NewTreadName + $arrayNr + "motionPath" + "_uValue") ;
+				keyTangent -e -itt linear -ott linear;
+				cycleCheck -e off;
+				setInfinity -pri cycle;
+				setInfinity -poi cycle;
+
+				//set driven
+				currentTime 100 ;
+				setAttr ($NewTreadName + $arrayNr + "motionPath" + ".uValue") 0.0;
+				setAttr ($NewCurveName + ".DistanceDriven") 0;
+				setDrivenKeyframe -currentDriver ($NewCurveName + ".DistanceDriven") ($NewTreadName + $arrayNr + "motionPath" + ".uValue");
+
+				currentTime 1 ;
+				setAttr ($NewCurveName + ".DistanceDriven") 100;
+				setAttr ($NewTreadName + $arrayNr + "motionPath" + ".uValue") 1.0;
+				setDrivenKeyframe -currentDriver ($NewCurveName + ".DistanceDriven") ($NewTreadName + $arrayNr + "motionPath" + ".uValue");
+
+				//clear old keyframes
+				selectKey -add -k -t 1 -t 10000 ($NewTreadName + $arrayNr + "motionPath" + "_uValue") ;
+				cutKey -animation keys -clear;
+
+				//rename animCurveUL
+				select -r animCurveUL1 ;
+				rename animCurveUL1 ("animCurveUL" +$NewTreadName + $arrayNr) ;
+							
+				//set driven animation to linear, pri/poi cycle
+				selectKey -r -k -f 0 -f 100 ("animCurveUL" +$NewTreadName + $arrayNr) ;
+				keyTangent -e -itt linear -ott linear;
+				setInfinity -pri cycle;
+				setInfinity -poi cycle;
+				selectKey -clear ;
+							
+				//fix uValue's on frame 100
+				selectKey -r -k -f 100 ("animCurveUL" +$NewTreadName + $arrayNr) ;
+				keyframe -animation keys -absolute -valueChange 1 ;
+
+				//fix uValue's on frame 0
+				selectKey -r -k -f 0 ("animCurveUL" +$NewTreadName + $arrayNr) ;
+				keyframe -animation keys -absolute -valueChange 0 ;
+
+				//DriveDirection
+				if ($DriveDirection == 1) {
+					selectKey -r -k -f 100 ("animCurveUL" +$NewTreadName + $arrayNr) ;
+					keyframe -e -iub true -animation keys -r -o over -tc -200 -fc -200;
+				}
+
+				//offset keys where -tc is the number of frames(can be desimal)
+				selectKey -r -k -f -2000 -f 100 ("animCurveUL" +$NewTreadName + $arrayNr) ;
+				//RandomNr
+				float $randomPathNr = (rand(-2400,0));
+				keyframe -e -iub true -r -o over -tc (($randomPathNr / 100 * $RandomPositionOnPath) + (-2400.0000/$NrOfTreads * $i /100 * (100 - $RandomPositionOnPath))) ("animCurveUL" +$NewTreadName + $arrayNr) ;
+
+			} else {
+				//import values
+				global int $vector1;
+				global int $vector2;
+				global int $vector3;
+
+				//attatch to motion path
+				select -r ($NewTreadName + $arrayNr) ;
+				select -tgl $NewCurveName ;
+
+				pathAnimation 	-n ($NewTreadName + $arrayNr + "motionPath") -fractionMode true -follow true -followAxis x -upAxis y
+								-worldUpType "objectrotation" -worldUpVector $vector1 $vector2 $vector3 -worldUpObject $NewCurveName
+								-inverseUp $InverseUp -inverseFront $InverseFront -bank $Bank -bs $BankScale -bt $BankAngle
+								-startTimeU 0 -endTimeU 1;
+
+				//offset U-value
+				float $randomPathNr2 = (rand(1,0));
+				if ($DriveDirection == 0) {
+					setAttr ($NewTreadName + $arrayNr + "motionPath" +".uValue") (1 - ((($randomPathNr2 / 100 * $RandomPositionOnPath) + ((1 - (1.00/($NrOfTreads) * $i)) * (1 - ($RandomPositionOnPath / 100))))));
+				}	else {
+					setAttr ($NewTreadName + $arrayNr + "motionPath" +".uValue") (($randomPathNr2 / 100 * $RandomPositionOnPath) + ((1 - (1.00/($NrOfTreads) * $i)) * (1 - ($RandomPositionOnPath / 100))));
+				}
+			}
+
+			//rotate chain link + offset
+			if ($offsetTwistX != 0 || $RandomTwistX == 1) {
+				shadingNode -asUtility plusMinusAverage;
+				rename ($NewTreadName + "plusMinusAverageTreadTwistX_" + $arrayNr) ;
+				connectAttr -f ($NewCurveName + ".TwistX") ($NewTreadName + "plusMinusAverageTreadTwistX_" + $arrayNr + ".input1D[0]");
+				setAttr ($NewTreadName + "plusMinusAverageTreadTwistX_" + $arrayNr + ".input1D[1]") ($offsetTwistX * $arrayNr) ;
+				connectAttr -f ($NewTreadName + "plusMinusAverageTreadTwistX_" + $arrayNr + ".output1D") ($NewTreadName + $arrayNr + "motionPath" + ".frontTwist");
+				if ($RandomTwistX == 1) {
+					//RandomNr
+					float $randomTwistX = (rand($RandomTwistXMin * 1000,$RandomTwistXMax * 10000));
+					setAttr ($NewTreadName + "plusMinusAverageTreadTwistX_" + $arrayNr + ".input1D[2]") ($OriginalScaleX * $Scale + ($randomTwistX / 10000)) ;
+				}
+			} else {
+				connectAttr ($NewCurveName + ".TwistX") ($NewTreadName + $arrayNr + "motionPath" + ".frontTwist");
+			}
+
+			if ($offsetTwistY != 0 || $RandomTwistY == 1)  {
+				shadingNode -asUtility plusMinusAverage;
+				rename ($NewTreadName + "plusMinusAverageTreadTwistY_" + $arrayNr) ;
+				connectAttr -f ($NewCurveName + ".TwistY") ($NewTreadName + "plusMinusAverageTreadTwistY_" + $arrayNr + ".input1D[0]");
+				setAttr ($NewTreadName + "plusMinusAverageTreadTwistY_" + $arrayNr + ".input1D[1]") ($offsetTwistY * $arrayNr) ;
+				connectAttr -f ($NewTreadName + "plusMinusAverageTreadTwistY_" + $arrayNr + ".output1D") ($NewTreadName + $arrayNr + "motionPath" + ".upTwist");
+				if ($RandomTwistY == 1) {
+					//RandomNr
+					float $randomTwistY = (rand($RandomTwistYMin * 1000,$RandomTwistYMax * 10000));
+					setAttr ($NewTreadName + "plusMinusAverageTreadTwistY_" + $arrayNr + ".input1D[2]") ($OriginalScaleX * $Scale + ($randomTwistY / 10000)) ;
+				}
+			} else {
+				connectAttr ($NewCurveName + ".TwistY") ($NewTreadName + $arrayNr + "motionPath" + ".upTwist");
+			}
+
+			if ($offsetTwistZ != 0 || $RandomTwistZ == 1)  {
+				shadingNode -asUtility plusMinusAverage;
+				rename ($NewTreadName + "plusMinusAverageTreadTwistZ_" + $arrayNr) ;
+				connectAttr -f ($NewCurveName + ".TwistZ") ($NewTreadName + "plusMinusAverageTreadTwistZ_" + $arrayNr + ".input1D[0]");
+				setAttr ($NewTreadName + "plusMinusAverageTreadTwistZ_" + $arrayNr + ".input1D[1]") ($offsetTwistZ * $arrayNr) ;
+				connectAttr -f ($NewTreadName + "plusMinusAverageTreadTwistZ_" + $arrayNr + ".output1D") ($NewTreadName + $arrayNr + "motionPath" + ".sideTwist");
+				if ($RandomTwistZ == 1) {
+					//RandomNr
+					float $randomTwistZ = (rand($RandomTwistZMin * 10000,$RandomTwistZMax * 10000));
+					setAttr ($NewTreadName + "plusMinusAverageTreadTwistZ_" + $arrayNr + ".input1D[2]") ($OriginalScaleX * $Scale + ($randomTwistZ / 10000)) ;
+				}
+			} else {
+				connectAttr ($NewCurveName + ".TwistZ") ($NewTreadName + $arrayNr + "motionPath" + ".sideTwist");
+			}
+
+			//rotate chain link + offset
+			if ($offsetRotateX != 0 || $RandomRotateX == 1) {
+				shadingNode -asUtility plusMinusAverage;
+				rename ($NewTreadName + "plusMinusAverageRotX_" + $arrayNr) ;
+				connectAttr -f ($NewCurveName + ".RotateX") ($NewTreadName + "plusMinusAverageRotX_" + $arrayNr + ".input1D[0]");
+				setAttr ($NewTreadName + "plusMinusAverageRotX_" + $arrayNr + ".input1D[1]") ($offsetRotateX * $arrayNr) ;
+				connectAttr -f ($NewTreadName + "plusMinusAverageRotX_" + $arrayNr + ".output1D") ($NewTreadName + $arrayNr + "_GEO" + ".rotateX");
+				if ($RandomRotateX == 1) {
+					//RandomNr
+					float $randomRotateX = (rand($RandomRotateXMin * 10000,$RandomRotateXMax * 10000));
+					setAttr ($NewTreadName + "plusMinusAverageRotX_" + $arrayNr + ".input1D[2]") ($OriginalScaleX * $Scale + ($randomRotateX / 10000)) ;
+				}
+			} else {
+				connectAttr ($NewCurveName + ".RotateX") ($NewTreadName + $arrayNr + "_GEO" + ".rotateX");
+			}
+
+			if ($offsetRotateY != 0 || $RandomRotateY == 1)  {
+				shadingNode -asUtility plusMinusAverage;
+				rename ($NewTreadName + "plusMinusAverageRotY_" + $arrayNr) ;
+				connectAttr -f ($NewCurveName + ".RotateY") ($NewTreadName + "plusMinusAverageRotY_" + $arrayNr + ".input1D[0]");
+				setAttr ($NewTreadName + "plusMinusAverageRotY_" + $arrayNr + ".input1D[1]") ($offsetRotateY * $arrayNr) ;
+				connectAttr -f ($NewTreadName + "plusMinusAverageRotY_" + $arrayNr + ".output1D") ($NewTreadName + $arrayNr + "_GEO" + ".rotateY");
+				if ($RandomRotateY == 1) {
+					//RandomNr
+					float $randomRotateY = (rand($RandomRotateYMin * 10000,$RandomRotateYMax * 10000));
+					setAttr ($NewTreadName + "plusMinusAverageRotY_" + $arrayNr + ".input1D[2]") ($OriginalScaleX * $Scale + ($randomRotateY / 10000)) ;
+				}
+			} else {
+				connectAttr ($NewCurveName + ".RotateY") ($NewTreadName + $arrayNr + "_GEO" + ".rotateY");
+			}
+
+			if ($offsetRotateZ != 0 || $RandomRotateZ == 1)  {
+				shadingNode -asUtility plusMinusAverage;
+				rename ($NewTreadName + "plusMinusAverageRotZ_" + $arrayNr) ;
+				connectAttr -f ($NewCurveName + ".RotateZ") ($NewTreadName + "plusMinusAverageRotZ_" + $arrayNr + ".input1D[0]");
+				setAttr ($NewTreadName + "plusMinusAverageRotZ_" + $arrayNr + ".input1D[1]") ($offsetRotateZ * $arrayNr) ;
+				connectAttr -f ($NewTreadName + "plusMinusAverageRotZ_" + $arrayNr + ".output1D") ($NewTreadName + $arrayNr + "_GEO" + ".rotateZ");
+				if ($RandomRotateZ == 1) {
+					//RandomNr
+					float $randomRotateZ = (rand($RandomRotateZMin * 10000,$RandomRotateZMax * 10000));
+					setAttr ($NewTreadName + "plusMinusAverageRotZ_" + $arrayNr + ".input1D[2]") ($OriginalScaleX * $Scale + ($randomRotateZ / 10000)) ;
+				}
+			} else {
+				connectAttr ($NewCurveName + ".RotateZ") ($NewTreadName + $arrayNr + "_GEO" + ".rotateZ");
+			}
+
+			//offsetScale
+			if ($offsetScale != 0) {
+				//OffsetScale
+				select -r ($NewTreadName + $arrayNr + "_GEO");
+				scale	($OriginalScaleX * $Scale + $offsetScale * $arrayNr)
+						($OriginalScaleY * $Scale + $offsetScale * $arrayNr)
+						($OriginalScaleZ * $Scale + $offsetScale * $arrayNr);
+			} else {
+				select -r ($NewTreadName + $arrayNr + "_GEO");
+				scale	($OriginalScaleX * $Scale)
+						($OriginalScaleY * $Scale)
+						($OriginalScaleZ * $Scale);
+			}
+
+			//randomScale
+			if ($RandomScale == 1) {
+				float $randomNr = (rand(($RandomScaleMin * 10000),($RandomScaleMax * 10000)));
+				select -r ($NewTreadName + $arrayNr + "_GEO");
+				scale -r 	($OriginalScaleX * $Scale + ($randomNr / 10000))
+							($OriginalScaleY * $Scale + ($randomNr / 10000))
+							($OriginalScaleZ * $Scale + ($randomNr / 10000));
+			}
+
+			//ConnectBankValuesToCurve
+			if ($Bank == 1) {
+				connectAttr -f ($NewCurveName + ".BankScale") ($NewTreadName + $arrayNr + "motionPath.bankScale");
+				connectAttr -f ($NewCurveName + ".BankAngle") ($NewTreadName + $arrayNr + "motionPath.bankLimit");
+			}
+
+			//ConnectScaleToCurve
+			float $val_X = `getAttr ($NewTreadName + $arrayNr + "_GEO" + ".scaleX")`;
+			float $val_Y = `getAttr ($NewTreadName + $arrayNr + "_GEO" + ".scaleY")`;
+			float $val_Z = `getAttr ($NewTreadName + $arrayNr + "_GEO" + ".scaleZ")`;
+			float $val2_X = `getAttr ($NewCurveName + ".ScaleX")`;
+			float $val2_Y = `getAttr ($NewCurveName + ".ScaleY")`;
+			float $val2_Z = `getAttr ($NewCurveName + ".ScaleZ")`;
+
+			//scaleX
+			shadingNode -asUtility plusMinusAverage;
+			rename ($NewTreadName + "plusMinusAverageScaleX_" + $arrayNr + "_GEO") ;
+			connectAttr -f ($NewCurveName + ".ScaleX") ($NewTreadName + "plusMinusAverageScaleX_" + $arrayNr + "_GEO" + ".input1D[0]");
+			setAttr ($NewTreadName + "plusMinusAverageScaleX_" + $arrayNr + "_GEO" + ".input1D[1]")  $val_X;
+			setAttr ($NewTreadName + "plusMinusAverageScaleX_" + $arrayNr + "_GEO" + ".input1D[2]")  (-$val2_X);
+			connectAttr -f ($NewTreadName + "plusMinusAverageScaleX_" + $arrayNr + "_GEO" + ".output1D") ($NewTreadName + $arrayNr + "_GEO" + ".scaleX");
+
+			//scaleY
+			shadingNode -asUtility plusMinusAverage;
+			rename ($NewTreadName + "plusMinusAverageScaleY_" + $arrayNr + "_GEO") ;
+			connectAttr -f ($NewCurveName + ".ScaleY") ($NewTreadName + "plusMinusAverageScaleY_" + $arrayNr + "_GEO" + ".input1D[0]");
+			setAttr ($NewTreadName + "plusMinusAverageScaleY_" + $arrayNr + "_GEO" + ".input1D[1]")  $val_Y;
+			setAttr ($NewTreadName + "plusMinusAverageScaleY_" + $arrayNr + "_GEO" + ".input1D[2]")  (-$val2_Y);
+			connectAttr -f ($NewTreadName + "plusMinusAverageScaleY_" + $arrayNr + "_GEO" + ".output1D") ($NewTreadName + $arrayNr + "_GEO" + ".scaleY");
+
+			//scaleZ
+			shadingNode -asUtility plusMinusAverage;
+			rename ($NewTreadName + "plusMinusAverageScaleZ_" + $arrayNr + "_GEO") ;
+			connectAttr -f ($NewCurveName + ".ScaleZ") ($NewTreadName + "plusMinusAverageScaleZ_" + $arrayNr + "_GEO" + ".input1D[0]");
+			setAttr ($NewTreadName + "plusMinusAverageScaleZ_" + $arrayNr + "_GEO" + ".input1D[1]")  $val_Z;
+			setAttr ($NewTreadName + "plusMinusAverageScaleZ_" + $arrayNr + "_GEO" + ".input1D[2]")  (-$val2_Z);
+			connectAttr -f ($NewTreadName + "plusMinusAverageScaleZ_" + $arrayNr + "_GEO" + ".output1D") ($NewTreadName + $arrayNr + "_GEO" + ".scaleZ");
+
+			string $followGroundGRP = ("followGround_" + $arrayNr);
+			
+			// follow ground
+			if ($enableFollowGround == 1) {
+				string $followGroundGRP = ("followGround_" + $arrayNr);
+				string $locator = ("locatorFollowGround_" + $arrayNr);
+
+				select -r;
+				spaceLocator -p 0 0 0;
+				rename $locator;
+				doGroup 0 1 1;
+				rename $followGroundGRP;
+				select -r $followGroundGRP ;
+				select -add $locator ;
+				doCreateParentConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" } ;
+				parentConstraint -mo -weight 1;
+				select -r $locator ;
+				disconnectAttr ($locator + "_parentConstraint1.constraintTranslateY") ($locator + ".translateY");
+				select -r $groundObj ;
+				select -add $locator ;
+				geometryConstraint -weight 1;
+				select -r $locator ;
+				transformLimits -tx 0 0 -etx 1 1 $locator;
+				transformLimits -tz 0 0 -etz 1 1 $locator;
+
+				//follow ground Normal
+				if ($followRot == 1) {
+					//follow normal
+					select -r $locator ;
+					
+					disconnectAttr ($locator + "_parentConstraint1.constraintRotateX") ("|" + $followGroundGRP + "|" + $locator + ".rotateX");
+					disconnectAttr ($locator + "_parentConstraint1.constraintRotateY") ("|" + $followGroundGRP + "|" + $locator + ".rotateY");
+					disconnectAttr ($locator + "_parentConstraint1.constraintRotateZ") ("|" + $followGroundGRP + "|" + $locator + ".rotateZ");
+					
+					select -r $groundObj ;
+					select -tgl $locator ;
+					normalConstraint -weight 1 -aimVector 0 1 0 -upVector 0 1 0 -worldUpType "scene";
+				}
+				select -r $followGroundGRP;
+				select -add ($NewTreadName + $arrayNr);
+				parent -r;
+
+				select -r ($NewTreadName + $arrayNr + "_GEO");
+				select -add $locator;
+				parent -r;
+				
+				setAttr ("locatorFollowGround_Shape" + $arrayNr + ".lodVisibility") 0;
+			}
+			
+			if ($enableFollowGround == 1) {
+				//offsetTranslate
+				if ($TranslateX != 0 || $TranslateY != 0 || $TranslateZ != 0) {
+					setAttr ($followGroundGRP + ".translateX") $TranslateX;
+					setAttr ($followGroundGRP + ".translateY") $TranslateY;
+					setAttr ($followGroundGRP + ".translateZ") $TranslateZ;
+				}
+				if ($RandomTranslateX != 0)  {
+					select -r ($followGroundGRP + ".translateX");
+					float $randomTranslateX = (rand($RandomTranslateXMin * 10000,$RandomTranslateXMax * 10000));
+					setAttr ($followGroundGRP + ".translateX") ($TranslateX + ($randomTranslateX / 10000)) ;
+				}
+				if ($RandomTranslateY != 0)  {
+					select -r ($followGroundGRP + ".translateX");
+					float $randomTranslateY = (rand($RandomTranslateYMin * 10000,$RandomTranslateYMax * 10000));
+					setAttr ($followGroundGRP + ".translateY") ($TranslateY + ($randomTranslateY / 10000)) ;
+				}
+				if ($RandomTranslateZ != 0)  {
+					select -r ($followGroundGRP + ".translateX");
+					float $randomTranslateZ = (rand($RandomTranslateZMin * 10000,$RandomTranslateZMax * 10000));
+					setAttr ($followGroundGRP + ".translateZ") ($TranslateZ + ($randomTranslateZ / 10000)) ;
+				}
+			}
+
+			if ($enableFollowGround == 0) {
+				//offsetTranslate
+				if ($TranslateX != 0 || $TranslateY != 0 || $TranslateZ != 0) {
+					setAttr ($NewTreadName + $arrayNr + "_GEO" + ".translateX") $TranslateX;
+					setAttr ($NewTreadName + $arrayNr + "_GEO" + ".translateY") $TranslateY;
+					setAttr ($NewTreadName + $arrayNr + "_GEO" + ".translateZ") $TranslateZ;
+				}	
+				if ($RandomTranslateX != 0)  {
+					select -r ($NewTreadName + $arrayNr + "_GEO" + ".translateX");
+					float $randomTranslateX = (rand($RandomTranslateXMin * 10000,$RandomTranslateXMax * 10000));
+					setAttr ($NewTreadName + $arrayNr + "_GEO" + ".translateX") ($TranslateX + ($randomTranslateX / 10000)) ;
+				}
+				if ($RandomTranslateY != 0)  {
+					select -r ($NewTreadName + $arrayNr + "_GEO" + ".translateX");
+					float $randomTranslateY = (rand($RandomTranslateYMin * 10000,$RandomTranslateYMax * 10000));
+					setAttr ($NewTreadName + $arrayNr + "_GEO" + ".translateY") ($TranslateY + ($randomTranslateY / 10000)) ;
+				}
+				if ($RandomTranslateZ != 0)  {
+					select -r ($NewTreadName + $arrayNr + "_GEO" + ".translateX");
+					float $randomTranslateZ = (rand($RandomTranslateZMin * 10000,$RandomTranslateZMax * 10000));
+					setAttr ($NewTreadName + $arrayNr + "_GEO" + ".translateZ") ($TranslateZ + ($randomTranslateZ / 10000)) ;
+				}
+			}
+
+			//goto protocol when done
+			if ($arrayNr == $NrOfTreads) {
+				done;
+			}		
+		}
+};
+
+proc done() {
+	//import values
+	int $enableFollowGround = `checkBox -q -v enableFollowGround`;
+	string $NewGroupName = (`textField -q -tx NewTreadName` + "_GRP");
+	string $NewCurveName = `textField -q -tx NewCurveName`;
+	int $NrOfTreads = `intSliderGrp -q -v refle1`;
+	int $treadCalcOffset = `intField -q -v treadCalcOffset`;
+	int $CheckState = `checkBox -q -v refl7`;
+	int $fastMode = `checkBox -q -v refl5`;
+	global string $curvePath[];
+
+	//reset value ++
+	if ($fastMode != 1) {
+		setAttr ($NewCurveName + ".DistanceDriven") 0;
+	}
+	select -cl;
+
+	currentTime 1 ;
+
+	//lock tread_GRP and bind stuff to curve
+	setAttr ($NewGroupName + ".overrideEnabled") 1;
+	connectAttr -f ($NewCurveName + ".DisplayType") ($NewGroupName + ".overrideDisplayType");
+	setAttr ($NewCurveName + ".DisplayType") 2;
+	connectAttr -f ($NewCurveName + ".LevelOfDetail") ($NewGroupName + ".overrideLevelOfDetail");
+	setAttr ($NewCurveName + ".LevelOfDetail") 0;
+	
+	setAttr -lock true ($NewGroupName + ".tx");
+	setAttr -lock true ($NewGroupName + ".ty");
+	setAttr -lock true ($NewGroupName + ".tz");
+	setAttr -lock true ($NewGroupName + ".rx");
+	setAttr -lock true ($NewGroupName + ".ry");
+	setAttr -lock true ($NewGroupName + ".rz");
+	setAttr -lock true ($NewGroupName + ".sx");
+	setAttr -lock true ($NewGroupName + ".sy");
+	setAttr -lock true ($NewGroupName + ".sz");
+
+	//select the new curve
+	select -r $NewCurveName;
+
+	//stopp ProgressBar
+	stopProgressBar;
+
+	MoveTool;
+
+	//callibrate follow mesh
+	int $maxVal = 60;
+	if ($enableFollowGround == 1) {
+		for( $i=0; $i<$maxVal; ++$i )	{
+			currentTime ($maxVal + 1 - $i) ;
+			setAttr "NewCurve.translateY" (($maxVal - $i) / 1000) ;
+		}
+		currentTime 1 ;
+	}
+	
+	//calculate number of treads based on lokator distance
+	if ($CheckState == 1) {
+
+		//set int based on imported values
+		float $TreadMessureDistance = `getAttr distanceDimension1.distance`;
+		//find arclengt
+		arclen $curvePath;
+		float $arclengt = `arclen -ch off $curvePath`;
+
+		//find number of treads
+		$NrOfTreads = ($arclengt / $TreadMessureDistance + $treadCalcOffset);
+
+		print ("Done!   (Created " + $NrOfTreads + " Treads)");
+	} else {
+		print ("Done!   (Created " + $NrOfTreads + " Treads)");
+	}
+};
+
+proc deleteOriginalTreads() {
+	//import values
+	global string $treadObj[];
+	global string $curvePath[];
+
+	select -r $treadObj;
+	select -tgl $curvePath;
+	delete;
+};
+
+proc deleteTreads() {
+	//import values
+	string $NewCurveName = `textField -q -tx NewCurveName`;
+	string $NewGroupName = (`textField -q -tx NewTreadName` + "_GRP");
+
+   	if( `objExists $NewGroupName` ) {		
+		select -r $NewGroupName;
+		delete;
+		print "Deleted";
+	}
+
+   	if( `objExists $NewCurveName` ) {		
+		select -r $NewCurveName;
+		delete;
+		print "Deleted";
+	}
+};
+
+proc windowDock() {
+	global float $dockExist;
+	
+	if ($dockExist == 0) {
+	
+	if ( `dockControl -ex TreadCreator` ) {
+		deleteUI -control TreadCreator;
+	}
+	dockControl -label TreadCreator -area "left"
+		-content TreadCreator
+		-allowedArea "left"
+		-allowedArea "right" TreadCreator;
+	} else {
+		dockControl -edit -floating 0 TreadCreator;
+	}
+	menuItem -edit -en false dockButton;
+	menuItem -edit -en true floatButton;
+	float $dockExist = 1;
+};
+
+proc windowFloat() {
+	if ( `dockControl -ex yolo` ) {
+		deleteUI -control yolo;
+	}
+	window  -w 50 -h 50 yolo;
+	dockControl -edit -floating 1 -content yolo TreadCreator;
+	window -edit -mxb false -tlb false -title "TreadCreator" TreadCreator;
+
+	//change dock/float-button vis
+	menuItem -edit -en true dockButton;
+	menuItem -edit -en false floatButton;
+	showWindow TreadCreator;
+	resizeWindow;
+	deleteUI yolo;
+	
+};
+
+proc webPage01() {
+	launch -web "http://www.creativecrash.com/maya/script/tread-creator";
+};
+
+proc helpWin() {
+    if (`window -exists helpWin`) {
+        deleteUI helpWin;
+     }     
+        window -toolbox 1 -rtf true -menuBar 1 -t "Help" helpWin; 
+        columnLayout -adj 1 mainHelpCol;
+
+//--------------------------------------------------------------------------
+string $helpText =("==========================================================================================="
++"\n"
++"TreadCreator by Håvard Dalen, Email - haavard_kd@hotmail.com"
++"\n"
++"==========================================================================================="
++"\n"
++"Step one, import your objects"
++"\n"
++" 1. Select your mesh and press LoadMesh"
++"\n"
++" 2. Select your path and press LoadCurve"
++"\n"
++"    *You can leave the namespaces as default or edit them in the read/Curve-Name field"
++"\n"
++" 3. You are now ready to press CreateTreads!"
++"\n"
++"___________________________________________________________________________________________"
++"\n"
++"Step two, edit the main settings"
++"\n"
++" 1. Enable FastMode and AutoUpdate for faster interaction(Performance tab)"
++"\n"
++"     *Auto Update will automatically make new treads when you change values in the menu"
++"\n"
++"     *Fast mode will disable some features, but is much faster than the regular mode"
++"\n"
++" 2. If your object is flipping, change FixFlipping value, one of the three should work"
++"\n"
++" 3. Rotate your object in place by using Rotate X, Y and Z"
++"\n"
++" 4. Change the number of treads with the Amount slider"
++"\n"
++"     *Use the CalculateAmount to measure one tread length,"
++"\n"
++"      total amount will then be calculated"
++"\n"
++" 5. Disable FastMode and you're done!"
++"\n"
++"     *To make a new copy simply rename the Tread and Curve-Name fields,"
++"\n"
++"      it will now make a new copy without overwriting the previous one"
++"\n"
++"___________________________________________________________________________________________"
++"\n"
++"Exstra:"
++"\n"
++" -Create a chain by offsetting the rotation by 90 degrees per tread(ArrayOffset tab)"
++"\n"
++" -Pressing the `+` button right to the LoadMesh allows you to"
++"\n"
++"  distribute more than one object on your path"
++"\n"
++"\n"
++"\n"
++"==========================================================================================="
+);
+      
+        scrollField -wordWrap true -h 560 -text $helpText -ed false helpScroll;
+        showWindow helpWin;
+        window -edit -widthHeight 650 450 helpWin;
+};
+
+proc exit() {
+	//delete checkdistance if exist
+	if( `objExists CheckDistance_GRP` ) {
+		select -r CheckDistance_GRP;
+		delete;
+	}
+	if (`menuItem -q -en floatButton`) {
+		deleteUI -control TreadCreator;
+	}	
+	if ( `dockControl -ex TreadCreator` ) {
+		deleteUI -control TreadCreator;
+	}
+	if ( `window -exists TreadCreator` ) {
+		deleteUI TreadCreator;
+	}
+};

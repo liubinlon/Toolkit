@@ -1,0 +1,884 @@
+/////////////////
+//MAYA粒子爆炸动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+global proc gtExplosivesWin(){
+if(`window -ex gtExplosivesWin`==1) deleteUI -window gtExplosivesWin;
+window -t "老船角色绑定-☆-粒子爆炸动画工具!!!"  -wh 300 200 gtExplosivesWin;
+columnLayout -adj 1;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1710\"";
+
+string $form=`formLayout gtForm`;
+
+text -l "名      称：" text1;
+textField  -text "explosive" gtEfireTextF;
+button -l "应用" -c "gtExplosivesCreatePro;" but2;
+
+setParent..;
+formLayout -e
+-af text1 left 15 -ap text1 right 0 38 -af text1 top 12
+-ap gtEfireTextF left 0 38 -af gtEfireTextF right 15 -af gtEfireTextF top 12 
+-af but2 left 15 -af but2 right 15 -ac but2 top 5 gtEfireTextF
+$form;
+showWindow gtExplosivesWin;
+}
+
+global proc gtExplosivesCreatePro(){
+
+string $EfN=`textField -q -tx gtEfireTextF`;
+
+string $selCollisionObj[]=`ls -sl`;
+int $collisionObjEx=`size($selCollisionObj)`;
+if( $collisionObjEx>0){
+for($i=0;$i<$collisionObjEx;$i++){
+string $objnam[]=`listRelatives -c $selCollisionObj[0]`;
+string $typeSel=`objectType $objnam[0]`;
+if($typeSel!="mesh"&&$typeSel!="nurbsSurface"){
+error "the selected object should be mesh or nurbs";
+}
+}
+}
+emitter -pos 0 0 0 -type dir   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 100 -srn 100 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 1 -dz 0 -sp 0.8 -n ($EfN+"gtEbase_emitter1");
+emitter -pos 0 0 0 -type dir   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 100 -srn 100 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 1 -dz 0 -sp 0.9 -n ($EfN+"gtEbase_emitter2");
+emitter -pos 0 0 0 -type dir   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 100 -srn 100 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 1 -dz 0 -sp 1 -n ($EfN+"gtEbase_emitter3");
+
+particle -n ($EfN+"gtEbase_particle");
+
+connectDynamic -em ($EfN+"gtEbase_emitter1") ($EfN+"gtEbase_particle");
+connectDynamic -em ($EfN+"gtEbase_emitter2") ($EfN+"gtEbase_particle");
+connectDynamic -em ($EfN+"gtEbase_emitter3") ($EfN+"gtEbase_particle");
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEbase_emitter1.rate");
+setKeyframe -t 5 -v 160 -itt spline -ott spline ($EfN+"gtEbase_emitter1.rate");
+setKeyframe -t 10 -v 0 -itt spline -ott spline ($EfN+"gtEbase_emitter1.rate");
+selectKey -add -k -t 5 ($EfN+"gtEbase_emitter1_rate") ;
+keyTangent -edit -weightedTangents true;
+keyTangent -weightLock off;
+keyTangent -e -a -t 5 -outAngle 9.5 -outWeight 5.0 ($EfN+"gtEbase_emitter1_rate") ;
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEbase_emitter2.rate");
+setKeyframe -t 10 -v 180 -itt spline -ott spline ($EfN+"gtEbase_emitter2.rate");
+setKeyframe -t 17 -v 0 -itt spline -ott spline ($EfN+"gtEbase_emitter2.rate");
+selectKey -add -k -t 10 ($EfN+"gtEbase_emitter2_rate") ;
+keyTangent -edit -weightedTangents true;
+keyTangent -weightLock off;
+keyTangent -e -a -t 10 -outAngle 0 -outWeight 7.0 ($EfN+"gtEbase_emitter2_rate") ;
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEbase_emitter3.rate");
+setKeyframe -t 20 -v 200 -itt spline -ott spline ($EfN+"gtEbase_emitter3.rate");
+setKeyframe -t 27 -v 0 -itt spline -ott spline ($EfN+"gtEbase_emitter3.rate");
+selectKey -add -k -t 20 ($EfN+"gtEbase_emitter3_rate") ;
+keyTangent -edit -weightedTangents true;
+keyTangent -weightLock off;
+keyTangent -e -a -t 20 -outAngle 0 -outWeight 7.0 ($EfN+"gtEbase_emitter3_rate") ;
+
+setAttr ($EfN+"gtEbase_particleShape.seed[1]") 4;
+setAttr ($EfN+"gtEbase_particleShape.seed[2]") 7;
+setAttr ($EfN+"gtEbase_particleShape.seed[0]") 1;
+
+gravity -pos 0 0 0 -m 9.8 -att 0 -dx 0 -dy -1 -dz 0  -mxd -1  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 -n ($EfN+"gtEbase_gravity");
+connectDynamic -f ($EfN+"gtEbase_gravity")  ($EfN+"gtEbase_particle");
+
+turbulence -pos 0 0 0 -m 5 -att 0 -f 1 -phaseX 0 -phaseY 0 -phaseZ 0 -noiseLevel 0 -noiseRatio 0.707  -mxd -1  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 -n ($EfN+"gtEbase_turbulence") ;
+connectDynamic -f ($EfN+"gtEbase_turbulence")  ($EfN+"gtEbase_particle");
+
+drag -pos 0 0 0 -m 3 -att 0 -dx 0 -dy 0 -dz 0 -ud 0  -mxd -1  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 -n ($EfN+"gtEbase_drag");
+connectDynamic -f ($EfN+"gtEbase_drag") ($EfN+"gtEbase_particle");
+
+setAttr ($EfN+"gtEbase_particleShape.lifespanMode") 3;
+
+string $gtEbaseRad="vector $speed=";
+       $gtEbaseRad+=($EfN);
+       $gtEbaseRad+="gtEbase_particleShape.velocity;\r\nif($speed.y<0.2)\r\n{";
+       $gtEbaseRad+=($EfN);
+       $gtEbaseRad+="gtEbase_particleShape.lifespanPP=rand(0.001,0.005);}\r\nelse{\r\n";
+       $gtEbaseRad+=($EfN);
+       $gtEbaseRad+="gtEbase_particleShape.lifespanPP=3.5;\r\n}";
+
+dynExpression -s $gtEbaseRad -rad ($EfN+"gtEbase_particleShape");
+
+select -r ($EfN+"gtEbase_particle") ;
+emitter -type omni  -name ($EfN+"gtEfire_emitter") -r 24 -sro 0 -nuv 0 -cye none -cyi 1 -spd 1.5 -srn 0.6 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 0 -dz 0 -sp 0 ;
+particle -n ($EfN+"gtEfire_particle");
+connectDynamic -em ($EfN+"gtEfire_emitter") ($EfN+"gtEfire_particle"); 
+setAttr ($EfN+"gtEfire_particleShape.particleRenderType") 8;
+addAttr -is true -ln "betterIllumination" -at bool -dv 1 ($EfN+"gtEfire_particleShape");
+addAttr -is true -ln "surfaceShading" -at "float" -min 0 -max 1 -dv 0 ($EfN+"gtEfire_particleShape");
+addAttr -is true -ln "threshold" -at "float" -min 0 -max 10 -dv 0 ($EfN+"gtEfire_particleShape");
+addAttr -ln radiusPP -dt doubleArray ($EfN+"gtEfire_particleShape");
+addAttr -ln radiusPP0 -dt doubleArray ($EfN+"gtEfire_particleShape");
+setAttr ($EfN+"gtEfire_particleShape.lifespanMode") 3;
+
+string $gtEfireC=($EfN);
+       $gtEfireC+="gtEfire_particleShape.radiusPP=0.15;\r\n";
+       $gtEfireC+=($EfN);
+       $gtEfireC+="gtEfire_particleShape.lifespanPP=rand(0.4,1.0);";
+
+dynExpression -s $gtEfireC -c ($EfN+"gtEfire_particleShape") ;
+
+string $gtEfireRad=($EfN);
+       $gtEfireRad+="gtEfire_particleShape.radiusPP=3*linstep(0,0.8,age/lifespanPP)+0.15;";
+
+dynExpression -s $gtEfireRad -rad ($EfN+"gtEfire_particleShape");
+
+createDisplayLayer -name ($EfN+"gtE_fireLayer") -number 1 -empty;
+
+select -r ($EfN+"gtEbase_emitter1") ;
+select -add ($EfN+"gtEbase_emitter2") ;
+select -add ($EfN+"gtEbase_emitter3") ;
+select -add ($EfN+"gtEbase_particle") ;
+select -add ($EfN+"gtEbase_gravity") ;
+select -add ($EfN+"gtEbase_turbulence") ;
+select -add ($EfN+"gtEbase_drag") ;
+select -add ($EfN+"gtEfire_particle") ;
+group -n ($EfN+"gtEfire_Group");
+editDisplayLayerMembers -noRecurse ($EfN+"gtE_fireLayer") `ls -selection`;
+
+addAttr -ln "opacityPP" -dt doubleArray ($EfN+"gtEfire_particleShape");
+addAttr -ln "opacityPP0" -dt doubleArray ($EfN+"gtEfire_particleShape");
+addAttr -ln "rgbPP" -dt vectorArray ($EfN+"gtEfire_particleShape");
+addAttr -ln "rgbPP0" -dt vectorArray ($EfN+"gtEfire_particleShape");
+
+arrayMapper -target ($EfN+"gtEfire_particleShape") -destAttr rgbPP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEfire_particleShape.rgbPP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEfire_particle_rgbPP_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEfire_particle_rgbPP_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+rename ($EfN+"fire_colorR");
+
+setAttr ($EfN+"fire_colorR.colorEntryList[0].position") 0;
+setAttr ($EfN+"fire_colorR.colorEntryList[0].color") -type double3 2 2 3 ;
+setAttr ($EfN+"fire_colorR.colorEntryList[3].position") 0.12;
+setAttr ($EfN+"fire_colorR.colorEntryList[3].color") -type double3 1 1.1 0 ;
+setAttr ($EfN+"fire_colorR.colorEntryList[5].color") -type double3 1.1 0 0 ;
+setAttr ($EfN+"fire_colorR.colorEntryList[5].position") 0.2;
+setAttr ($EfN+"fire_colorR.colorEntryList[1].position") 0.4;
+setAttr ($EfN+"fire_colorR.colorEntryList[1].color") -type double3 0.1 0 0 ;
+setAttr ($EfN+"fire_colorR.colorEntryList[2].position") 1;
+setAttr ($EfN+"fire_colorR.colorEntryList[2].color") -type double3 0 0 0 ;
+
+arrayMapper -target ($EfN+"gtEfire_particleShape") -destAttr opacityPP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEfire_particleShape.opacityPP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEfire_particle_opacityPP_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEfire_particle_rgbPP_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+
+rename ($EfN+"gtfire_opacity");
+removeMultiInstance -break true ($EfN+"gtfire_opacity.colorEntryList[1]");
+setAttr ($EfN+"gtfire_opacity.colorEntryList[2].position") 1;
+setAttr ($EfN+"gtfire_opacity.colorEntryList[2].color") -type double3 0 0 0 ;
+
+shadingNode -asTexture ramp -n ($EfN+"gtfire_opacityInput");
+
+shadingNode -asUtility place2dTexture -n ($EfN+"gtfire_opacityInputPlace");
+
+connectAttr ($EfN+"gtfire_opacityInputPlace.outUV") ($EfN+"gtfire_opacityInput.uv");
+
+connectAttr ($EfN+"gtfire_opacityInputPlace.outUvFilterSize") ($EfN+"gtfire_opacityInput.uvFilterSize");
+
+defaultNavigation -ce -source ($EfN+"gtfire_opacityInput") -destination ($EfN+"gtfire_opacity.colorEntryList[0].color");
+
+removeMultiInstance -break true ($EfN+"gtfire_opacityInput.colorEntryList[1]");
+setAttr ($EfN+"gtfire_opacityInput.colorEntryList[2].position") 1;
+setAttr ($EfN+"gtfire_opacityInput.colorEntryList[2].color") -type double3 1 1 1 ;
+setAttr ($EfN+"gtfire_opacityInput.colorEntryList[0].color") -type double3 0.5 0.5 0.5 ;
+setAttr ($EfN+"gtfire_opacityInput.type") 1;
+
+addAttr -ln incandescencePP -dt vectorArray ($EfN+"gtEfire_particleShape");
+addAttr -ln incandescencePP0 -dt vectorArray ($EfN+"gtEfire_particleShape");
+addAttr -ln userScalar1PP -dt doubleArray ($EfN+"gtEfire_particleShape");
+addAttr -ln userScalar1PP0 -dt doubleArray ($EfN+"gtEfire_particleShape");
+
+arrayMapper -target ($EfN+"gtEfire_particleShape") -destAttr incandescencePP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEfire_particleShape.incandescencePP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEfire_particle_incand_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEfire_particle_incand_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+
+rename ($EfN+"gtfire_incand");
+setAttr ($EfN+"gtfire_incand.colorEntryList[0].position") 0;
+setAttr ($EfN+"gtfire_incand.colorEntryList[0].color") -type double3 1.1 1.1 1 ;
+setAttr ($EfN+"gtfire_incand.colorEntryList[2].position") 0.12;
+setAttr ($EfN+"gtfire_incand.colorEntryList[2].color") -type double3 2 1.1 0.512 ;
+setAttr ($EfN+"gtfire_incand.colorEntryList[3].position") 0.2;
+setAttr ($EfN+"gtfire_incand.colorEntryList[3].color") -type double3 1 0.507 0.2 ;
+setAttr ($EfN+"gtfire_incand.colorEntryList[1].position") 0.35;
+setAttr ($EfN+"gtfire_incand.colorEntryList[1].color") -type double3 0.1 0.0 0.0 ;
+setAttr ($EfN+"gtfire_incand.colorEntryList[5].position") 0.70;
+setAttr ($EfN+"gtfire_incand.colorEntryList[5].color") -type double3 0 0 0.0 ;
+setAttr ($EfN+"gtfire_incand.colorEntryList[4].position") 1;
+setAttr ($EfN+"gtfire_incand.colorEntryList[4].color") -type double3 0.24 0.12 0.12 ;
+setAttr ($EfN+"gtfire_incand.colorEntryList[4].color") -type double3 0.24 0.12 0.1 ;
+
+arrayMapper -target ($EfN+"gtEfire_particleShape") -destAttr userScalar1PP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEfire_particleShape.userScalar1PP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEfire_particle_glow_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEfire_particle_glow_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+rename ($EfN+"gtfire_glow");
+removeMultiInstance -break true ($EfN+"gtfire_glow.colorEntryList[1]");
+setAttr ($EfN+"gtfire_glow.colorEntryList[0].position") 0;
+setAttr ($EfN+"gtfire_glow.colorEntryList[0].color") -type double3 1 1 1;
+setAttr ($EfN+"gtfire_glow.colorEntryList[2].position") 0.85;
+setAttr ($EfN+"gtfire_glow.colorEntryList[2].color") -type double3 0 0 0 ;
+
+shadingNode -asShader particleCloud -n ($EfN+"gtfire_cloudM");
+
+sets -renderable true -noSurfaceShader true -empty -name ($EfN+"gtfire_cloudMSG");
+
+connectAttr -f ($EfN+"gtfire_cloudM.outColor") ($EfN+"gtfire_cloudMSG.volumeShader");
+
+shadingNode -asUtility particleSamplerInfo -n ($EfN+"gtfire_cloudInfo");
+
+connectAttr -f ($EfN+"gtfire_cloudInfo.outColor") ($EfN+"gtfire_cloudM.color");
+connectAttr -f ($EfN+"gtfire_cloudInfo.outIncandescence") ($EfN+"gtfire_cloudM.incandescence");
+connectAttr -f ($EfN+"gtfire_cloudInfo.outTransparency") ($EfN+"gtfire_cloudM.transparency");
+connectAttr -f ($EfN+"gtfire_cloudInfo.userScalar1PP") ($EfN+"gtfire_cloudM.glowIntensity");
+select -r ($EfN+"gtEfire_particle") ;
+sets -e -forceElement  ($EfN+"gtfire_cloudMSG");
+
+emitter -pos 0 0 0 -type omni   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 100 -srn 60 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 0 -dz 0 -sp 0 -n ($EfN+"gtEin_emitter1");
+emitter -pos 0 0 0 -type omni   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 100 -srn 70 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 0 -dz 0 -sp 0 -n ($EfN+"gtEin_emitter2");
+emitter -pos 0 0 0 -type omni   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 100 -srn 80 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 0 -dz 0 -sp 0 -n ($EfN+"gtEin_emitter3");
+
+particle -n ($EfN+"gtEin_particle");
+
+connectDynamic -em ($EfN+"gtEin_emitter1") ($EfN+"gtEin_particle");
+connectDynamic -em ($EfN+"gtEin_emitter2") ($EfN+"gtEin_particle");
+connectDynamic -em ($EfN+"gtEin_emitter3") ($EfN+"gtEin_particle");
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEin_emitter1.rate");
+setKeyframe -t 3 -v 1200 -itt spline -ott step ($EfN+"gtEin_emitter1.rate");
+setKeyframe -t 10 -v 0 -itt spline -ott step ($EfN+"gtEin_emitter1.rate");
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEin_emitter2.rate");
+setKeyframe -t 10 -v 1200 -itt spline -ott step ($EfN+"gtEin_emitter2.rate");
+setKeyframe -t 17 -v 0 -itt spline -ott step ($EfN+"gtEin_emitter2.rate");
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEin_emitter3.rate");
+setKeyframe -t 20 -v 1200 -itt spline -ott step ($EfN+"gtEin_emitter3.rate");
+setKeyframe -t 27 -v 0 -itt spline -ott step ($EfN+"gtEin_emitter3.rate");
+
+setAttr ($EfN+"gtEin_particleShape.seed[1]") 3;
+setAttr ($EfN+"gtEin_particleShape.seed[2]") 6;
+setAttr ($EfN+"gtEin_particleShape.seed[0]") 2;
+
+gravity -pos 0 0 0 -m 8 -att 0 -dx 0 -dy -1 -dz 0  -mxd -1  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 -n ($EfN+"gtEin_gravity");
+connectDynamic -f ($EfN+"gtEin_gravity")  ($EfN+"gtEin_particle");
+
+turbulence -pos 0 0 0 -m 30 -att 0 -f 5 -phaseX 0 -phaseY 0 -phaseZ 0 -noiseLevel 0 -noiseRatio 0.707  -mxd -1  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 -n ($EfN+"gtEin_turbulence") ;
+connectDynamic -f ($EfN+"gtEin_turbulence") ($EfN+"gtEin_particle");
+
+drag -pos 0 0 0 -m 5 -att 0 -dx 0 -dy 0 -dz 0 -ud 0  -mxd -1  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 -n ($EfN+"gtEin_drag");
+connectDynamic -f ($EfN+"gtEin_drag") ($EfN+"gtEin_particle");
+
+setAttr ($EfN+"gtEin_particleShape.lifespanMode") 3;
+setAttr ($EfN+"gtEin_particleShape.particleRenderType") 8;
+addAttr -ln "rgbPP" -dt vectorArray ($EfN+"gtEin_particleShape");
+addAttr -ln "rgbPP0" -dt vectorArray ($EfN+"gtEin_particleShape");
+addAttr -ln "opacityPP" -dt doubleArray ($EfN+"gtEin_particleShape");
+addAttr -ln "opacityPP0" -dt doubleArray ($EfN+"gtEin_particleShape");
+addAttr -ln incandescencePP -dt vectorArray ($EfN+"gtEin_particleShape");
+addAttr -ln incandescencePP0 -dt vectorArray ($EfN+"gtEin_particleShape");
+addAttr -ln userScalar1PP -dt doubleArray ($EfN+"gtEin_particleShape");
+addAttr -ln userScalar1PP0 -dt doubleArray ($EfN+"gtEin_particleShape");
+addAttr -ln radiusPP -dt doubleArray ($EfN+"gtEin_particleShape");
+addAttr -ln radiusPP0 -dt doubleArray ($EfN+"gtEin_particleShape");
+
+addAttr -is true -ln "betterIllumination" -at bool -dv 1 ($EfN+"gtEin_particleShape");
+addAttr -is true -ln "surfaceShading" -at "float" -min 0 -max 1 -dv 0 ($EfN+"gtEin_particleShape");
+addAttr -is true -ln "threshold" -at "float" -min 0 -max 10 -dv 0 ($EfN+"gtEin_particleShape");
+
+string $gtEinC=($EfN);
+       $gtEinC+="gtEin_particleShape.lifespanPP=rand(1.2,4.2);\r\n";
+       $gtEinC+=($EfN);
+       $gtEinC+="gtEin_particleShape.radiusPP=rand(3,5);\r\n";
+       $gtEinC+=($EfN);
+       $gtEinC+="gtEin_particleShape.mass=rand(0.85,1.15);";
+
+dynExpression -s $gtEinC -c ($EfN+"gtEin_particleShape");
+
+createDisplayLayer -name ($EfN+"gtEfire_inLayer") -number 1 -empty ;
+
+select -r ($EfN+"gtEin_emitter1") ($EfN+"gtEin_emitter2") ($EfN+"gtEin_emitter3") ($EfN+"gtEin_particle") ($EfN+"gtEin_gravity") ($EfN+"gtEin_turbulence") ($EfN+"gtEin_drag") ;
+
+group -n ($EfN+"gtEin_Group");
+
+editDisplayLayerMembers -noRecurse ($EfN+"gtEfire_inLayer") `ls -selection`;
+
+arrayMapper -target ($EfN+"gtEin_particleShape") -destAttr rgbPP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEin_particleShape.rgbPP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEin_particle_rgbPP_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEin_particle_rgbPP_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+rename ($EfN+"gtEinfire_color");
+
+setAttr ($EfN+"gtEinfire_color.colorEntryList[0].position") 0.0;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[0].color") -type double3 0.6 0 0 ;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[2].position") 0.1;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[2].color") -type double3 2.1 2.1 0.9 ;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[5].position") 0.36;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[5].color") -type double3 0.1 0.1 0 ;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[3].position") 0.18;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[3].color") -type double3 1.1 0 0 ;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[1].position") 0.63;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[1].color") -type double3 0.1 0.1 0 ;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[6].position") 0.82;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[6].color") -type double3 1.9 1.6 0.9 ;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[4].position") 1;
+setAttr ($EfN+"gtEinfire_color.colorEntryList[4].color") -type double3 0.6 0 0 ;
+
+arrayMapper -target ($EfN+"gtEin_particleShape") -destAttr opacityPP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEin_particleShape.opacityPP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEin_particle_opacityPP_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEin_particle_opacityPP_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+rename ($EfN+"gtEinfire_opacity");
+setAttr ($EfN+"gtEinfire_opacity.colorEntryList[0].position") 0;
+setAttr ($EfN+"gtEinfire_opacity.colorEntryList[0].color") -type double3 0.5 0.5 0.5 ;
+setAttr ($EfN+"gtEinfire_opacity.colorEntryList[3].position") 0.1;
+setAttr ($EfN+"gtEinfire_opacity.colorEntryList[3].color") -type double3 1 1 1 ;
+setAttr ($EfN+"gtEinfire_opacity.colorEntryList[1].position") 0.59;
+setAttr ($EfN+"gtEinfire_opacity.colorEntryList[1].color") -type double3 0.66 0.66 0.66 ;
+setAttr ($EfN+"gtEinfire_opacity.colorEntryList[2].position") 1;
+setAttr ($EfN+"gtEinfire_opacity.colorEntryList[2].color") -type double3 0 0 0 ;
+setAttr ($EfN+"gtEinfire_opacity.interpolation") 4;
+
+arrayMapper -target ($EfN+"gtEin_particleShape") -destAttr incandescencePP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEin_particleShape.incandescencePP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEin_particle_incand_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEin_particle_incand_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+rename ($EfN+"gtEin_incand");
+
+setAttr ($EfN+"gtEin_incand.colorEntryList[4].position") 0.345;
+setAttr ($EfN+"gtEin_incand.colorEntryList[4].color") -type double3 0.59 0 0 ;
+setAttr ($EfN+"gtEin_incand.colorEntryList[3].position") 0.175;
+setAttr ($EfN+"gtEin_incand.colorEntryList[3].color") -type double3 1 1 0 ;
+setAttr ($EfN+"gtEin_incand.colorEntryList[0].position") 0;
+setAttr ($EfN+"gtEin_incand.colorEntryList[0].color") -type double3 0.1 0.1 0 ;
+setAttr ($EfN+"gtEin_incand.colorEntryList[0].position") 0;
+setAttr ($EfN+"gtEin_incand.colorEntryList[1].color") -type double3 0.4 0 0 ;
+setAttr ($EfN+"gtEin_incand.colorEntryList[1].position") 0.49;
+setAttr ($EfN+"gtEin_incand.colorEntryList[2].color") -type double3 0 0 0 ;
+setAttr ($EfN+"gtEin_incand.colorEntryList[2].position") 1;
+
+arrayMapper -target ($EfN+"gtEin_particleShape") -destAttr userScalar1PP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEin_particleShape.userScalar1PP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEin_particle_glow_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEin_particle_glow_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+rename ($EfN+"gtEin_glow");
+setAttr ($EfN+"gtEin_glow.colorEntryList[0].position") 0;
+setAttr ($EfN+"gtEin_glow.colorEntryList[0].color") -type double3 0 0 0 ;
+setAttr ($EfN+"gtEin_glow.colorEntryList[1].position") 0.125;
+setAttr ($EfN+"gtEin_glow.colorEntryList[1].color") -type double3 1 1 1 ;
+setAttr ($EfN+"gtEin_glow.colorEntryList[2].position") 0.65;
+setAttr ($EfN+"gtEin_glow.colorEntryList[2].color") -type double3 0 0 0 ;
+setAttr ($EfN+"gtEin_glow.interpolation") 4;
+
+shadingNode -asShader particleCloud -n ($EfN+"gtEfireinM");
+
+sets -renderable true -noSurfaceShader true -empty -name ($EfN+"gtEfireinSG");
+
+connectAttr -f ($EfN+"gtEfireinM.outColor") ($EfN+"gtEfireinSG.volumeShader");
+
+shadingNode -asUtility particleSamplerInfo -n ($EfN+"gtEfireinInfo");
+connectAttr -f ($EfN+"gtEfireinInfo.outColor") ($EfN+"gtEfireinM.color");
+connectAttr -f ($EfN+"gtEfireinInfo.outIncandescence") ($EfN+"gtEfireinM.incandescence");
+connectAttr -f ($EfN+"gtEfireinInfo.outTransparency") ($EfN+"gtEfireinM.transparency");
+connectAttr -f ($EfN+"gtEfireinInfo.userScalar1PP") ($EfN+"gtEfireinM.glowIntensity");
+
+select -r ($EfN+"gtEin_particle") ;
+sets -e -forceElement ($EfN+"gtEfireinSG");
+
+shadingNode -asTexture solidFractal -n ($EfN+"gtEfirein_solidF");
+shadingNode -asUtility place3dTexture -n ($EfN+"gtEfirein_solidFplace");
+
+connectAttr ($EfN+"gtEfirein_solidFplace.wim[0]") ($EfN+"gtEfirein_solidF.pm");
+setAttr ($EfN+"gtEfirein_solidF.ratio") 0.612;
+
+defaultNavigation -ce -source ($EfN+"gtEfirein_solidF") -destination ($EfN+"gtEfireinM.blobMap");
+
+emitter -pos 0 0 0 -type omni   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 180 -srn 60 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 0 -dz 0 -sp 0 -n ($EfN+"gtEout_emitter1");
+
+emitter -pos 0 0 0 -type dir   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 100 -srn 100 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 1 -dz 0 -sp 1 -n ($EfN+"gtEout_emitter2");
+
+emitter -pos 0 0 0 -type dir   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 100 -srn 100 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 1 -dz 0 -sp 1 -n ($EfN+"gtEout_emitter3");
+
+particle -n ($EfN+"gtEout_particle");
+
+gravity -pos 0 0 0 -m 0 -att 0 -dx 0 -dy -1 -dz 0  -mxd -1  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 -n ($EfN+"gtEout_gravity");
+connectDynamic -f ($EfN+"gtEout_gravity")  ($EfN+"gtEout_particle");
+air -pos 0 0 0 -m 120 -att 0 -dx 1 -dy 0.5 -dz 0.5 -s 0.5 -iv 0 -iro 1 -vco 0 -es 0  -mxd 20  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 -n ($EfN+"gtEout_air");
+setAttr ($EfN+"gtEout_air.useMaxDistance") 0;
+
+connectDynamic -f ($EfN+"gtEout_air")  ($EfN+"gtEout_particle");
+
+setKeyframe -t 0 -v 0  -ott spline ($EfN+"gtEout_gravity.mag");
+setKeyframe -t 27 -v -36 -itt spline -ott step ($EfN+"gtEout_gravity.mag");
+
+connectDynamic -em ($EfN+"gtEout_emitter1") ($EfN+"gtEout_particle");
+connectDynamic -em ($EfN+"gtEout_emitter2") ($EfN+"gtEout_particle");
+connectDynamic -em ($EfN+"gtEout_emitter3") ($EfN+"gtEout_particle");
+
+connectDynamic -f ($EfN+"gtEin_gravity") ($EfN+"gtEout_particle");
+connectDynamic -f ($EfN+"gtEin_drag") ($EfN+"gtEout_particle");
+connectDynamic -f ($EfN+"gtEin_turbulence") ($EfN+"gtEout_particle");
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEout_emitter1.rate");
+setKeyframe -t 3 -v 120 -itt spline -ott step ($EfN+"gtEout_emitter1.rate");
+setKeyframe -t 10 -v 24 -itt spline -ott step ($EfN+"gtEout_emitter1.rate");
+setKeyframe -t 45 -v 90 -itt spline -ott step ($EfN+"gtEout_emitter1.rate");
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEout_emitter2.rate");
+setKeyframe -t 10 -v 120 -itt spline -ott step ($EfN+"gtEout_emitter2.rate");
+setKeyframe -t 17 -v 24 -itt spline -ott step ($EfN+"gtEout_emitter2.rate");
+setKeyframe -t 50 -v 90 -itt spline -ott step ($EfN+"gtEout_emitter2.rate");
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEout_emitter3.rate");
+setKeyframe -t 20 -v 120 -itt spline -ott step ($EfN+"gtEout_emitter3.rate");
+setKeyframe -t 27 -v 24 -itt spline -ott step ($EfN+"gtEout_emitter3.rate");
+setKeyframe -t 60 -v 90 -itt spline -ott step ($EfN+"gtEout_emitter3.rate");
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEout_emitter1.translateY");
+setKeyframe -t 20 -v 0 -itt spline -ott step ($EfN+"gtEout_emitter1.translateY");
+setKeyframe -t 10 -v 26 -itt spline -ott step ($EfN+"gtEout_emitter1.translateY");
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEout_emitter2.translateY");
+setKeyframe -t 20 -v 0 -itt spline -ott step ($EfN+"gtEout_emitter2.translateY");
+setKeyframe -t 100 -v 24 -itt spline -ott step ($EfN+"gtEout_emitter2.translateY");
+
+setKeyframe -t 0 -v 0 -itt spline -ott step ($EfN+"gtEout_emitter3.translateY");
+setKeyframe -t 20 -v 0 -itt spline -ott step ($EfN+"gtEout_emitter3.translateY");
+setKeyframe -t 100 -v 28 -itt spline -ott step ($EfN+"gtEout_emitter3.translateY");
+
+setAttr ($EfN+"gtEout_particleShape.particleRenderType") 8;
+setAttr ($EfN+"gtEout_particleShape.seed[0]") 2;
+setAttr ($EfN+"gtEout_particleShape.seed[1]") 4;
+setAttr ($EfN+"gtEout_particleShape.seed[2]") 3;
+setAttr ($EfN+"gtEout_particleShape.lifespanMode") 2;
+setAttr ($EfN+"gtEout_particleShape.lifespan") 4;
+setAttr ($EfN+"gtEout_particleShape.lifespanRandom") 2;
+
+addAttr -ln "opacityPP" -dt doubleArray ($EfN+"gtEout_particleShape");
+addAttr -ln "opacityPP0" -dt doubleArray ($EfN+"gtEout_particleShape");
+addAttr -ln "rgbPP" -dt vectorArray ($EfN+"gtEout_particleShape");
+addAttr -ln "rgbPP0" -dt vectorArray ($EfN+"gtEout_particleShape");
+addAttr -ln radiusPP -dt doubleArray ($EfN+"gtEout_particleShape");
+addAttr -ln radiusPP0 -dt doubleArray ($EfN+"gtEout_particleShape");
+addAttr -ln rgbVPP -dt doubleArray ($EfN+"gtEout_particleShape");
+addAttr -ln rgbVPP0 -dt doubleArray ($EfN+"gtEout_particleShape");
+setAttr -e -k 1 ($EfN+"gtEout_particleShape.rgbVPP");
+select -r ($EfN+"gtEout_particleShape");
+
+string $gtEoutC=($EfN);
+       $gtEoutC+="gtEout_particleShape.rgbVPP=rand(0,1);\r\n";
+       $gtEoutC+=($EfN);
+       $gtEoutC+="gtEout_particleShape.radiusPP=rand(4.5,8.5);";
+
+dynExpression -s $gtEoutC -c ($EfN+"gtEout_particleShape");
+
+arrayMapper -target ($EfN+"gtEout_particleShape") -destAttr rgbPP -inputV rgbVPP -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEout_particleShape.rgbPP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEout_particle_rgbPP_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEout_particle_rgbPP_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+rename ($EfN+"gtEout_color");
+removeMultiInstance -break true ($EfN+"gtEout_color.colorEntryList[1]");
+
+setAttr ($EfN+"gtEout_color.colorEntryList[0].position") 0;
+setAttr ($EfN+"gtEout_color.colorEntryList[0].color") -type double3 0.1 0.1 0.1 ;
+setAttr ($EfN+"gtEout_color.colorEntryList[2].position") 1;
+setAttr ($EfN+"gtEout_color.colorEntryList[2].color") -type double3 0 0 0 ;
+
+arrayMapper -target ($EfN+"gtEout_particleShape") -destAttr opacityPP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEout_particleShape.opacityPP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEout_particle_opacityPP_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEout_particle_opacityPP_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+rename ($EfN+"gtEout_opacity");
+setAttr ($EfN+"gtEout_opacity.colorEntryList[0].position") 0;
+setAttr ($EfN+"gtEout_opacity.colorEntryList[0].color") -type double3 0 0 0 ;
+setAttr ($EfN+"gtEout_opacity.colorEntryList[3].position") 0.12;
+setAttr ($EfN+"gtEout_opacity.colorEntryList[3].color") -type double3 0.33 0.33 0.33 ;
+setAttr ($EfN+"gtEout_opacity.colorEntryList[1].position") 0.65;
+setAttr ($EfN+"gtEout_opacity.colorEntryList[1].color") -type double3 0.66 0.66 0.66 ;
+setAttr ($EfN+"gtEout_opacity.colorEntryList[2].position") 1;
+setAttr ($EfN+"gtEout_opacity.colorEntryList[2].color") -type double3 0 0 0 ;
+
+shadingNode -asShader particleCloud -n ($EfN+"gtEsmokeM");
+sets -renderable true -noSurfaceShader true -empty -name ($EfN+"gtEsmokeMSG");
+connectAttr -f ($EfN+"gtEsmokeM.outColor") ($EfN+"gtEsmokeMSG.volumeShader");
+shadingNode -asUtility particleSamplerInfo -n ($EfN+"gtEsmokeInfo");
+
+connectAttr -f ($EfN+"gtEsmokeInfo.outColor") ($EfN+"gtEsmokeM.color");
+connectAttr -f ($EfN+"gtEsmokeInfo.outTransparency") ($EfN+"gtEsmokeM.transparency");
+
+shadingNode -asTexture solidFractal -n ($EfN+"gtEsmokeSolidF");
+shadingNode -asUtility place3dTexture -n ($EfN+"gtEsmokeSolidFplace");
+connectAttr ($EfN+"gtEsmokeSolidFplace.wim[0]") ($EfN+"gtEsmokeSolidF.pm");
+connectAttr -force ($EfN+"gtEsmokeSolidF.outColor") ($EfN+"gtEsmokeM.blobMap");
+
+setAttr ($EfN+"gtEsmokeSolidF.amplitude") 5;
+
+setAttr ($EfN+"gtEsmokeM.surfaceShadingShadow") 1;
+setAttr ($EfN+"gtEsmokeM.density") 0.072;
+setAttr ($EfN+"gtEsmokeM.roundness") 0.99;
+setAttr ($EfN+"gtEsmokeM.diffuseCoeff") 0.6;
+setAttr ($EfN+"gtEsmokeM.surfaceColor") -type double3 0.55 0.5 0.5 ;
+setAttr ($EfN+"gtEsmokeM.noise") 0.8;
+setAttr ($EfN+"gtEsmokeM.noiseFreq") 0.7;
+setAttr ($EfN+"gtEsmokeM.noiseAspect") 0.5;
+setAttr ($EfN+"gtEsmokeM.noiseAnimRate") 0.3;
+setAttr ($EfN+"gtEsmokeM.solidCoreSize") 0.2;
+setAttr ($EfN+"gtEsmokeM.solidCoreSize") 0.4;
+select -r ($EfN+"gtEout_particle") ;
+sets -e -forceElement ($EfN+"gtEsmokeMSG");
+
+createDisplayLayer -name ($EfN+"gtEsmokeLayer") -number 1 -empty;
+select -r ($EfN+"gtEfirein_solidFplace") ($EfN+"gtEout_emitter1") ($EfN+"gtEout_emitter2") ($EfN+"gtEout_emitter3") ($EfN+"gtEout_particle") ($EfN+"gtEsmokeSolidFplace") ;
+group -n ($EfN+"gtEfirein_Group");
+
+editDisplayLayerMembers -noRecurse ($EfN+"gtEsmokeLayer") `ls -selection`;
+
+emitter -pos 0 0 0 -type dir   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 40 -srn 30 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 1 -dz 0 -sp 0.8 -n ($EfN+"gtEobj_emitter1");
+emitter -pos 0 0 0 -type dir   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 40 -srn 30 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 1 -dz 0 -sp 0.99 -n ($EfN+"gtEobj_emitter2");
+emitter -pos 0 0 0 -type dir   -r 0 -sro 0 -nuv 0 -cye none -cyi 1 -spd 40 -srn 30 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 1 -dz 0 -sp 0.9 -n ($EfN+"gtEobj_emitter3");
+
+particle -n ($EfN+"gtEobj_particle");
+
+connectDynamic -em ($EfN+"gtEobj_emitter1") ($EfN+"gtEobj_particle");
+connectDynamic -em ($EfN+"gtEobj_emitter2") ($EfN+"gtEobj_particle");
+connectDynamic -em ($EfN+"gtEobj_emitter3") ($EfN+"gtEobj_particle");
+setAttr ($EfN+"gtEobj_particleShape.seed[0]") 2;
+setAttr ($EfN+"gtEobj_particleShape.seed[1]") 7;
+setAttr ($EfN+"gtEobj_particleShape.seed[2]") 9;
+
+setAttr ($EfN+"gtEobj_particleShape.lifespanMode") 2;
+setAttr ($EfN+"gtEobj_particleShape.lifespan") 6.2;
+setAttr ($EfN+"gtEobj_particleShape.lifespanRandom") 2.4;
+
+setAttr  ($EfN+"gtEobj_particleShape.conserve") 0.965;
+
+string $gtEobj=($EfN);
+       $gtEobj+="gtEobj_emitter1.rate=";
+       $gtEobj+=($EfN);
+       $gtEobj+="gtEbase_emitter1.rate/3;\r\n";
+       $gtEobj+=($EfN);
+       $gtEobj+="gtEobj_emitter2.rate=";
+       $gtEobj+=($EfN);
+       $gtEobj+="gtEbase_emitter2.rate/3;\r\n";
+       $gtEobj+=($EfN);
+       $gtEobj+="gtEobj_emitter3.rate=";
+       $gtEobj+=($EfN);
+       $gtEobj+="gtEbase_emitter3.rate/3;\r\n";
+expression -s $gtEobj -ae 1 -uc all;
+
+addAttr -ln gtErot0 -dt vectorArray  ($EfN+"gtEobj_particleShape");
+addAttr -ln gtErot -dt vectorArray  ($EfN+"gtEobj_particleShape");
+setAttr -e -keyable true ($EfN+"gtEobj_particleShape.gtErot");
+addAttr -ln gtEscale0 -dt vectorArray  ($EfN+"gtEobj_particleShape");
+addAttr -ln gtEscale -dt vectorArray  ($EfN+"gtEobj_particleShape");
+setAttr -e -keyable true ($EfN+"gtEobj_particleShape.gtEscale");
+addAttr -ln gtEspinPP0 -dt vectorArray  ($EfN+"gtEobj_particleShape");
+addAttr -ln gtEspinPP -dt vectorArray  ($EfN+"gtEobj_particleShape");
+setAttr -e -keyable true ($EfN+"gtEobj_particleShape.gtEspinPP");
+
+gravity -pos 0 0 0 -m 6.2 -att 0 -dx 0 -dy -1 -dz 0  -mxd -1  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 -n ($EfN+"gtEobj_gravity");
+
+connectDynamic -f ($EfN+"gtEobj_gravity")  ($EfN+"gtEobj_particle");
+
+polyCube -ch 0 -o on -ax 0 1 0 -w 3 -h 3 -d 3 -subdivisionsWidth 5 -subdivisionsDepth 5 -subdivisionsHeight 5 -n ($EfN+"gtEobj");
+
+solidShatter( ($EfN+"gtEobjs"), 5, 1, 1, 0, 0, 1, 1, 3, "shapes", 0, 0);
+select -r ($EfN+"gtEobjs1");
+string $tempN[]=`ls -sl`;
+string $objects[]=`listRelatives -c  $tempN[0]`;
+int $objSize=`size($objects)`;
+
+select -r $objects[1] ;
+parent -world;
+rename ($EfN+"gtEojb");
+
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+particleInstancer  -addObject -object  ($EfN+"gtEojb") -cycle Sequential -cycleStep 1 
+    -cycleStepUnits Frames -levelOfDetail Geometry -rotationUnits Degrees -rotationOrder XYZ 
+      -position worldPosition -rotation gtErot -scale gtEscale -age age ($EfN+"gtEobj_particleShape");
+
+select -r ($EfN+"gtEobj_particle") ;
+emitter -type omni  -name ($EfN+"gtEobj_emiter") -r 60 -sro 0 -nuv 0 -cye none -cyi 1 -spd 0.2 -srn 0.1 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 0 -dy 0 -dz 0 -sp 0 ;
+particle -n ($EfN+"gtEobjSmoke");
+connectDynamic -em ($EfN+"gtEobj_emiter") ($EfN+"gtEobjSmoke"); 
+addPP -atr rate ($EfN+"gtEobj_emiter");
+
+setAttr ($EfN+"gtEobjSmokeShape.lifespanMode") 3;
+setAttr ($EfN+"gtEobjSmokeShape.particleRenderType") 8;
+addAttr -is true -ln "betterIllumination" -at bool -dv 1 ($EfN+"gtEobjSmokeShape");
+addAttr -is true -ln "surfaceShading" -at "float" -min 0 -max 1 -dv 0 ($EfN+"gtEobjSmokeShape");
+addAttr -is true -ln "threshold" -at "float" -min 0 -max 10 -dv 0 ($EfN+"gtEobjSmokeShape");
+addAttr -ln radiusPP -dt doubleArray ($EfN+"gtEobjSmokeShape");
+addAttr -ln radiusPP0 -dt doubleArray ($EfN+"gtEobjSmokeShape");
+
+string $gtEobjSmokeC=($EfN);
+       $gtEobjSmokeC+="gtEobjSmokeShape.radiusPP=";
+       $gtEobjSmokeC+=($EfN);
+       $gtEobjSmokeC+="gtEobj_particleShape.gtEscale/10;\r\n";
+       $gtEobjSmokeC+=($EfN);
+       $gtEobjSmokeC+="gtEobjSmokeShape.lifespanPP=";
+       $gtEobjSmokeC+=($EfN);
+       $gtEobjSmokeC+="gtEobj_particleShape.gtEscale/50;";
+
+dynExpression -s $gtEobjSmokeC -c ($EfN+"gtEobjSmokeShape");
+
+string $gtEobjSmokeRad=($EfN);
+       $gtEobjSmokeRad+="gtEobjSmokeShape.radiusPP=1.2*linstep(0,0.72,age/lifespan)+";
+       $gtEobjSmokeRad+=($EfN);
+       $gtEobjSmokeRad+="gtEobj_particleShape.gtEscale/10;";
+
+dynExpression -s $gtEobjSmokeRad -rad ($EfN+"gtEobjSmokeShape");
+
+
+string $gtEobjC=($EfN);
+       $gtEobjC+="gtEobj_particleShape.gtEscale=rand(0.2,20.6);\r\n";
+       $gtEobjC+=($EfN);
+       $gtEobjC+="gtEobj_particleShape.gtErot=rand(-180,180);\r\n";
+       $gtEobjC+=($EfN);
+       $gtEobjC+="gtEobj_particleShape.mass=rand(0.8,4);\r\n";
+       $gtEobjC+=($EfN);
+       $gtEobjC+="gtEobj_particleShape.gtEspinPP=rand(1,12);\r\n";
+       $gtEobjC+=($EfN);
+       $gtEobjC+="gtEobj_particleShape.";
+       $gtEobjC+=($EfN);
+       $gtEobjC+="gtEobj_emiterRatePP=80;\r\n";
+
+dynExpression -s $gtEobjC -c ($EfN+"gtEobj_particleShape");
+
+string $gtEobjRad=($EfN);
+       $gtEobjRad+="gtEobj_particleShape.gtErot+=";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_particleShape.gtEspinPP;\n";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_particleShape.";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_emiterRatePP-=0.8;\n";
+
+dynExpression -s $gtEobjRad -rad ($EfN+"gtEobj_particleShape");
+
+addAttr -ln "rgbPP" -dt vectorArray ($EfN+"gtEobjSmokeShape");
+addAttr -ln "rgbPP0" -dt vectorArray ($EfN+"gtEobjSmokeShape");
+addAttr -ln "opacityPP" -dt doubleArray ($EfN+"gtEobjSmokeShape");
+addAttr -ln "opacityPP0" -dt doubleArray ($EfN+"gtEobjSmokeShape");
+
+arrayMapper -target ($EfN+"gtEobjSmokeShape") -destAttr rgbPP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEobjSmokeShape.rgbPP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEobjSmoke_rgbPP_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEobjSmoke_rgbPP_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+rename ($EfN+"gtEobjsmoke_color");
+
+arrayMapper -target ($EfN+"gtEobjSmokeShape") -destAttr opacityPP -inputV ageNormalized -type ramp;
+string $ramptemp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEobjSmokeShape.opacityPP") `;
+select -r $ramptemp[0] ;
+rename ($EfN+"gtEobjSmoke_opacityPP_ArrayMapper");
+string $ramp[]=`listConnections -source 1 -destination 0 ($EfN+"gtEobjSmoke_opacityPP_ArrayMapper.computeNodeColor") `;
+select -r $ramp[0];
+rename ($EfN+"gtEobjsmoke_opacity");
+
+removeMultiInstance -break true ($EfN+"gtEobjsmoke_opacity.colorEntryList[1]");
+setAttr ($EfN+"gtEobjsmoke_opacity.colorEntryList[2].position") 1;
+setAttr ($EfN+"gtEobjsmoke_opacity.colorEntryList[2].color") -type double3 1 1 1 ;
+setAttr ($EfN+"gtEobjsmoke_opacity.colorEntryList[0].position") 0;
+setAttr ($EfN+"gtEobjsmoke_opacity.colorEntryList[0].color") -type double3 0.65 0.65 0.65 ;
+setAttr ($EfN+"gtEobjsmoke_color.colorEntryList[1].position") 0.28;
+setAttr ($EfN+"gtEobjsmoke_color.colorEntryList[1].color") -type double3 0.3 0.28 0.25 ;
+setAttr ($EfN+"gtEobjsmoke_color.colorEntryList[3].position") 0.12;
+setAttr ($EfN+"gtEobjsmoke_color.colorEntryList[3].color") -type double3 0.550.35 0.;
+setAttr ($EfN+"gtEobjsmoke_color.colorEntryList[0].position") 0;
+setAttr ($EfN+"gtEobjsmoke_color.colorEntryList[0].color") -type double3 1.5 1. 0.9 ;
+setAttr ($EfN+"gtEobjsmoke_color.colorEntryList[2].position") 1;
+setAttr ($EfN+"gtEobjsmoke_color.colorEntryList[2].color") -type double3 0 0 0 ;
+setAttr ($EfN+"gtEobjSmokeShape.threshold") 0.5;
+
+shadingNode -asShader particleCloud -n ($EfN+"gtEobjsmokeM");
+sets -renderable true -noSurfaceShader true -empty -name ($EfN+"gtEobjsmokeSG");
+connectAttr -f ($EfN+"gtEobjsmokeM.outColor") ($EfN+"gtEobjsmokeSG.volumeShader");
+
+shadingNode -asUtility particleSamplerInfo -n ($EfN+"gtEobjsmokeInfo");
+
+connectAttr -f ($EfN+"gtEobjsmokeInfo.outColor") ($EfN+"gtEobjsmokeM.color");
+connectAttr -f ($EfN+"gtEobjsmokeInfo.outTransparency") ($EfN+"gtEobjsmokeM.transparency");
+select -r ($EfN+"gtEobjSmoke") ;
+sets -e -forceElement ($EfN+"gtEobjsmokeSG");
+setAttr ($EfN+"gtEobjsmokeM.density") 0.01;
+setAttr ($EfN+"gtEobjsmokeM.diffuseCoeff") 0.6;
+setAttr ($EfN+"gtEobjsmokeM.blobMap") -type double3 0.48 0.48 0.48 ;
+setAttr ($EfN+"gtEobjsmokeM.surfaceColor") -type double3 0.5 0.5 0.5 ;
+
+select -r ($EfN+"gtEobjs1");
+scale 3 3 3;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+string $tempN[]=`ls -sl`;
+string $objects[]=`listRelatives -c  $tempN[0]`;
+int $objSize=`size($objects)`;
+
+for($i=0;$i<$objSize;$i++){
+
+select -r  $objects[$i] ;
+rename ($EfN+"gtEdFireobjs"+$i);
+Fire;
+pickWalk -d up;
+
+rename ($EfN+"gtEfire"+$i);
+
+setAttr ($EfN+"gtEfireShape"+$i+".startFrame") 20;
+setAttr ($EfN+"gtEfireShape"+$i+".fireLifespan") 2.4;
+setAttr ($EfN+"gtEfireShape"+$i+".fireSpeed") 98;
+setAttr ($EfN+"gtEfireShape"+$i+".fireSpread") 0.24;
+
+}
+
+select -r ($EfN+"gtEobjs1");
+
+string $tempN[]=`ls -sl`;
+string $objects[]=`listRelatives -c  $tempN[0]`;
+int $objSize=`size($objects)`;
+for($i=0;$i<$objSize;$i++){
+
+select -r  $objects[$i] ;
+rigidBody -active -m 1 -dp 1.5 -sf 0.2 -df 0.2 -b 0.01 -l 0 -tf 200 -iv 0 0 0 -iav 0 0 0 
+    -p (rand(-3.5,1.2)) 0 (rand(-2.5,4.3)) -c 0 -pc 0 -i (rand(-.41,.61)) 0 (rand(-.21,.41)) -imp 0 0 0 -si 0 0 0 -sio none -n ($EfN+"gtEfireRigidB"+$i);
+
+setAttr ($EfN+"gtEfireRigidB"+$i+".collisions") 0;
+}
+
+select -r ($EfN+"gtEojb");
+Fire;
+pickWalk -d up;
+
+rename ($EfN+"gtEojbfire");
+
+setAttr ($EfN+"gtEojbfireShape.startFrame") 20;
+setAttr ($EfN+"gtEojbfireShape.fireLifespan") 2.4;
+setAttr ($EfN+"gtEojbfireShape.fireSpeed") 98;
+setAttr ($EfN+"gtEojbfireShape.fireSpread") 0.24;
+setAttr ($EfN+"gtEojbfireShape.fireSpread") 1;
+setAttr ($EfN+"gtEojbfireShape.flameStartRadius") 3;
+setAttr ($EfN+"gtEojbfireShape.flameEndRadius") 1;
+setAttr ($EfN+"gtEojbfireShape.fireLifespan") 3;
+setAttr ($EfN+"gtEojbfireShape.fireSpeed") 90;
+
+createDisplayLayer -name ($EfN+"gtobjLayer") -number 1 -empty;
+
+select -r ($EfN+"gtEobj_emitter1") ;
+select -add ($EfN+"gtEobj_emitter2") ;
+select -add ($EfN+"gtEobj_emitter3") ;
+select -add ($EfN+"gtEobj_particle") ;
+select -add ($EfN+"gtEobj_gravity") ;
+select -add ($EfN+"gtEobjSmoke") ;
+select -add ($EfN+"gtEout_gravity") ;
+select -add ($EfN+"gtEout_air") ;
+
+group -n ($EfN+"gtobj_Group");
+
+editDisplayLayerMembers -noRecurse ($EfN+"gtobjLayer")  `ls -selection`;
+
+spaceLocator -n ($EfN+"MainControler") -p 0 0 0;
+scale 10 10 10;
+select -r ($EfN+"gtobj_Group");
+select -add ($EfN+"gtEfire_Group");
+select -add ($EfN+"gtEin_Group");
+select -add ($EfN+"gtEfirein_Group");
+select -add ($EfN+"gtobj_Group");
+select -add ($EfN+"gtEobjs1");
+select -add ($EfN+"gtEojb");
+select -add ($EfN+"MainControler");
+
+parent;
+
+select -add ($EfN+"MainControler") ;
+
+editDisplayLayerMembers -noRecurse ($EfN+"gtobjLayer")  `ls -selection`;
+
+if($collisionObjEx>0){
+for($i=0;$i<$collisionObjEx;$i++){
+collision -r 1 -f 0.01 $selCollisionObj[$i];
+
+connectDynamic -c $selCollisionObj[$i] ($EfN+"gtEobj_particle");
+connectDynamic -c $selCollisionObj[$i] ($EfN+"gtEbase_particle");
+connectDynamic -c $selCollisionObj[$i] ($EfN+"gtEin_particle");
+connectDynamic -c $selCollisionObj[$i] ($EfN+"gtEout_particle");
+}
+
+event -die 0 -count 0 ($EfN+"gtEobj_particle");
+event -die 0 -count 0 ($EfN+"gtEbase_particle");
+event -die 0 -count 0 ($EfN+"gtEin_particle");
+event -die 0 -count 0 ($EfN+"gtEout_particle");
+
+string $gtEobjC=($EfN);
+       $gtEobjC+="gtEobj_particleShape.gtEscale=rand(0.2,10.6);\r\n";
+       $gtEobjC+=($EfN);
+       $gtEobjC+="gtEobj_particleShape.gtErot=rand(-180,180);\r\n";
+       $gtEobjC+=($EfN);
+       $gtEobjC+="gtEobj_particleShape.mass=rand(0.8,4);\r\n";
+       $gtEobjC+=($EfN);
+       $gtEobjC+="gtEobj_particleShape.gtEspinPP=rand(0.24,2.4);\r\n";
+       $gtEobjC+=($EfN);
+       $gtEobjC+="gtEobj_particleShape.";
+       $gtEobjC+=($EfN);
+       $gtEobjC+="gtEobj_emiterRatePP=80;\r\n";
+
+dynExpression -s $gtEobjC -c ($EfN+"gtEobj_particleShape");
+
+select -r ($EfN+"gtEobj_particleShape");
+
+string $gtEobjRad=($EfN);
+       $gtEobjRad+="gtEobj_particleShape.gtErot+=";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_particleShape.gtEspinPP;\r\nif(";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_particleShape.event>0){\r\n";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_particleShape.";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_emiterRatePP-=5;\r\n";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_particleShape.gtEspinPP=0;}\r\nelse{\r\n";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_particleShape.";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_emiterRatePP=120;\r\n";
+       $gtEobjRad+=($EfN);
+       $gtEobjRad+="gtEobj_particleShape.gtEspinPP+=rand(0.5,1.5);}\n";
+
+dynExpression -s $gtEobjRad -rad ($EfN+"gtEobj_particleShape");
+}
+
+playbackOptions -e -ast 0 -aet 240 -min 0 -max 240;
+
+changeSelectMode -object;
+
+select -r ($EfN+"MainControler");
+}
+/////////////////////////////
+gtExplosivesWin;
+/////////////////////2016-10-30

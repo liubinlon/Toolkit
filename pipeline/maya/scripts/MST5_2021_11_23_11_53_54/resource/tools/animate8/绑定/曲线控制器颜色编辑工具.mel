@@ -1,0 +1,84 @@
+//曲线控制器颜色编辑绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+global proc gtcurveColorWin(){
+
+if(`window -ex gtcurveColorWin`) deleteUI  -window gtcurveColorWin;
+window -wh 400 150 -title "老船角色绑定-☆-曲线颜色编辑器！" gtcurveColorWin;
+
+frameLayout -l "老船绑定工具-批量编辑曲线颜色" 
+    -collapsable off
+    -collapse off;
+columnLayout -adj 1 gtmainFmColorColumn;
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1159\"";
+
+text -l "选择曲线，点击色块，编辑曲线颜色";
+    gridLayout -numberOfRows 4 -numberOfColumns 8 -cellWidthHeight 30 20 -p gtmainFmColorColumn sss;
+    iconTextButton -bgc .627 .627 .627 -command "gtupdateColorSlider 0";
+    iconTextButton -bgc .467 .467 .467 -command "gtupdateColorSlider 1";
+    iconTextButton -bgc .000 .000 .000 -command "gtupdateColorSlider 2";
+    iconTextButton -bgc .247 .247 .247 -command "gtupdateColorSlider 3";
+    iconTextButton -bgc .498 .498 .498 -command "gtupdateColorSlider 4";
+    iconTextButton -bgc 0.608 0 0.157 -command "gtupdateColorSlider 5";
+    iconTextButton -bgc 0 0.016 0.373 -command "gtupdateColorSlider 6";
+    iconTextButton -bgc 0 0 1 -command "gtupdateColorSlider 7";
+    iconTextButton -bgc 0 0.275 0.094 -command "gtupdateColorSlider 8";
+    iconTextButton -bgc 0.145 0 0.263 -command "gtupdateColorSlider 9";
+    iconTextButton -bgc 0.78 0 0.78 -command "gtupdateColorSlider 10";
+    iconTextButton -bgc 0.537 0.278 0.2 -command "gtupdateColorSlider 11";
+    iconTextButton -bgc 0.243 0.133 0.122 -command "gtupdateColorSlider 12";
+    iconTextButton -bgc 0.6 0.145 0 -command "gtupdateColorSlider 13";
+    iconTextButton -bgc 1 0 0 -command "gtupdateColorSlider 14";
+    iconTextButton -bgc 0 1 0  -command "gtupdateColorSlider 15";
+    iconTextButton -bgc 0 0.255 0.6 -command "gtupdateColorSlider 16";
+    iconTextButton -bgc 1 1 1 -command "gtupdateColorSlider 17";
+    iconTextButton -bgc 1 1 0 -command "gtupdateColorSlider 18";
+    iconTextButton -bgc 0.388 0.863 1 -command "gtupdateColorSlider 19";
+    iconTextButton -bgc 0.263 1 0.635 -command "gtupdateColorSlider 20";
+    iconTextButton -bgc 1 0.686 0.686 -command "gtupdateColorSlider 21";
+    iconTextButton -bgc 0.89 0.675 0.475 -command "gtupdateColorSlider 22";
+    iconTextButton -bgc 1 1 0.384 -command "gtupdateColorSlider 23";
+    iconTextButton -bgc 0 0.6 0.325 -command "gtupdateColorSlider 24";
+    iconTextButton -bgc 0.627 0.412 0.188 -command "gtupdateColorSlider 25";
+    iconTextButton -bgc 0.62 0.627 0.188 -command "gtupdateColorSlider 26";
+    iconTextButton -bgc 0.408 0.627 0.188 -command "gtupdateColorSlider 27";
+    iconTextButton -bgc 0.188 0.627 0.365 -command "gtupdateColorSlider 28";
+    iconTextButton -bgc 0.188 0.627 0.627 -command "gtupdateColorSlider 29";
+    iconTextButton -bgc 0.188 0.404 0.627 -command "gtupdateColorSlider 30";
+    iconTextButton -bgc 0.435 0.188 0.627 -command "gtupdateColorSlider 31";
+    setParent..;
+colorIndexSliderGrp -min 0 -max 31 -value 0 -cw2 70 163  gtconColor;
+
+showWindow gtcurveColorWin;
+}
+
+////////////////////////////////////
+global proc gtupdateColorSlider(int $color){
+colorIndexSliderGrp  -e -value $color gtconColor;
+string $objs[] = `ls -sl`; 
+if (`size($objs)`!=0)
+    {
+    for($i=0;$i<size($objs);$i++)
+        {
+        string $shape[]= `listRelatives -f -s $objs[$i]`;
+        int $color = `colorIndexSliderGrp -q -v gtconColor`;
+        if($color > 0)
+            {
+                
+          for($j=0;$j<size($shape);$j++){
+            setAttr ($shape[$j] + ".overrideEnabled") 1; 
+            setAttr ($shape[$j] + ".overrideColor") ($color - 1);
+            }
+            }  
+        }
+    }
+}
+////////////////////
+gtcurveColorWin;

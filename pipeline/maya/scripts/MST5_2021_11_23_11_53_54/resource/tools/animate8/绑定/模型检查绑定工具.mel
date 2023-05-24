@@ -1,0 +1,781 @@
+//老船角色模型检查及编辑绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtMeshCheckWin (){
+	global int $abSymTable[];
+	
+	global string $abSbg;
+	int $sbgBnsEn = false; 
+	string $selBaseGeo;
+	
+	if (size($abSymTable) > 0){ 
+		$selBaseGeo = $abSbg;
+		$sbgBnsEn = true;
+	}
+	
+	if (`window -exists gtMeshCheckWin`)deleteUI -window gtMeshCheckWin;
+		window -t "老船角色绑定-☆-角色模型检查绑定工具" -w 180 -h 315 gtMeshCheckWin;
+	columnLayout -adj 1 mainColumnattr;
+    text -l "老船绑定工具-老船动画吧：http://www.animate8.com/";
+    button -l "访 问 老 船 动 画 吧！" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1784\"";        
+	separator sep1;
+	rowColumnLayout -nc 2 -cw 1 80 -cw 2 100 -vis 0 ;
+
+	text -l "全局容差：" tolTxt;
+	textField -editable true -text "0.001" tolFld;
+	setParent..;
+	rowColumnLayout -nc 2 -cw 1 200 -cw 2  105 ;
+	radioButtonGrp -en 1  -l "方式：" -nrb  2 -la2 "选择及子物体" "全部" -cw3 45 100 55 -select 1 gtRenamMeshR;
+
+	button -l "编辑重名模型" -command "gtModelCleanMakeUniqueNames" gtacsBn;
+    setParent..;
+	rowColumnLayout -nc 2 -cw 1 200 -cw 2  105 ;
+	radioButtonGrp -en 1  -l "方式：" -nrb  2 -la2 "选择及子物体" "全部" -cw3 45 100 55 -select 1 gtRenamMeshShapeR;
+
+	button -l "重命名形节点" -command "gtRenameShapestoMesh" gtacsBnf;
+	setParent..;
+		separator sep2b;
+	rowColumnLayout -nc 3 -cw 1 150 -cw 2  5 -cw 3 150 ;
+
+	button -l "删除物体名字空间字符：" -command "gtRemoveNameSpaces" gtacsBnb;
+	text -l "";		
+	button -l "删除历史中间物体" -command "gtdeleteIntermediateObjects" gtacsBnc;	
+
+	button -l "删除ImagePlane节点" -command "gtdeleteImagePlane" gtacsBnd;
+	text -l "";	
+	button -l "整理3D贴图坐标" -command "gtUnParentAllPlace3dTextures" gtacsBne;	
+		
+	setParent..;
+	
+	separator sep2;
+	rowColumnLayout -nc 3 -cw 1 150 -cw 2 5 -cw 3 150 ;
+
+	button -l "检查模型左右对称" -command "clear($abSymTable);gtabSymCtl" sbgBn;
+	text -l "";
+	button -l "选择角色模型" -command "gtSelectAllSymCtl";
+
+	setParent..;
+	
+	rowColumnLayout -nc 2 -cw 1 80 -cw 2 230 ;
+
+	text -l "全部模型：" allGtolTxt;
+	textField -editable 0 -text "" allGtsbgFld;
+	
+    text -l "问题模型：" gtolTxt;
+	textField -editable 0 -text "" gtsbgFld;
+	
+	setParent..;
+	separator sep3;
+	rowColumnLayout -nc 4 -cw 1 85 -cw 2 25 -cw 3 80 -cw 4 120 ;
+	text -l "问题模型总数：";
+	textField  -en 0 gtAllolTxt;
+		text -l "当前选择第：";
+	textField  -en 0 gtSingleolTxt;
+
+	setParent..;
+		
+	rowColumnLayout -nc 3 -cw 1 150 -cw 2 5 -cw 3 150 ;
+
+	button -l "选择全部问题模型" -command "gtSelectSymCtl" gtcsBn;
+	text -l "";
+	button -l "循环选择问题模型" -command "gtSelectSingleSymCtl" csBn;
+	setParent..;
+		separator sep2a;
+	
+	columnLayout -adj 1 -vis 1 mainColumnattrA;
+	
+		rowColumnLayout -nc 2 -cw 1 150 -cw 2 150;
+	button -label "选择中心顶点" -c "gtMeshSelectMiddleVex"  buta;
+	button -label "修正中心顶点" -c "gtMeshModifyMiddleVex"   butab;
+setParent..;
+		rowColumnLayout -nc 3 -cw 1 100 -cw 2 100 -cw 3 100;
+	button -label "删除左侧模型" -c "gtss_delHalf 0"  buta;
+	button -label "删除右侧模型" -c "gtss_delHalf 1"  butbb;
+	button -label "镜像合并物体" -c "gtMeshMirrorCombineModel"   butab;
+setParent..;
+	rowColumnLayout -nc 3 -cw 1 100 -cw 2 100 -cw 3 100;
+	text -l "选择模型物体";
+	button -label "左到右镜像" -c "gtMeshMirrorProc 0"  ;
+	button -label "右到左镜像" -c "gtMeshMirrorProc 1"  ;
+	text -l "选择左右顶点";
+	button -label "左到右镜像" -c "gtMeshVextMirrorProc 0"  ;
+	button -label "右到左镜像" -c "gtMeshVextMirrorProc 1"  ;	
+setParent..;
+////////////////////
+rowColumnLayout -nc 3 -cw 1 195 -cw 2 5 -cw 3 100 -vis 0;
+textFieldGrp  -cw2 100 130 -l "目标顶点:" -tx "" -ed 0 gtTextMeshVextMirroRAim;
+text -l "";
+button -l "载入目标顶点" -c "gtMeshMirrorLoadAimVextProc";
+textFieldGrp  -cw2 100 130 -l "编辑顶点:" -tx "" -ed 0 gtTextMeshVextMirroREidt;
+text -l "";
+button -l "载入编辑顶点" -c "gtMeshMirrorLoadEidtVextProc";
+text -l "左右按顺序载入对称顶点";
+text -l "";
+button -label "镜像顶点形态" -c "gtMeshMultiVextMirrorProc"  ;	
+setParent..;
+separator -style single  sep1b;	
+showWindow gtMeshCheckWin;
+}
+/////////////////////////
+global proc gtMeshMirrorLoadAimVextProc (){
+    string $sel[]=`ls -fl -orderedSelection`;
+    string $vext="";
+
+    for($i=0;$i<size($sel);$i++){
+    $vext+=$sel[$i]+" ";    
+    }
+textFieldGrp  -e -tx $vext gtTextMeshVextMirroRAim;
+}
+////////////////
+global proc gtMeshMirrorLoadEidtVextProc (){
+    string $sel[]=`ls -fl -orderedSelection `;
+    string $vext="";
+    for($i=0;$i<size($sel);$i++){
+    $vext+=$sel[$i]+" ";    
+    }
+textFieldGrp  -e -tx $vext gtTextMeshVextMirroREidt;
+}
+//////////////
+global proc gtMeshMultiVextMirrorProc (){
+string $ssVext=`textFieldGrp  -q -tx  gtTextMeshVextMirroRAim`;
+string $ddVext=`textFieldGrp  -q -tx  gtTextMeshVextMirroREidt`;
+
+string $tempString[];
+int $num=`tokenize $ssVext " "  $tempString`;
+string $sVext[];
+clear $sVext;
+for($i=0;$i<$num;$i++){
+    $sVext[$i]=$tempString[$i];
+    }
+//print $sVext;
+string $tempString[];
+int $num=`tokenize $ddVext " "  $tempString`;
+string $dVext[];
+clear $dVext;
+for($i=0;$i<$num;$i++){
+    $dVext[$i]=$tempString[$i];
+    }
+//print $dVext;
+int $sizeA=0;
+if(size($dVext)>size($sVext))
+$sizeA=size($sVext);
+else
+$sizeA=size($dVext);
+
+global string $gMainProgressBar;
+progressBar -e -st ("镜像顶点形态：") -bp -ii 1 -min 0 -max $sizeA $gMainProgressBar;
+for ($i=0;$i<$sizeA;$i++)
+	{
+	if (`progressBar -q -ic $gMainProgressBar`)
+		break;
+	progressBar -e -s 1 $gMainProgressBar;
+	$posB=`xform -q -ws -t $sVext[$i]`;
+	xform -ws -t ($posB[0]*-1) $posB[1] $posB[2] ($dVext[$i]);			
+	}
+progressBar -e -ep $gMainProgressBar;
+}
+/////////////////////
+global proc gtMeshMirrorProc (int $side){
+//int $side=0;
+string $sel[]=`ls -sl`;
+
+for($ii=0;$ii<size($sel);$ii++){
+string $mesh=$sel[$ii];
+int $vexAll[]=`polyEvaluate -v $mesh`;
+    
+select -r ($mesh+".vtx[0:999999]");
+$vtxs=`ls -sl -fl`;
+
+int $vexNum=size($vtxs);
+string $geometry=$mesh;
+
+select -cl;
+for ($i=0;$i<size($vtxs);$i++)
+	{
+	$pos=`xform -q -ws -t $vtxs[$i]`;
+	if($pos[0]>0.0001)
+	   select -add $vtxs[$i];
+	}	
+string $posSideVex[]=`ls -sl -fl`;
+
+select -cl;
+for ($i=0;$i<size($vtxs);$i++)
+	{
+	$pos=`xform -q -ws -t $vtxs[$i]`;
+	if($pos[0]<-0.0001)
+	   select -add $vtxs[$i];	
+	}
+string $negSideVex[]=`ls -sl -fl`;	
+int $negNum=size($negSideVex);
+int $posNum=size($posSideVex);
+if($negNum!=$posNum)error "左右顶点数量不一致，请手动检查模型";
+
+if($negNum==$posNum){
+string $sVext[];
+clear $sVext;
+string $dVext[];
+clear $dVext;
+if($side==0){
+  $sVext=$posSideVex;
+  $dVext=$negSideVex;  
+}else{
+  $dVext=$posSideVex;
+  $sVext=$negSideVex;      
+}
+
+createNode -n closestSampler closestPointOnMesh;
+$tempString=`listRelatives -ni -s $geometry`;
+connectAttr -f ($tempString[0]+".outMesh") closestSampler.inMesh;
+connectAttr -f ($geometry+".worldMatrix[0]") closestSampler.inputMatrix;
+int $closestOppositeVtxNr;
+global string $gMainProgressBar;
+
+progressBar -e -st ("镜像簇权重："+$sel[$ii]) -bp -ii 1 -min 0 -max `size($sVext)` $gMainProgressBar;
+for ($i=0;$i<size($sVext);$i++)
+	{
+	if (`progressBar -q -ic $gMainProgressBar`)
+		break;
+	progressBar -e -s 1 $gMainProgressBar;
+	$posB=`xform -q -ws -t $sVext[$i]`;
+	setAttr -type float3 closestSampler.inPosition ($posB[0]*-1) $posB[1] $posB[2];
+	$closestOppositeVtxNr=`getAttr closestSampler.result.closestVertexIndex`;
+	xform -ws -t ($posB[0]*-1) $posB[1] $posB[2] ($geometry+".vtx["+$closestOppositeVtxNr+"]");			
+	}
+progressBar -e -ep $gMainProgressBar;
+
+delete closestSampler;
+        }
+    }
+select -r $sel;    
+}
+///////////////////////////
+global proc gtMeshVextMirrorProc (int $side){
+//int $side=0;
+string $sel[]=`ls -sl -fl`;
+
+select -cl;
+for ($i=0;$i<size($sel);$i++){
+	$pos=`xform -q -ws -t $sel[$i]`;
+	if($pos[0]>0.0001)
+	   select -add $sel[$i];
+	}	
+string $posSideVex[]=`ls -sl -fl`;
+
+select -cl;
+for ($i=0;$i<size($sel);$i++){
+	$pos=`xform -q -ws -t $sel[$i]`;
+	if($pos[0]<-0.0001)
+	   select -add $sel[$i];
+	}	
+string $negSideVex[]=`ls -sl -fl`;	
+
+int $negNum=size($negSideVex);
+int $posNum=size($posSideVex);
+if($negNum!=1&&$posNum!=1)error "请左右各选择一个顶点";
+
+if($negNum==$posNum){
+string $ssVext="";
+string $ddVext="";
+if($side==0){
+  $ssVext=$posSideVex[0];
+  $ddVext=$negSideVex[0];
+}else{
+  $ssVext=$negSideVex[0];      
+  $ddVext=$posSideVex[0];
+}
+	$posB=`xform -q -ws -t $ssVext`;
+	xform -ws -t ($posB[0]*-1) $posB[1] $posB[2] $ddVext;			
+    }
+select -r $sel;       
+}
+////////////////////////////////////
+global proc gtss_delHalf(int $axis_dig)
+{    
+   // int $axis_dig=1;
+    string $meshSel[]=`ls -sl`;
+	string $shapeNode[] = `pickWalk -d "down"`; 
+	PolySelectConvert 3;
+	string $selection[] = `filterExpand -sm 31`; 
+	int $s = `size($selection)`;
+	float $middleVertex = 0.001;
+	
+	for($each in $selection) {
+		float $values[] = `xform -q -t -os $each`;
+		float $eachVertexValue = $values[0];
+		if($axis_dig==0){		
+		if($eachVertexValue<=$middleVertex) 
+		select -d $each;
+	}else{
+	   if($eachVertexValue>=$middleVertex*-1) 
+		select -d $each;
+        }
+    }		
+PolySelectConvert 1;
+		doDelete;
+	select -r $meshSel;		
+}	
+//////////////////////////////
+global proc gtMeshMirrorCombineModel(){
+int $as=1;
+string $axis="";
+if($as==1)$axis="X";
+if($as==2)$axis="Y";
+if($as==3)$axis="Z";
+
+float $x=1;
+float $y=1;
+float $z=1;
+if($as==1)$x=-1;
+if($as==2)$y=-1;
+if($as==3)$z=-1;
+
+string $sel[]=`ls -sl`;
+for($i=0;$i<size($sel);$i++){
+ float $sc[]=`getAttr  ($sel[$i]+".s")`;
+if($sc[0]<0||$sc[1]<0||$sc[2]<0)error ("当前选择物体"+$sel[$i]+"缩放数值不能是负数");
+}
+for($i=0;$i<size($sel);$i++){
+float $sc[]=`getAttr  ($sel[$i]+".s")`;
+setAttr ($sel[$i]+".scalePivot"+$axis) 0;
+setAttr  ($sel[$i]+".rotatePivot"+$axis) 0 ;
+select -r ($sel[$i]);
+duplicate -rr;
+string $o[]=`ls -sl`;
+scale -r ($x*$sc[0]) ($y*$sc[1]) ($z*$sc[2]);
+select -add ($sel[$i]);
+polyUnite -ch 0 -mergeUVSets 1 ($o[0]) ($sel[$i]);
+string $model[]=`ls -sl`;
+polyMergeVertex  -d 0.01 -am 1 -ch 0 ($model[0]+".vtx[0:9999999]");
+rename $model[0] ($sel[$i]);
+    }
+select -r ($sel);
+}
+////////////
+ global proc gtMeshSelectMiddleVex(){
+string $sel[]=`ls -sl`;
+float $tollorence=`textField -q -tx tolFld`;
+int $as=1;
+
+int $index=0;
+if($as==1)$index=0;
+if($as==2)$index=1;
+if($as==3)$index=2;
+
+for($i=0;$i<size($sel);$i++){
+select -r ($sel[$i]+".vtx[0:99999999]");
+string $vex[]=`ls -sl -fl`;
+select -cl;
+for($j=0;$j<size($vex);$j++){
+    float $posA[]=`xform -q -ws -t -a ($vex[$j])`;
+    if($posA[$index]<$tollorence&&$posA[$index]>(0-$tollorence))select -add ($vex[$j]);
+        }
+    }
+}
+//////////////////////////
+global proc gtMeshModifyMiddleVex(){
+int $as=1;
+
+float $x=1;
+float $y=1;
+float $z=1;
+if($as==1)$x=0;
+if($as==2)$y=0;
+if($as==3)$z=0;
+
+string $vex[]=`ls -sl -fl`;
+for($j=0;$j<size($vex);$j++){
+    float $posA[]=`xform -q -ws -t -a ($vex[$j])`;
+    xform -ws -t ($posA[0]*$x) ($posA[1]*$y) ($posA[2]*$z) ($vex[$j]) ;
+    }
+}
+///////////////////////////
+global proc int gtabCheckSym (string $obj, int $axis, float $tol, int $bTable, int $usePiv) {
+    int $badM=0;
+   // string $obj=$selMesh;
+    // int $axis=$axisSel;
+   // int $bTable=1;    
+	global int $abSymTable[];
+	string $aNegVerts[];
+	string $aPosVerts[];
+	string $aNonSymVerts[];
+	string $aStr[];
+	string $vtx;
+	string $str;
+	int $aPosVertsInt[];
+	int $aNegVertsInt[];
+	int $aInt[];
+	int $totVtx;
+	int $i;
+	int $j;
+	int $mAxisInd = $axis - 1; 
+	int $axis2Ind = ($mAxisInd + 1) % 3;
+	int $axis3Ind = ($mAxisInd + 2) % 3;
+	int $mod;
+	int $prog;
+	int $vertCounter = 0;
+	float $aNegVertTrans[];
+	float $aPosVertTrans[];
+	float $aVtxTrans[];
+	float $aVtx2Trans[];
+	float $bBox[];
+	float $mid;
+	float $midOffset;
+	float $posOffset;
+	float $negOffset;
+	float $flt;
+	float $progNum;
+	float $progDenom;
+	float $test1;
+	float $test2;
+	
+	if ($usePiv){
+		$aVtxTrans = `xform -q -ws -t $obj`;
+		$mid = $aVtxTrans[$mAxisInd];
+	}else{
+		//if ($bTable){
+			//clear($abSymTable);
+			//$bBox = `xform -q -ws -boundingBox $obj`;
+			//$mid = $bBox[$mAxisInd] + (($bBox[($mAxisInd+3)] - $bBox[$mAxisInd])/2);
+		//}else{
+			$mid = 0; 
+	//	}
+	}
+		//print $mid;
+	$aInt = `polyEvaluate -v $obj`; 
+	$totVtx = $aInt[0];
+	
+	waitCursor -state on;
+	progressWindow -title "工作" -progress 0 -status "检索";
+	$progDenom = $totVtx;
+	$flt = ceil($progDenom/50);
+	$mod = $flt;
+
+	for ($i=0;$i<$totVtx;$i++){
+		
+
+		if (($i % $mod) == 0){ 
+			$progNum = $i;
+			$prog = ($progNum/$progDenom)*100.0;
+			progressWindow -e -progress $prog;
+		}
+		
+		$vtx = $obj+".vtx["+$i+"]";
+		$aVtxTrans = `xform -q -ws -translation $vtx`;
+		$midOffset = $aVtxTrans[$mAxisInd] - $mid;
+		if ($midOffset >= 0){
+			$aPosVerts[size($aPosVerts)] = $vtx;
+			if ($bTable){$aPosVertsInt[size($aPosVertsInt)] = $i;}
+			$aVtxTrans = `xform -q -ws -t $vtx`;
+			$aPosVertTrans[size($aPosVertTrans)] = $aVtxTrans[$mAxisInd];
+		}else{
+			if ($midOffset < 0){
+				$aNegVerts[size($aNegVerts)] = $vtx;
+				if ($bTable){$aNegVertsInt[size($aNegVertsInt)] = $i;}
+				$aVtxTrans = `xform -q -ws -t $vtx`;
+				$aNegVertTrans[size($aNegVertTrans)] = $aVtxTrans[$mAxisInd];
+			}
+		}
+	}
+
+	if ($bTable){$str = "检查";}else{$str = "检查对称结果";}
+	progressWindow -e -progress 0 -status $str;
+	$progDenom = size($aPosVerts);
+	$flt = ceil($progDenom/50);
+	$mod = $flt;
+		
+	for ($i=0;$i<size($aPosVerts);$i++){
+		
+		if (($i % $mod) == 0){ 
+			$progNum = $i;
+			$prog = ($progNum/$progDenom)*100.0;
+			progressWindow -e -progress $prog;
+		}
+		
+		$vtx = $aPosVerts[$i];
+		$posOffset = ($aPosVertTrans[$i] - $mid);
+		if ($posOffset < $tol){
+			$aPosVerts[$i] = "m";
+			$vertCounter ++;
+			continue;
+		}
+		for ($j=0;$j<size($aNegVerts);$j++){
+			if ($aNegVerts[$j] == "m"){continue;}
+			$negOffset = $mid - $aNegVertTrans[$j];
+			if ($negOffset < $tol){
+				$aNegVerts[$j] = "m";
+				$vertCounter ++;
+				continue;
+			}
+			if (abs($posOffset - $negOffset) <= $tol){
+				$aVtxTrans = `xform -q -ws -t $vtx`;
+				$aVtx2Trans = `xform -q -ws -t $aNegVerts[$j]`;
+				$test1 = $aVtxTrans[$axis2Ind] - $aVtx2Trans[$axis2Ind];
+				$test2 = $aVtxTrans[$axis3Ind] - $aVtx2Trans[$axis3Ind];
+				if (abs($test1) < $tol && abs($test2) < $tol){
+
+					if ($bTable){
+						$abSymTable[size($abSymTable)] = $aPosVertsInt[$i];
+						$abSymTable[size($abSymTable)] = $aNegVertsInt[$j];
+						$vertCounter += 2;
+					}
+					$aPosVerts[$i] = $aNegVerts[$j] = "m"; 
+					break;
+				}
+			}
+		}
+	}
+	$aStr = {"m"};
+	$aPosVerts = stringArrayRemove($aStr, $aPosVerts);
+	$aNegVerts = stringArrayRemove($aStr, $aNegVerts);
+	$aNonSymVerts = stringArrayCatenate($aPosVerts, $aNegVerts);
+
+	if ($bTable){$int = size($abSymTable) + $vertCounter;
+		if ($vertCounter != $totVtx){
+			$badM=1;
+		}else{
+			$badM=0;
+		}
+	}
+	progressWindow -endProgress;
+	waitCursor -state off;
+	return  $badM;
+}
+////////////////////////////////
+global proc gtabSymCtl (){
+	global int $abSymTable[];
+	global string $abSbg;
+	string $sel[] = `ls -sl -fl`;
+	string $aStr[];
+	string $aSelVerts[];
+	string $aHiliteObj[];
+	string $baseObj = `textField -q -text gtsbgFld`;
+	string $str;
+	string $selMesh;
+	float $tol = `textField -q -text tolFld`;
+	int $axisSel = 1;
+	int $negToPos = 1;
+	int $usePiv = 0;
+	int $warned = false; 
+	string $badMesh[];
+	for($i=0;$i<size($sel);$i++){
+	$aStr = `filterExpand -sm 12 $sel[$i]`;
+    if(size($aStr)==1){
+    $selMesh = $aStr[0]; 
+		        int $bad=0;
+				int $bad=gtabCheckSym($selMesh, $axisSel, $tol, 1, $usePiv);
+				$abSbg = $selMesh;
+				//print $bad;
+				if($bad==1){
+				int $size=size($badMesh);
+				$badMesh[$size]=$abSbg;
+				}			
+			}
+		}
+		//print $badMesh;
+			string $text="";
+			for($i=0;$i<size($badMesh);$i++){
+			   $text+=$badMesh[$i]+" "; 
+			}
+			//print $text;
+	textField -e -text $text gtsbgFld;	
+	textField -e -tx (size($badMesh)) gtAllolTxt;
+	
+	string $text="";
+			for($i=0;$i<size($sel);$i++){
+			   $text+=$sel[$i]+" "; 
+			}
+			//print $text;
+	textField -e -text $text allGtsbgFld;	
+	
+    select -r $badMesh;
+}
+///////////////////////
+global proc gtSelectSymCtl (){
+    string $text=`textField -q -text  gtsbgFld`;
+    string $name[];	
+    int $size=`tokenize $text " " $name`;
+    int $ex=`objExists $name[0]`;
+    if($ex==1)
+    select -r $name;
+    else
+    print "\n没有发现问题模型";
+}
+///////////////////
+global proc gtSelectSingleSymCtl (){
+
+    string $text=`textField -q -text  gtsbgFld`;
+    string $label=`textField -q -tx  gtAllolTxt`;
+
+    int $gtAllNumM=$label;
+    string $name[];	
+    global int $gtCurrentNum;
+    if($gtCurrentNum>=($gtAllNumM)){
+        $gtCurrentNum=0;
+    }
+    int $size=`tokenize $text " " $name`;
+    
+    int $ex=`objExists $name[$gtCurrentNum]`;
+    if($ex==1){
+    select -r $name[$gtCurrentNum];
+    textField -e -tx ($gtCurrentNum+"："+$name[$gtCurrentNum]) gtSingleolTxt;
+      $gtCurrentNum+=1;}
+    else{
+    print "\n没有发现问题模型";}
+}
+////////////////////////
+global proc gtModelCleanMakeUniqueNames ()
+{
+    int $objss=`radioButtonGrp -q -sl gtRenamMeshR`;
+    string $sel[]=`ls -sl -fl`;
+    if($objss==1){
+        select -cl;
+        for($i=0;$i<size($sel);$i++){
+         string $childs[]=`listRelatives -c -ad -fullPath -type "mesh" $sel[$i]`;
+         select -add $childs ;
+         }
+       pickWalk -d up;       
+    }else{
+    SelectAllGeometry;
+    }
+
+string $alls[]=`ls -sl`;
+string $alls2[],$tempString[];
+string $suffix;
+int $clash;
+for ($i=0;$i<size($alls);$i++)
+    {
+    $break=0;
+    select -cl;
+    for ($ii=0;$ii<size($alls);$ii++){
+        int $ex=`objExists ($alls[$ii])`;
+        if($ex==1)select -add ($alls[$ii]);
+    }
+    select -d $alls[$i];
+    $alls2=`ls -sl -sn`;
+    int $ex=size($alls2);
+    
+    if($ex>0){
+    $suffix="";
+    $clash=0;
+    tokenize $alls[$i] "|" $tempString;
+    $newName=$tempString[size($tempString)-1]+$suffix;
+    for ($z=0;$z<size($alls2);$z++)
+        {
+        tokenize $alls2[$z] "|" $tempString;
+        if ($newName==$tempString[size($tempString)-1])
+            {
+            for ($aa=0;$aa<9999;$aa++)
+            if (!`objExists ($newName+$aa)`)
+                {
+                print("// 重新命名： "+$alls[$i]+" "+$alls[$i]+"1\n");                
+                rename $alls[$i] ($newName+$aa);
+                $break=1;
+                break;         
+                }
+            if ($break)
+                break;
+            }
+        if ($break)
+            break;
+            }
+        }
+    }
+   // if(`size($sel)`)select -r $sel;
+}
+
+////////////////////////////
+global proc gtdeleteIntermediateObjects ()
+{
+string $tempString[]=`ls -intermediateObjects -type mesh`;
+if (size($tempString))
+	delete $tempString;
+	}
+	
+///////////////////////////////
+global proc gtdeleteImagePlane ()
+{
+string $imagePlanes[]=`ls -type imagePlane`;
+if (size($imagePlanes))
+	delete $imagePlanes;
+}
+
+/////////////////////////
+global proc gtUnParentAllPlace3dTextures ()
+{
+string $place3ds[]=`ls -type place3dTexture`;
+int $ex=`objExists gtPlace3dTextureGrp`;
+if($ex==0){
+    select -cl;
+    group -empty -n gtPlace3dTextureGrp;
+}
+for ($i=0;$i<size($place3ds);$i++)
+{
+string $tempString[]=`listRelatives -p $place3ds[$i]`;
+if($tempString[0]!="gtPlace3dTextureGrp"){
+    select -r $place3ds[$i] ;
+    select -add gtPlace3dTextureGrp;
+	parent ; 
+        }
+    }
+}
+////////////////////
+global proc gtRemoveNameSpaces ()
+{
+string $allObj[]=`ls -type transform`;
+for ($i=0;$i<size($allObj);$i++){
+    string $tempString[];
+    if (`gmatch $allObj[$i] "*:*"`)
+        {            
+        tokenize $allObj[$i] ":" $tempString;
+        rename $allObj[$i] $tempString[size($tempString)-1];
+        }
+    }
+}
+////////////////////
+global proc gtRenameShapestoMesh ()
+{
+int $objss=`radioButtonGrp -q -sl gtRenamMeshShapeR`;
+    string $sel[]=`ls -sl -fl`;
+    if($objss==1){
+        select -cl;
+        for($i=0;$i<size($sel);$i++){
+         string $childs[]=`listRelatives -c -ad -fullPath -type "mesh" $sel[$i]`;
+         select -add $childs ;
+         }
+    }else{
+string $allM[]=`ls -type mesh`;
+    }
+string $meshes[]=`ls -type mesh -sl`;
+for ($i=0;$i<size($meshes);$i++)
+    if (`objExists $meshes[$i]`)
+    	{
+    	$tempString=`listRelatives -p $meshes[$i]`;
+    	rename $meshes[$i] ($tempString[0]+"TEMPShape");
+    	}
+$meshes=`ls -type mesh`;
+for ($i=0;$i<size($meshes);$i++)
+    if (`objExists $meshes[$i]`)
+    	{
+	    $tempString=`listRelatives -p $meshes[$i]`;
+    	rename $meshes[$i] ($tempString[0]+"Shape");
+    	}
+}
+//////////////////
+global proc gtSelectAllSymCtl (){
+
+    string $text=`textField -q -text  allGtsbgFld`; 
+    string $name[];	
+  
+    int $size=`tokenize $text " " $name`;
+    select -r $name;   
+}
+///////////////////
+gtMeshCheckWin;
+/////////////////////////

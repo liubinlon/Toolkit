@@ -1,0 +1,30 @@
+global proc mccv(){
+string $all_crv[]=`ls -sl`;
+int $num_crv=`size($all_crv)`;
+
+
+for($cc=0;$cc<$num_crv;$cc++)
+
+{
+
+
+float $pos_cv[]=`pointPosition ($all_crv[$cc]+".cv[0]")`;
+move $pos_cv[0] $pos_cv[1] $pos_cv[2] ($all_crv[$cc]+".scalePivot") ($all_crv[$cc]+".rotatePivot");
+
+}
+}
+
+
+if(`window -ex FY_tool_3mccv`) {deleteUI FY_tool_3mccv;} 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 0 -tlb 0 FY_tool_3mccv;
+rowColumnLayout -numberOfColumns 1 ;
+  text -l "";
+
+  text -label "===选择所有的曲线===";
+    text -l "";
+button -label "执行" -recomputeSize 1 -w 180 -command "mccv()";
+
+setParent ..;   
+showWindow FY_tool_3mccv;

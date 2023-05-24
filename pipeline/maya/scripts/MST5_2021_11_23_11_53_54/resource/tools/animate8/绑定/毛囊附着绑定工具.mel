@@ -1,0 +1,167 @@
+//物体附着模型表面绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+global proc gtPlaceToModelFollicleWin(){
+
+if(`window -ex gtPlaceToModelFollicleWin`) deleteUI  -window gtPlaceToModelFollicleWin;
+window -wh 300 200 -title "老船角色绑定-☆-毛囊附着模型表面绑定工具！" gtPlaceToModelFollicleWin;
+columnLayout -adj 1   mainColumnL;
+ text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1478\"";
+		text -l "说明：附着模型可以是多边形和曲面" -h 20 ;
+
+	separator -style double;
+	textFieldButtonGrp -cw3 80 200 65 -l (" 附着模型:") -text "需要载入附着模型" -bl   "载    入" -bc "gtloadcPlaneName;" gtTextFieldplaneN;
+	//separator -style double;
+	rowColumnLayout -nc 3 -cw 1 50 -cw 2 100 -cw 3 200;
+	text -l "";
+	checkBox -l "保持原位置" -v 1 gtSingleChk;
+
+	button -label "创建简单父子约束附着毛囊" -c "gtplaceObjToPlaneByFollicle";
+		separator -style double;
+	separator -style double;
+		separator -style double;
+	
+showWindow gtPlaceToModelFollicleWin;
+}
+////////////////////////
+global proc gtloadcPlaneName(){
+string $sel[]=`ls -sl`;
+textFieldButtonGrp -e -tx $sel[0] gtTextFieldplaneN;
+}
+////////////////////////
+
+global proc gtplaceObjToPlaneByFollicle(){
+int $stat=`checkBox -q -v gtSingleChk`;  
+string $plane=`textFieldButtonGrp -q -tx gtTextFieldplaneN`;
+int $ex=`objExists $plane`;
+if($ex==0)error "请载入附着模型";
+string $sel[]=`ls -sl`;
+
+string $bigManM= $plane;
+string $shape[]=`listRelatives -s $bigManM`;
+
+string $type=`objectType  $shape[0]`;
+if($type!="mesh"&&$type!="nurbsSurface")error "需要多边形或者曲面作为固定的面";
+
+int $exsit=`objExists ($bigManM+"follicleGrp")`;
+
+if($exsit==0){
+group -em -n ($bigManM+"follicleGrp");
+}
+
+for($i=0;$i<size($sel);$i++){
+spaceLocator -p 0 0 0 -n ($sel[$i]+"Loc");
+
+group -n ($sel[$i]+"LocGrp");
+
+select -r ($sel[$i]);
+select -add ($sel[$i]+"LocGrp");
+delete `parentConstraint`;
+select -r ($sel[$i]+"Loc");
+select -add ($sel[$i]);
+parentConstraint -mo;
+string $shap[]=`listRelatives -s ($sel[$i]+"Loc")`;
+setAttr ($shap[0]+".localScaleZ") 0.01;
+setAttr ($shap[0]+".localScaleX") 0.01;
+setAttr ($shap[0]+".localScaleY") 0.01;
+
+float $pos[]=`xform -q -a -ws -t ($sel[$i]+"Loc")`;
+string $type=`objectType  $shape[0]`;
+
+////////////////////////
+if($type=="mesh"){
+createNode closestPointOnMesh -n ($sel[$i]+"cpom"+$i);
+connectAttr -f ($bigManM+".outMesh") ($sel[$i]+"cpom"+$i+".inMesh");
+
+setAttr ($sel[$i]+"cpom"+$i+".inPositionX") $pos[0] ;
+setAttr ($sel[$i]+"cpom"+$i+".inPositionY") $pos[1] ;
+setAttr ($sel[$i]+"cpom"+$i+".inPositionZ") $pos[2] ;
+float $u=`getAttr ($sel[$i]+"cpom"+$i+".parameterU")`;
+float $v=`getAttr ($sel[$i]+"cpom"+$i+".parameterV")`;
+
+createNode follicle -n ($sel[$i]+"follicleShape"+$i);
+select -r ($sel[$i]+"follicleShape"+$i);
+pickWalk -d up;
+rename ($sel[$i]+"follicle"+$i);
+connectAttr -f ($bigManM+".outMesh") ($sel[$i]+"follicleShape"+$i+".inputMesh");
+connectAttr -f ($bigManM+".worldMatrix[0]") ($sel[$i]+"follicleShape"+$i+".inputWorldMatrix");
+
+connectAttr -f ($sel[$i]+"follicleShape"+$i+".outTranslate") ($sel[$i] +"follicle"+$i+".translate");
+connectAttr -f ($sel[$i]+"follicleShape"+$i+".outRotate") ($sel[$i]+"follicle"+$i+".rotate");
+
+setAttr  ($sel[$i]+"follicleShape"+$i+".parameterU") $u;
+setAttr  ($sel[$i]+"follicleShape"+$i+".parameterV") $v;
+
+select -r ($sel[$i]+"follicle"+$i);
+select -add ($bigManM+"follicleGrp");
+parent;
+select -r ($sel[$i]+"cpom"+$i);
+delete;
+}
+else
+{
+createNode closestPointOnSurface -n ($sel[$i]+"cpom"+$i);
+string $shape[]=`listRelatives -s $bigManM`;
+connectAttr -f ($shape[0]+".worldSpace") ($sel[$i]+"cpom"+$i+".inputSurface");
+
+setAttr ($sel[$i]+"cpom"+$i+".inPositionX") $pos[0] ;
+setAttr ($sel[$i]+"cpom"+$i+".inPositionY") $pos[1] ;
+setAttr ($sel[$i]+"cpom"+$i+".inPositionZ") $pos[2] ;
+float $u=`getAttr ($sel[$i]+"cpom"+$i+".parameterU")`;
+float $v=`getAttr ($sel[$i]+"cpom"+$i+".parameterV")`;
+
+createNode follicle -n ($sel[$i]+"follicleShape"+$i);
+select -r ($sel[$i]+"follicleShape"+$i);
+pickWalk -d up;
+rename ($sel[$i]+"follicle"+$i);
+connectAttr -f ($shape[0]+".local") ($sel[$i]+"follicleShape"+$i+".inputSurface");
+connectAttr -f ($shape[0]+".worldMatrix[0]") ($sel[$i]+"follicleShape"+$i+".inputWorldMatrix");
+
+connectAttr -f ($sel[$i]+"follicleShape"+$i+".outTranslate") ($sel[$i] +"follicle"+$i+".translate");
+connectAttr -f ($sel[$i]+"follicleShape"+$i+".outRotate") ($sel[$i]+"follicle"+$i+".rotate");
+
+setAttr  ($sel[$i]+"follicleShape"+$i+".parameterU") $u;
+setAttr  ($sel[$i]+"follicleShape"+$i+".parameterV") $v;
+
+select -r ($sel[$i]+"follicle"+$i);
+select -add ($bigManM+"follicleGrp");
+parent;
+select -r ($sel[$i]+"cpom"+$i);
+delete;
+
+}
+if($stat==0){
+select -r ($sel[$i]+"follicle"+$i);
+select -add ($sel[$i]+"LocGrp");
+delete `pointConstraint`;
+
+select -r ($sel[$i]+"LocGrp");
+select -add ($sel[$i]+"follicle"+$i);
+parent;
+        }else{
+    string $constraint[]=`listConnections -s 1 -d 0 ($sel[$i]+".tx")`;
+    delete ($constraint[0]);
+    select -r ($sel[$i]+"follicle"+$i);
+    select -add ($sel[$i]+"LocGrp");
+    delete `parentConstraint`;
+
+    select -r ($sel[$i]+"LocGrp");
+    select -add ($sel[$i]+"follicle"+$i);
+    parent;
+    float $pos[]=`getAttr ($sel[$i]+"follicle"+$i+".translate")`;
+    move $pos[0] $pos[1] $pos[2]  ($sel[$i]+".scalePivot")  ($sel[$i]+".rotatePivot") ;
+    select -r ($sel[$i]+"Loc");
+    select -add ($sel[$i]);
+    parentConstraint -mo;
+        }
+    }
+}
+//////////////////////////
+gtPlaceToModelFollicleWin;

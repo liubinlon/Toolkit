@@ -1,0 +1,66 @@
+
+global proc  c_p(){
+
+
+string $what[]=`ls -sl`;
+string $select[];
+if (`nodeType $what[0]`=="mesh"){polyToCurve -form 2 -degree 1;string $the_curve[]=`ls -sl`;}
+string $the_curve[]=`ls -sl`;
+for ($i=0;$i<size($the_curve);$i++){
+circle -c 0 0 0 -nr 0 1 0 -sw 360 -r 0.1 -d 3 -ut 0 -tol 0.01 -s 8 -ch 1 -n ($the_curve[$i]+"_circle");
+
+string $the_cir[]=`ls -sl`;
+
+select -r $the_cir[0];
+
+select -add $the_curve[$i];
+extrude -ch true -rn false -po 0 -et 2 -ucp 1 -fpt 1 -upn 1 -rotation 0 -scale 1 -rsp 1 $the_cir[0]  $the_curve[$i];
+rename  ($the_curve[$i]+"_nub");
+string $the_nub[]=`ls -sl`;
+setAttr ($the_nub[0]+".visibility") 0;
+setAttr ($the_cir[0]+".visibility") 0;
+nurbsToPoly -mnd 1  -ch 1 -f 2 -pt 1 -pc 200 -chr 0.9 -ft 0.01 -mel 0.001 -d 0.1 -ut 1 -un 5 -vt 1 -vn 2 -uch 0 -ucr 0 -cht 0.2 -es 0 -ntr 0 -mrt 0 -uss 1 $the_nub[0];
+rename  ($the_curve[$i]+"_poly");
+string $the_poly[]=`ls -sl`;
+string $the_poly_s[]=`listRelatives -s  $the_poly[0]`;
+string $the_nbsTess[]=`listConnections ($the_poly_s[0]+".inMesh")`;
+
+
+addAttr -ln "radius"  -at double  $the_nbsTess[0];
+setAttr -e-keyable true ($the_nbsTess[0]+".radius");
+addAttr -ln "angle"  -at double  $the_nbsTess[0];
+setAttr -e-keyable true ($the_nbsTess[0]+".angle");
+setAttr -keyable false -channelBox false ($the_nbsTess[0]+".f");
+setAttr -keyable false -channelBox false ($the_nbsTess[0]+".pt");
+setAttr -keyable false -channelBox false ($the_nbsTess[0]+".pc");
+setAttr -keyable false -channelBox false ($the_nbsTess[0]+".chr");
+setAttr -keyable false -channelBox false ($the_nbsTess[0]+".ut");
+setAttr -keyable false -channelBox false ($the_nbsTess[0]+".vt");
+setAttr -keyable false -channelBox false ($the_nbsTess[0]+".cht");
+setAttr ($the_nbsTess[0]+".radius") 1;
+connectAttr -f ($the_nbsTess[0]+".angle") ($the_cir[0]+".ry");
+connectAttr -f ($the_nbsTess[0]+".radius") ($the_cir[0]+".sx");
+connectAttr -f ($the_nbsTess[0]+".radius") ($the_cir[0]+".sy");
+connectAttr -f ($the_nbsTess[0]+".radius") ($the_cir[0]+".sz");
+print "成功生成poly，请自行从历史节点中进行相关设置~\n";
+$select[size($select)]=$the_poly[0];
+}
+select -r $select;
+}
+
+
+if(`window -ex FY_tool_22`) deleteUI FY_tool_22; 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 0 -tlb 0 FY_tool_22 ;
+rowColumnLayout -numberOfColumns 1  ;
+text -l "";
+text -l "";
+text -fn "boldLabelFont" -l "   奥义之线生成poly大法 - 选择边线或者曲线(1Linear)   ";
+text -l "";
+text -l "";
+button -l "执行" -c "c_p()";
+text -l "";
+text -l "";
+setParent ..;   
+showWindow FY_tool_22;

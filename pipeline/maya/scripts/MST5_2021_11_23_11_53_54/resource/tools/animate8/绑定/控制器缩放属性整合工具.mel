@@ -1,0 +1,143 @@
+//控制器缩放属性整合绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtSclMasterWin(){
+if(`window -ex gtSclMasterWin`) deleteUI -window gtSclMasterWin;
+window -wh 410 300 -title "老船动画吧-控制器缩放属性整合绑定工具" gtSclMasterWin;
+columnLayout -adj 1 gtColL;
+
+text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 45  -c "showHelp -a \"http://www.animate8.com/archives/1708\"";
+formLayout gtform;
+
+///////////////////////////////////////
+text -l "缩    放    轴    向："  gttexta;
+checkBox -l "X" -v 1 conCheckB3;
+checkBox -l "Y" -v 1 conCheckB4;
+checkBox -l "Z" -v 1 conCheckB5;
+help textFieldButtonGrp;
+textFieldButtonGrp  -cw3 80 200 80 -label "控制器一：" -text "载入起始端控制器" -buttonLabel "载入起始端控制器" -bc "gtSclconMasterLoadnameA" sclconButA ;
+textFieldButtonGrp  -cw3 80 200 80 -label "控制器二：" -text "载入结束端控制器" -buttonLabel "载入起始端控制器" -bc "gtSclconMasterLoadnameB" sclconButB ;
+
+button -l "创建缩放控制整合" -c "gtSclMasterTrsProcA;" conBut2;
+frameLayout -l "使用说明" -cll 1 -cl 1 gtFrameLayout;
+
+string $shuoming="";
+    $shuoming+="控制器整合：\n需要从起始端按顺序选择被控制器的物体\n控制器必须有干净的变换属性";
+text -l ($shuoming) text1;
+//help frameLayout;
+formLayout -e
+
+-af gttexta left 10 -af gttexta right 10 -af gttexta top 5 
+
+-af conCheckB3 left 50 -ap conCheckB3 right 0 43 -ac conCheckB3 top 5 gttexta
+-ac conCheckB4 left 4 conCheckB3 -ap conCheckB4 right 0 70 -ac conCheckB4 top 5 gttexta
+-ac conCheckB5 left 4 conCheckB4 -af conCheckB5 right 10 -ac conCheckB5 top 5 gttexta
+
+-af sclconButA left 10 -af sclconButA right 10 -ac sclconButA top 5 conCheckB5
+-af sclconButB left 10 -af sclconButB right 10 -ac sclconButB top 5 sclconButA
+
+-af conBut2 left 10 -af conBut2 right 10 -ac conBut2 top 5 sclconButB
+-af gtFrameLayout left 10 -af gtFrameLayout right 10 -ac gtFrameLayout top 4 conBut2
+  gtform;
+
+showWindow gtSclMasterWin;
+}
+/////////////////////////////
+global proc gtSclconMasterLoadnameA(){
+    string $sel[]=`ls -sl`;
+    textFieldButtonGrp -e -tx ($sel[0]) sclconButA;
+}
+////////////////
+global proc gtSclconMasterLoadnameB(){
+    string $sel[]=`ls -sl`;
+    textFieldButtonGrp -e -tx ($sel[0]) sclconButB;
+}
+//////////////////////////
+global proc gtSclMasterTrsProcA (){
+
+int $x=`checkBox -q -v conCheckB3`;
+int $y=`checkBox -q -v conCheckB4`;
+int $z=`checkBox -q -v conCheckB5`;       
+string $conA=`textFieldButtonGrp -q -tx sclconButA`;
+string $conB=`textFieldButtonGrp -q -tx sclconButB`;
+string $selC[]=`ls -sl`;                                          
+int $numC=size($selC);                                           
+string $conAA=$conA;                                        
+string $conBB=$conB; 
+  
+for($ii=0;$ii<$numC;$ii++){  
+                                        
+float $perRot=1.0/($numC+1);                                      
+float $mA=1-$perRot*$ii-$perRot; 
+float $multA= smoothstep(0,1,$mA);                                                    
+float $multB=1-$multA; 
+
+select -r ($selC[$ii]);
+group -n ($selC[$ii]+"Scl");
+spaceLocator -p 0 0 0 -n ($selC[$ii]+"tempLoc");
+select -r ($selC[$ii]);
+select -add ($selC[$ii]+"tempLoc");
+delete`pointConstraint`;
+float $p[]=`xform -q -ws -t -a ($selC[$ii]+"tempLoc")`;  
+delete ($selC[$ii]+"tempLoc");
+move -a ($p[0]) ($p[1]) ($p[2]) ($selC[$ii]+"Scl.scalePivot") ($selC[$ii]+"Scl.rotatePivot");
+
+select -r  $conBB;
+string $attrNam="sclBias"+$ii;
+addAttr -ln $attrNam  -at double  -min 0 -max 1 -dv  $multB;
+shadingNode -asUtility reverse -n ($selC[$ii]+"reversAA");
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"reversAA.inputX"); 
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"reversAA.inputY"); 
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"reversAA.inputZ"); 
+ 
+shadingNode -asUtility multiplyDivide -n ($selC[$ii]+"multiplyAAS"); 
+connectAttr -f ( $conAA+".scale") ($selC[$ii]+"multiplyAAS.input1"); 
+connectAttr -f ($selC[$ii]+"reversAA.output") ($selC[$ii]+"multiplyAAS.input2") ;   
+                              
+shadingNode -asUtility multiplyDivide -n ($selC[$ii]+"multiplyBBS"); 
+connectAttr -f ( $conBB+".scale") ($selC[$ii]+"multiplyBBS.input1");
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"multiplyBBS.input2Y") ;
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"multiplyBBS.input2Z");
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"multiplyBBS.input2X");
+
+if($x==1&&$y==1&&$z==1){                              
+shadingNode -asUtility plusMinusAverage -n ($selC[$ii]+"plusMinABS"); 
+connectAttr -force ($selC[$ii]+"multiplyAAS.output") ($selC[$ii]+"plusMinABS.input3D[0]"); 
+connectAttr -force ($selC[$ii]+"multiplyBBS.output") ($selC[$ii]+"plusMinABS.input3D[1]"); 
+connectAttr -f ($selC[$ii]+"plusMinABS.output3D") ($selC[$ii]+"Scl.scale"); 
+}else{
+    
+   if($x==1){
+    shadingNode -asUtility plusMinusAverage -n ($selC[$ii]+"plusMinABSX"); 
+connectAttr -force ($selC[$ii]+"multiplyAAS.outputX") ($selC[$ii]+"plusMinABSX.input1D[0]"); 
+connectAttr -force ($selC[$ii]+"multiplyBBS.outputX") ($selC[$ii]+"plusMinABSX.input1D[1]"); 
+connectAttr -f ($selC[$ii]+"plusMinABSX.output1D") ($selC[$ii]+"Scl.sx");    
+   } 
+   
+    if($y==1){
+    shadingNode -asUtility plusMinusAverage -n ($selC[$ii]+"plusMinABSY"); 
+connectAttr -force ($selC[$ii]+"multiplyAAS.outputY") ($selC[$ii]+"plusMinABSY.input1D[0]"); 
+connectAttr -force ($selC[$ii]+"multiplyBBS.outputY") ($selC[$ii]+"plusMinABSY.input1D[1]"); 
+connectAttr -f ($selC[$ii]+"plusMinABSY.output1D") ($selC[$ii]+"Scl.sy");    
+   } 
+       if($z==1){
+    shadingNode -asUtility plusMinusAverage -n ($selC[$ii]+"plusMinABSZ"); 
+connectAttr -force ($selC[$ii]+"multiplyAAS.outputZ") ($selC[$ii]+"plusMinABSZ.input1D[0]"); 
+connectAttr -force ($selC[$ii]+"multiplyBBS.outputZ") ($selC[$ii]+"plusMinABSZ.input1D[1]"); 
+connectAttr -f ($selC[$ii]+"plusMinABSZ.output1D") ($selC[$ii]+"Scl.sz");    
+               }   
+            }
+        }
+select ($conA);
+print "------------------完成---------------------";
+}
+/////////////////////////////////
+gtSclMasterWin;
+////////////////////////2016-10-30

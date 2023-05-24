@@ -1,0 +1,36 @@
+global proc sel_curve_for_hair(){
+pickWalk -d down -type edgering;
+string $aaa[]=`ls -sl -fl`;
+select -cl;
+string $all[];
+for ($a=0;$a<size($aaa);$a++)
+
+{
+    select -r $aaa[$a];
+    pickWalk -d right -type edgeloop;
+    
+    CreateCurveFromPoly;
+    string $t[]=`ls -sl`;
+    $all[size($all)]=$t[0];
+}
+
+select -r $all;
+clear $all;
+}
+if(`window -ex FY_tool_6`) deleteUI FY_tool_6; 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 0 -tlb 0 FY_tool_6;
+rowColumnLayout -numberOfColumns 1  ;
+text -l "";
+text -l "";
+text -fn "boldLabelFont" -l "         奥义之提取毛发曲线大法 - 先选择模型的一根边线         ";
+
+text -l "";
+
+text -l "";
+button -l "执行" -c "sel_curve_for_hair()";
+text -l "";
+text -l "";
+setParent ..;   
+showWindow FY_tool_6;

@@ -1,0 +1,97 @@
+{
+    "areaLight1": {
+        "color": [
+            1.0, 
+            1.0, 
+            1.0
+        ], 
+        "light_type": "areaLight", 
+        "rotation": [
+            0.0, 
+            0.0, 
+            0.0
+        ], 
+        "translate": [
+            0.0, 
+            0.0, 
+            0.0
+        ], 
+        "intensity": 1.0
+    }, 
+    "directionalLight1": {
+        "color": [
+            1.0, 
+            1.0, 
+            1.0
+        ], 
+        "light_type": "directionalLight", 
+        "rotation": [
+            0.0, 
+            0.0, 
+            0.0
+        ], 
+        "translate": [
+            0.0, 
+            0.0, 
+            0.0
+        ], 
+        "intensity": 1.0
+    }, 
+    "pointLight1": {
+        "color": [
+            1.0, 
+            1.0, 
+            1.0
+        ], 
+        "light_type": "pointLight", 
+        "rotation": [
+            0.0, 
+            0.0, 
+            0.0
+        ], 
+        "translate": [
+            0.0, 
+            0.0, 
+            0.0
+        ], 
+        "intensity": 1.0
+    }, 
+    "volumeLight1": {
+        "color": [
+            1.0, 
+            1.0, 
+            1.0
+        ], 
+        "light_type": "volumeLight", 
+        "rotation": [
+            0.0, 
+            0.0, 
+            0.0
+        ], 
+        "translate": [
+            0.0, 
+            0.0, 
+            0.0
+        ], 
+        "intensity": 1.0
+    }, 
+    "spotLight1": {
+        "color": [
+            1.0, 
+            1.0, 
+            1.0
+        ], 
+        "light_type": "spotLight", 
+        "rotation": [
+            0.0, 
+            0.0, 
+            0.0
+        ], 
+        "translate": [
+            0.0, 
+            0.0, 
+            0.0
+        ], 
+        "intensity": 1.0
+    }
+}

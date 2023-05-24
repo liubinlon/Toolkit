@@ -1,0 +1,64 @@
+global string $projectMainFolder; //定义当前工程目录的主路径
+$projectMainFolder = `workspace -q -fn`+"/";
+$projectMainFolder = `substituteAllString $projectMainFolder "/" "\\"`;
+
+//定义UI
+if (`window -exists cx_openCurrentProjectWindow`)
+    deleteUI cx_openCurrentProjectWindow;
+window -t "打开当前工程目录" cx_openCurrentProjectWindow;
+columnLayout -rowSpacing 5 -columnWidth 250;
+button -c ( "system(\"load \"+$projectMainFolder)" ) -bgc 0.2 0.3 0.5 -height 50 $projectMainFolder;
+string $images_tmp = $projectMainFolder + "images\\tmp\\"; 
+button -c ( "system(\"load \"+$images_tmp)" +"\;" + "print (\"images\\\\tmp\\\\ is opened\")" ) -bgc 0.4 0.3 0.2 $images_tmp; //额外增加打开\images\tmp的按钮。注意-c中的命令，用到了二重转义字符，也是比较恶心人的地方，其实不用写这么多，增加一个print命令也是自己练习一下使用二重转义字符
+
+//使用函数来获取当前工作目录下的各个目录
+string $currentProjectFolderList[] = cx_currentProjectFolderList();
+for($i=0;$i<size($currentProjectFolderList);$i++)
+{
+   string $thisButton =` button $currentProjectFolderList[$i]`;
+   button -e -c ("cx_openfolderTemp "+$i) $thisButton;
+   if(`gmatch $currentProjectFolderList[$i] "*\\images"`) //为不同的按钮设置不同的颜色
+   button -e -bgc .15 .4 .15 $thisButton;
+   if(`gmatch $currentProjectFolderList[$i] "*\\scenes"`)
+   button -e -bgc .3 .2 .4 $thisButton;
+   if(`gmatch $currentProjectFolderList[$i] "*\\particles"`)
+   button -e -bgc .15 .15 .15 $thisButton;
+   if(`gmatch $currentProjectFolderList[$i] "*\\data"`)
+   button -e -bgc .5 .15 .15 $thisButton;
+}
+
+showWindow;
+
+//将第二版中的“获取工作目录下的各个目录的详细路径”写成了一个函数，注意数列字符串函数的定义方法
+global proc string[] cx_currentProjectFolderList() 
+{
+    global string $projectMainFolder;
+    $projectMainFolder = `workspace -q -fn`+"/";
+    $projectMainFolder = `substituteAllString $projectMainFolder "/" "\\"`;
+    string $folderNameList[];
+    clear $folderNameList;
+    $folderNameList = `getFileList -folder $projectMainFolder` ;
+    string $folderList[];
+    for($eachFolder in $folderNameList)
+    {
+        $eachFolder = $projectMainFolder + $eachFolder;
+        //print ("\"" + $eachFolder + "\"");
+        if(`filetest -d $eachFolder`)
+        {
+           // print (" DIRECTORY"+"\n");
+            $folderList[size($folderList)] = $eachFolder;
+        }
+        else
+        //print " is a file \n"; 
+        ;
+    }
+    return $folderList;
+};
+
+
+//打开某个目录的功能函数,用到了上面的函数
+global proc cx_openfolderTemp(int $i)
+{
+    string $currentProjectFolderList[] = cx_currentProjectFolderList() ;
+    system("load "+ $currentProjectFolderList[$i]);
+}

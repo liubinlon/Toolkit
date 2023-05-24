@@ -1,0 +1,36 @@
+
+
+
+global proc checkmesh()
+{
+polySelectConstraint -mode 3 -type 0x8000 -where 1;
+string $selectedEdge[] = `ls -sl`;
+polySelectConstraint -disable;
+
+if(size($selectedEdge)>0)
+for($eachEdge in $selectedEdge)
+print ("已检查出边缘线: " + $eachEdge+"\n");
+else
+print "这模型是封闭的。";
+}
+
+
+
+
+if(`window -ex FY_tool_4`) deleteUI FY_tool_4; 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 0 -tlb 0 FY_tool_4 ;
+rowColumnLayout -numberOfColumns 1  ;
+text -l "";
+text -l "";
+text -fn "boldLabelFont" -l "       奥义之查找边缘线大法 - 先选择一个模型       ";
+
+text -l "";
+
+text -l "";
+button -l "执行" -c "checkmesh()";
+text -l "";
+text -l "";
+setParent ..;   
+showWindow FY_tool_4;

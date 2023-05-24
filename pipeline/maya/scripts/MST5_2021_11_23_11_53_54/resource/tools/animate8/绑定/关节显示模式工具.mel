@@ -1,0 +1,70 @@
+//批量编辑关节显示模式绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtJointDrawingWin(){
+   if(`window -ex gtJointDrawingWin`) deleteUI -window gtJointDrawingWin;
+    window -wh 400 200  -t "老船角色绑定-☆-批量编辑关节显示模式绑定工具!" gtJointDrawingWin;
+    columnLayout -adj 1 mainColumnattr;
+  text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频！" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1316\"";
+
+
+    formLayout  gtCOTAF;
+    radioButtonGrp  -l "方式" -nrb  2 -la2 "选择的物体" "所有子层级"  -select 1 gtJointStyle;
+
+    text -l "编辑全部关节的显示模式" tgtextTempA;
+    checkBox -l "关节模式(勾选将显示关节)"  gtLoarSkinObjA;
+    button  -l "编辑关节显示模式" -c "gtBoneDisplayType" but3;
+       
+    formLayout -e
+  
+    -af tgtextTempA left 5 -af tgtextTempA top 5 -ap tgtextTempA right 0 50
+    -ac gtLoarSkinObjA left 5  tgtextTempA -af gtLoarSkinObjA top 5  -af gtLoarSkinObjA right 10
+    -af  gtJointStyle left 5 -af gtJointStyle right 10 -ac gtJointStyle top 5 tgtextTempA
+
+    -af but3 left 5 -af but3 right 5 -ac but3  top 5 gtJointStyle
+       
+    gtCOTAF;     
+    showWindow gtJointDrawingWin;   
+}
+////////////////////////
+global proc gtBoneDisplayType(){
+    int $state=`checkBox -q -v gtLoarSkinObjA`;
+    int $style=`radioButtonGrp -q -sl gtJointStyle`;
+
+    string $sel[]=`ls -sl`;
+    
+for($i=0;$i<size($sel);$i++){
+    string $nodetype=`nodeType ($sel[$i])`;
+    if($nodetype=="joint"){
+        if($state==0){
+        setAttr ($sel[$i]+".drawStyle") 2;
+        }else{
+        setAttr  ($sel[$i]+".drawStyle") 0;
+            }
+        } 
+        
+          if($style==2){
+            string $childs[]=`listRelatives -c -ad -fullPath ($sel[$i])`;
+          for($ii=0;$ii<size($childs);$ii++){
+    string $nodetype=`nodeType ($childs[$ii])`;
+    if($nodetype=="joint"){
+        if($state==0){
+        setAttr ($childs[$ii]+".drawStyle") 2;
+        }else{
+        setAttr  ($childs[$ii]+".drawStyle") 0;
+                }
+            } 
+        }
+      }                     
+   }    
+}
+/////////////////////////
+gtJointDrawingWin;

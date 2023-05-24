@@ -1,0 +1,382 @@
+//随机表达式动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+/////mainProc
+global proc gtBoxNoise(){
+float  $min=`floatSliderGrp -q -v gtFloatSMin`;
+float  $max=`floatSliderGrp -q -v gtFloatSMax`;
+int $t=`checkBox -q -v checkBt`;
+int $s=`checkBox -q -v checkBs`;
+int $r=`checkBox -q -v checkBr`;
+int $x=`checkBox -q -v checkBx`;
+int $y=`checkBox -q -v checkBy`;
+int $z=`checkBox -q -v checkBz`;
+
+string $sel[]=`ls -sl`;
+string $con=$sel[0];
+string $name=$con;
+
+if($t==1){
+   int $state=`objExists ($con+".trsFrequcy")`;
+if($state==0){
+select -r ($con);
+addAttr -ln "trsFrequcy" -at double -k 1 -dv 1;
+addAttr -ln "trsAmplitude" -at double -k 1 -dv 1;}
+
+    if($x==1){
+global string $gtShowText="";
+for($i=0;$i<size($sel);$i++){
+string $input[]=`listConnections -s 1 -d 0 ($sel[$i]+".tx")`;
+if(size($input[0])){
+$gtShowText+=("\n  ***"+$sel[$i]+".tx 已经被别人控制!");
+print ($gtShowText);
+continue;
+}
+
+float $radA=rand($min,$max);
+float $radF=rand($min,$max);
+
+string $exp="";
+	$exp+="float $a_f=`getAttr \"";
+	$exp+=($name);
+	$exp+=".trsFrequcy\"`;\n";
+	$exp+="float $a_a=`getAttr \"";
+	$exp+=($name);
+	$exp+=".trsAmplitude\"`;\n";
+	$exp+=($sel[$i]);
+	$exp+=".tx";
+	$exp+="=noise(time*$a_f*";
+	$exp+=$radF;
+	$exp+=")*$a_a*";
+	$exp+=$radA;
+	$exp+=";\n";
+expression -s $exp -ae 1 -uc all -n ($name+"expBx"+$i);
+	    }	
+	}
+
+    if($y==1){
+global string $gtShowText="";
+for($i=0;$i<size($sel);$i++){
+string $input[]=`listConnections -s 1 -d 0 ($sel[$i]+".ty")`;
+if(size($input[0])){
+$gtShowText+=("\n  ***"+$sel[$i]+".ty 已经被别人控制!");
+print ($gtShowText);
+continue;
+}
+
+float $radA=rand($min,$max);
+float $radF=rand($min,$max);
+
+string $exp="";
+	$exp+="float $a_f=`getAttr \"";
+	$exp+=($name);
+	$exp+=".trsFrequcy\"`;\n";
+	$exp+="float $a_a=`getAttr \"";
+	$exp+=($name);
+	$exp+=".trsAmplitude\"`;\n";
+	$exp+=($sel[$i]);
+	$exp+=".ty";
+	$exp+="=noise(time*$a_f*";
+	$exp+=$radF;
+	$exp+=")*$a_a*";
+	$exp+=$radA;
+	$exp+=";\n";
+expression -s $exp -ae 1 -uc all -n ($name+"expBy"+$i);
+	    }	
+	}
+	
+    if($z==1){
+global string $gtShowText="";
+for($i=0;$i<size($sel);$i++){
+string $input[]=`listConnections -s 1 -d 0 ($sel[$i]+".tz")`;
+if(size($input[0])){
+$gtShowText+=("\n  ***"+$sel[$i]+".tz 已经被别人控制!");
+print ($gtShowText);
+continue;
+}
+
+float $radA=rand($min,$max);
+float $radF=rand($min,$max);
+
+string $exp="";
+	$exp+="float $a_f=`getAttr \"";
+	$exp+=($name);
+	$exp+=".trsFrequcy\"`;\n";
+	$exp+="float $a_a=`getAttr \"";
+	$exp+=($name);
+	$exp+=".trsAmplitude\"`;\n";
+	$exp+=($sel[$i]);
+	$exp+=".tz";
+	$exp+="=noise(time*$a_f*";
+	$exp+=$radF;
+	$exp+=")*$a_a*";
+	$exp+=$radA;
+	$exp+=";\n";
+expression -s $exp -ae 1 -uc all -n ($name+"expBz"+$i);
+	        }	
+	    }
+    }
+   ///////////////////
+   if($s==1){
+   int $state=`objExists ($con+".sclFrequcy")`;
+if($state==0){
+select -r ($con);
+addAttr -ln "scl" -at double -k 1 -dv 1;
+addAttr -ln "sclFrequcy" -at double -k 1 -dv 1;
+addAttr -ln "sclAmplitude" -at double -k 1 -dv 1;}
+
+    if($x==1){
+global string $gtShowText="";
+for($i=0;$i<size($sel);$i++){
+string $input[]=`listConnections -s 1 -d 0 ($sel[$i]+".sx")`;
+if(size($input[0])){
+$gtShowText+=("\n  ***"+$sel[$i]+".sx 已经被别人控制!");
+print ($gtShowText);
+continue;
+}
+
+float $radA=rand($min,$max);
+float $radF=rand($min,$max);
+
+string $exp="";
+	$exp+="float $a_f=`getAttr \"";
+	$exp+=($name);
+	$exp+=".sclFrequcy\"`;\n";
+	
+	$exp+="float $a_s=`getAttr \"";
+	$exp+=($name);
+	$exp+=".scl\"`;\n";
+	
+	$exp+="float $a_a=`getAttr \"";
+	$exp+=($name);
+	$exp+=".sclAmplitude\"`;\n";
+	$exp+=($sel[$i]);
+	$exp+=".sx";
+	$exp+="=(noise(time*$a_f*";
+	$exp+=$radF;
+	$exp+=")*$a_a*";
+	$exp+=$radA;
+	$exp+="+$a_a)*$a_s;\n";
+expression -s $exp -ae 1 -uc all -n ($name+"expBsx"+$i);
+	    }	
+	}
+
+    if($y==1){
+global string $gtShowText="";
+for($i=0;$i<size($sel);$i++){
+string $input[]=`listConnections -s 1 -d 0 ($sel[$i]+".sy")`;
+if(size($input[0])){
+$gtShowText+=("\n  ***"+$sel[$i]+".sy 已经被别人控制!");
+print ($gtShowText);
+continue;
+}
+
+float $radA=rand($min,$max);
+float $radF=rand($min,$max);
+
+string $exp="";
+	$exp+="float $a_f=`getAttr \"";
+	$exp+=($name);
+	$exp+=".sclFrequcy\"`;\n";
+		$exp+="float $a_s=`getAttr \"";
+	$exp+=($name);
+	$exp+=".scl\"`;\n";
+	
+	$exp+="float $a_a=`getAttr \"";
+	$exp+=($name);
+	$exp+=".sclAmplitude\"`;\n";
+	$exp+=($sel[$i]);
+	$exp+=".sy";
+	$exp+="=(noise(time*$a_f*";
+	$exp+=$radF;
+	$exp+=")*$a_a*";
+	$exp+=$radA;
+	$exp+="+$a_a)*$a_s;\n";
+expression -s $exp -ae 1 -uc all -n ($name+"expBsy"+$i);
+	    }	
+	}
+	
+    if($z==1){
+global string $gtShowText="";
+for($i=0;$i<size($sel);$i++){
+string $input[]=`listConnections -s 1 -d 0 ($sel[$i]+".sz")`;
+if(size($input[0])){
+$gtShowText+=("\n  ***"+$sel[$i]+".sz 已经被别人控制!");
+print ($gtShowText);
+continue;
+}
+
+float $radA=rand($min,$max);
+float $radF=rand($min,$max);
+
+string $exp="";
+	$exp+="float $a_f=`getAttr \"";
+	$exp+=($name);
+	$exp+=".sclFrequcy\"`;\n";
+		$exp+="float $a_s=`getAttr \"";
+	$exp+=($name);
+	$exp+=".scl\"`;\n";
+	
+	$exp+="float $a_a=`getAttr \"";
+	$exp+=($name);
+	$exp+=".sclAmplitude\"`;\n";
+	$exp+=($sel[$i]);
+	$exp+=".sz";
+	$exp+="=(noise(time*$a_f*";
+	$exp+=$radF;
+	$exp+=")*$a_a*";
+	$exp+=$radA;
+	$exp+="+$a_a)*$a_s;\n";
+expression -s $exp -ae 1 -uc all -n ($name+"expBsz"+$i);
+	        }	
+	    }
+    }
+    ///////////////
+    if($r==1){
+   int $state=`objExists ($con+".rotFrequcy")`;
+if($state==0){
+select -r ($con);
+addAttr -ln "rotFrequcy" -at double -k 1 -dv 1;
+addAttr -ln "rotAmplitude" -at double -k 1 -dv 1;}
+
+    if($x==1){
+global string $gtShowText="";
+for($i=0;$i<size($sel);$i++){
+string $input[]=`listConnections -s 1 -d 0 ($sel[$i]+".rx")`;
+if(size($input[0])){
+$gtShowText+=("\n  ***"+$sel[$i]+".rx 已经被别人控制!");
+print ($gtShowText);
+continue;
+}
+
+float $radA=rand($min,$max);
+float $radF=rand($min,$max);
+
+string $exp="";
+	$exp+="float $a_f=`getAttr \"";
+	$exp+=($name);
+	$exp+=".rotFrequcy\"`;\n";
+	$exp+="float $a_a=`getAttr \"";
+	$exp+=($name);
+	$exp+=".rotAmplitude\"`;\n";
+	$exp+=($sel[$i]);
+	$exp+=".rx";
+	$exp+="=noise(time*$a_f*";
+	$exp+=$radF;
+	$exp+=")*$a_a*";
+	$exp+=$radA;
+	$exp+=";\n";
+expression -s $exp -ae 1 -uc all -n ($name+"expBrx"+$i);
+	    }	
+	}
+
+    if($y==1){
+global string $gtShowText="";
+for($i=0;$i<size($sel);$i++){
+string $input[]=`listConnections -s 1 -d 0 ($sel[$i]+".ry")`;
+if(size($input[0])){
+$gtShowText+=("\n  ***"+$sel[$i]+".ry 已经被别人控制!");
+print ($gtShowText);
+continue;
+}
+
+float $radA=rand($min,$max);
+float $radF=rand($min,$max);
+
+string $exp="";
+	$exp+="float $a_f=`getAttr \"";
+	$exp+=($name);
+	$exp+=".rotFrequcy\"`;\n";
+	$exp+="float $a_a=`getAttr \"";
+	$exp+=($name);
+	$exp+=".rotAmplitude\"`;\n";
+	$exp+=($sel[$i]);
+	$exp+=".ry";
+	$exp+="=noise(time*$a_f*";
+	$exp+=$radF;
+	$exp+=")*$a_a*";
+	$exp+=$radA;
+	$exp+=";\n";
+expression -s $exp -ae 1 -uc all -n ($name+"expBry"+$i);
+	    }	
+	}
+	
+    if($z==1){
+global string $gtShowText="";
+for($i=0;$i<size($sel);$i++){
+string $input[]=`listConnections -s 1 -d 0 ($sel[$i]+".rz")`;
+if(size($input[0])){
+$gtShowText+=("\n  ***"+$sel[$i]+".rz 已经被别人控制!");
+print ($gtShowText);
+continue;
+}
+
+float $radA=rand($min,$max);
+float $radF=rand($min,$max);
+
+string $exp="";
+	$exp+="float $a_f=`getAttr \"";
+	$exp+=($name);
+	$exp+=".rotFrequcy\"`;\n";
+	$exp+="float $a_a=`getAttr \"";
+	$exp+=($name);
+	$exp+=".rotAmplitude\"`;\n";
+	$exp+=($sel[$i]);
+	$exp+=".rz";
+	$exp+="=noise(time*$a_f*";
+	$exp+=$radF;
+	$exp+=")*$a_a*";
+	$exp+=$radA;
+	$exp+=";\n";
+expression -s $exp -ae 1 -uc all -n ($name+"expBrz"+$i);
+	        }	
+	    }
+    } 
+    
+}
+
+/////windowProc
+global proc gtBoxNoiseWin(){
+if(`window -ex gtBoxNWin`) deleteUI -window gtBoxNWin;
+window -wh 350 200 -t "老船角色绑定-☆☆☆☆☆-随机表达式动画工具！！！" gtBoxNWin;
+formLayout gtFormNoise;
+columnLayout -adj 1 gtColN;
+text -l "点击下方按钮↓↓↓↓↓" texta1;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/950\"";
+
+	rowColumnLayout -nc 4 -cw 1 50 -cw 2 100 -cw 3 100 -cw 4 100;
+text -l "";
+checkBox -l "移动随机"  -v 0 checkBt;
+checkBox -l "缩放随机" -v 0 checkBs;
+checkBox -l "旋转随机" -v 0 checkBr;
+    setParent..;
+	rowColumnLayout -nc 4 -cw 1 50 -cw 2 100 -cw 3 100 -cw 4 100;
+text -l "";
+
+checkBox -l "X" -v 0 checkBx;
+checkBox -l "Y" -v 0 checkBy;
+checkBox -l "Z" -v 0 checkBz;
+    setParent..;
+floatSliderGrp -min 0 -max 10  -v 0 -f 1 -l "最小：" gtFloatSMin;
+floatSliderGrp -min 0 -max 20  -v 0.5 -f 1 -l "最大：" gtFloatSMax;
+separator -style "double";
+
+button -l " 应  用" -w 120  -c "gtBoxNoise" but2;
+
+formLayout -e
+-af gtColN left 5
+-af gtColN right 5
+-af gtColN top 5 gtFormNoise;
+showWindow gtBoxNWin;
+}
+
+
+////////////////////////////////
+gtBoxNoiseWin;

@@ -1,0 +1,19 @@
+global proc selectHi()
+{
+    select -hi;
+    string $sel[]=`ls -sl`;
+    string $i;
+    string $nurbsCurves[];
+    int $count;
+    string $parentCurve[];
+    for($i in $sel)
+    {
+        if (`nodeType $i` == "nurbsCurve")
+        {
+        $parentCurve = `listRelatives -p -f $i`;
+        $nurbsCurves[$count] = $parentCurve[0];
+        $count++;}
+    }
+    select $nurbsCurves;
+}
+selectHi;

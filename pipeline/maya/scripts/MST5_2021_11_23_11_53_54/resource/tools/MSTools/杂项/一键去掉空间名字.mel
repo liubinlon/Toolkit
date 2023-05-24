@@ -1,0 +1,39 @@
+// **********************************************************   
+// Removes ALL Namespaces From Every Node In The Scene
+global proc jgRemoveAllNamespaces () {
+	// Get All Nodes In Scene  
+	string $allNodes[] = `ls` ;  
+	   
+	// Loop Through Them  
+	for($node in $allNodes) {  
+	   
+	   // Tokenize And Rename  
+	   string $buffer[] ;  
+	   tokenize $node ":" $buffer ;  
+	   string $newName = $buffer[size($buffer)-1] ;  
+	   catch(`rename $node $newName`) ;  
+	   
+	} 
+}
+
+
+
+
+
+
+
+if(`window -ex FY_tool_bc`) deleteUI FY_tool_bc; 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 0 -tlb 0 FY_tool_bc ;
+rowColumnLayout -numberOfColumns 1  ;
+text -l "";
+text -l "";
+text -fn "boldLabelFont" -l "   一键去除场景内的空间命名  \n 报错属于正常现象";
+text -l "";
+text -l "";
+button -l "执行" -c "jgRemoveAllNamespaces()" ;
+text -l "";
+text -l "";
+setParent ..;   
+showWindow FY_tool_bc;

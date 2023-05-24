@@ -1,0 +1,46 @@
+
+global proc copyskin(){
+string $skin_A[]=`ls -sl`;
+int $size_a=`size($skin_A)`;
+select $skin_A[size($skin_A)-1];
+SelectHierarchy ;
+
+string $skin_mesh[]=`ls -type "mesh" -sl`;
+int $size_b=`size($skin_mesh)`;
+for($cop=0;$cop<$size_b;$cop++)
+{
+ string $obj_s[]=`listRelatives -p $skin_mesh[$cop]`;
+select -r $skin_A[0]; 
+select -add $obj_s[0];
+copySkinWeights
+  -noMirror
+  -surfaceAssociation closestPoint 
+  -influenceAssociation oneToOne 
+  -influenceAssociation closestJoint 
+  -influenceAssociation closestJoint;
+                     
+                     
+}
+select -cl;
+print("=成功复制权重。=\n");
+}
+
+
+
+if(`window -ex FY_tool_3copy`) deleteUI FY_tool_3copy; 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 0 -tlb 0 FY_tool_3copy;
+rowColumnLayout -numberOfColumns 1  ;
+text -l "";
+text -l "";
+text -fn "boldLabelFont" -l "       选择有权重的物体再加选新物体的组       ";
+
+text -l "";
+
+text -l "";
+button -l "执行" -c "copyskin()";
+text -l "";
+text -l "";
+setParent ..;   
+showWindow FY_tool_3copy;

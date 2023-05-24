@@ -1,0 +1,620 @@
+// Multi OBJ Tool v1.1
+// -------------------
+// Tools for dealing with large amounts of OBJ files!
+//
+// Written by Paul "MoP" Greveson
+// www.greveson.co.uk
+ 
+ 
+// MAIN COMMANDS
+ 
+// Procedure to get the optionVars.
+global proc mopMultiObjTool.getOptions() {
+	// Main settings.
+	menuItem -e -cb `optionVar -q mopMultiObjToolFolderChk` mopMultiObjToolFolderChk;
+	
+	if ( !`optionVar -ex mopMultiObjToolSrcPath` )
+		optionVar -sv mopMultiObjToolSrcPath "";
+	textField -e -fi `optionVar -q mopMultiObjToolSrcPath` mopMultiObjToolSrcPath;
+	
+	if ( !`optionVar -ex mopMultiObjToolFilter` )
+		optionVar -sv mopMultiObjToolFilter "";
+	textField -e -text `optionVar -q mopMultiObjToolFilter` mopMultiObjToolFilter;
+	
+	// Export settings.
+	menuItem -e -cb `optionVar -q mopMultiObjToolExportGroups` mopMultiObjToolExportGroups;
+	menuItem -e -cb `optionVar -q mopMultiObjToolExportPointGroups` mopMultiObjToolExportPointGroups;
+	menuItem -e -cb `optionVar -q mopMultiObjToolExportMaterials` mopMultiObjToolExportMaterials;
+	menuItem -e -cb `optionVar -q mopMultiObjToolExportSmoothing` mopMultiObjToolExportSmoothing;
+	menuItem -e -cb `optionVar -q mopMultiObjToolExportNormals` mopMultiObjToolExportNormals;
+	
+	// Import settings.	
+	menuItem -e -cb `optionVar -q mopMultiObjToolImportMultiple` mopMultiObjToolImportMultiple;
+	menuItem -e -cb `optionVar -q mopMultiObjToolImportNamespace` mopMultiObjToolImportNamespace;
+}
+ 
+// Procedure to save the optionVars.
+global proc mopMultiObjTool.setOptions() {
+	// Main settings.
+	optionVar -iv mopMultiObjToolFolderChk `menuItem -q -cb mopMultiObjToolFolderChk`;
+	optionVar -sv mopMultiObjToolSrcPath `textField -q -fi mopMultiObjToolSrcPath`;
+	optionVar -sv mopMultiObjToolFilter `textField -q -text mopMultiObjToolFilter`;
+	
+	// Export settings.
+	optionVar -iv mopMultiObjToolExportGroups `menuItem -q -cb mopMultiObjToolExportGroups`;
+	optionVar -iv mopMultiObjToolExportPointGroups `menuItem -q -cb mopMultiObjToolExportPointGroups`;
+	optionVar -iv mopMultiObjToolExportMaterials `menuItem -q -cb mopMultiObjToolExportMaterials`;
+	optionVar -iv mopMultiObjToolExportSmoothing `menuItem -q -cb mopMultiObjToolExportSmoothing`;
+	optionVar -iv mopMultiObjToolExportNormals `menuItem -q -cb mopMultiObjToolExportNormals`;
+	
+	// Import settings.
+	optionVar -iv mopMultiObjToolImportMultiple `menuItem -q -cb mopMultiObjToolImportMultiple`;
+	optionVar -iv mopMultiObjToolImportNamespace `menuItem -q -cb mopMultiObjToolImportNamespace`;
+}
+ 
+// Procedure to assemble the OBJ export options based on chosen settings.
+global proc string mopMultiObjTool.getExportOptions() {
+	string $options = "";
+	$options += ( "groups=" + `optionVar -q mopMultiObjToolExportGroups` + ";" );
+	$options += ( "ptgroups=" + `optionVar -q mopMultiObjToolExportPointGroups` + ";" );
+	$options += ( "materials=" + `optionVar -q mopMultiObjToolExportMaterials` + ";" );
+	$options += ( "smoothing=" + `optionVar -q mopMultiObjToolExportSmoothing` + ";" );
+	$options += ( "normals=" + `optionVar -q mopMultiObjToolExportNormals` );
+	return ( "\"" + $options + "\"" );
+}
+ 
+// Procedure to assemble the OBJ import options based on chosen settings.
+global proc string mopMultiObjTool.getImportOptions() {
+	string $options = ( "mo=" + `optionVar -q mopMultiObjToolImportMultiple` );
+	return ( "\"" + $options + "\"" );
+}
+ 
+// Procedure to import selected files.
+global proc mopMultiObjTool.import() {
+	string $fileList = "mopMultiObjToolFileList";
+	string $path = `textField -q -fi mopMultiObjToolSrcPath`;
+	
+	string $selection[] = `textScrollList -q -si $fileList`;
+	if ( `size $selection` == 0 ) error "No valid files selected to import.";
+	
+	string $options = mopMultiObjTool.getImportOptions();
+	int $namespace = `optionVar -q mopMultiObjToolImportNamespace`;
+	
+	progressBar -e -min 0 -pr 1 -max `size $selection` mopMultiObjToolProgress;
+	int $done = 0;
+	for ( $item in $selection ) {
+		// Skip selected folders.
+		if ( `match "\\[ " $item` != "" ) continue;
+		
+		// Import the OBJ.
+		string $file = ( $path + $item );
+		if ( !`file -q -ex $file` ) warning( "File not found: " + toNativePath( $file ) );
+		
+		string $prefix = basename( `tolower $file`, ".obj" );
+		
+		string $cmd = "file -import -type \"OBJ\" ";
+		if ( $options == "\"mo=0\"" ) {
+			$cmd += "-ra true ";
+			if ( $namespace )
+				$cmd += ( "-ns \"" + $prefix + "\" " );
+			else
+				$cmd += ( "-rpr \"" + $prefix + "\" " );
+		}
+		else {
+			if ( $namespace )
+				$cmd += ( "-ns \"" + $prefix + "\" " );
+		}
+		$cmd += ( "-op " + $options + " -pr " );
+		$cmd += ( "\"" + $file + "\"" );
+		
+		eval( $cmd );
+		
+		progressBar -e -s 1 mopMultiObjToolProgress;
+		$done++;
+	}
+	
+	print ( "// Successfully imported " + $done + " OBJ files. //\n" );
+	progressBar -e -pr 0 mopMultiObjToolProgress;
+}
+ 
+ 
+// Procedure to export the selection to separate files.
+global proc mopMultiObjTool.export() {
+	string $sel[] = `ls -sl -l -tr`;
+	if ( `size $sel` == 0 ) error "Nothing selected.";
+	
+	string $path = `textField -q -fi mopMultiObjToolSrcPath`;
+	
+	// Get valid exports.
+	string $objs[] = {};
+	for ( $obj in $sel ) {
+		string $shapes[] = `listRelatives -type "mesh" $obj`;
+		if ( `size $shapes` > 0 )
+			$objs[ `size $objs` ] = $obj;
+	}
+	
+	if ( `size $objs` == 0 ) error "None of the selected objects made valid OBJ files.";
+	
+	string $options = mopMultiObjTool.getExportOptions();
+	
+	progressBar -e -min 0 -pr 1 -max `size $objs` mopMultiObjToolProgress;
+	int $done = 0;
+	for ( $obj in $objs ) {
+		string $tokens[] = {};
+		int $numTokens = `tokenize $obj "|" $tokens`;
+		string $file = ( $path + $tokens[ $numTokens - 1 ] + ".obj" );
+		select -r $obj;
+		file -f -es -type "OBJexport" -op $options $file;
+		progressBar -e -s 1 mopMultiObjToolProgress;
+		$done++;
+	}
+	// Reselect the original selection.
+	select -r $sel;
+	
+	progressBar -e -min 0 -pr 0 -max 1 mopMultiObjToolProgress;
+	print ( "// Successfully exported " + $done + " objects to OBJ. //\n" );
+	mopMultiObjTool.getFiles;
+}
+ 
+// Procedure to export the selection separate files.
+global proc mopMultiObjTool.browse( string $filename, string $fileType ) {
+	textField -e -fi $filename mopMultiObjToolSrcPath;
+	mopMultiObjTool.getFiles;
+}
+ 
+// Procedure to make sure the source path always ends in \.
+global proc mopMultiObjTool.checkSourcePath() {
+	string $path = `textField -q -fi mopMultiObjToolSrcPath`;
+	if ( $path == "" ) return;
+	if ( !endsWith( $path, "/" ) )
+		textField -e -fi ( $path + "/" ) mopMultiObjToolSrcPath;
+}
+ 
+ 
+// FILE LIST COMMANDS
+ 
+// Procedure to build the list of files to display.
+global proc mopMultiObjTool.getFiles() {
+	mopMultiObjTool.checkSourcePath;
+	mopMultiObjTool.setOptions;
+	string $fileList = "mopMultiObjToolFileList";
+	string $contents = "mopMultiObjToolContents";
+	string $path = `textField -q -fi mopMultiObjToolSrcPath`;
+	
+	// Store previous list selection.
+	string $origSel[] = `textScrollList -q -si $fileList`;
+	
+	// Clear the list.
+	int $numFiles = 0;
+	textScrollList -e -en 1 -ra $fileList;
+	
+	// Early out if the path doesn't exist.
+	if ( !`file -q -ex $path` ) {
+		textScrollList -e -en 0 $fileList;
+		text -e -l "指定的文件夹不存在." $contents;
+		return;
+	}
+	
+	string $filter = `textField -q -text mopMultiObjToolFilter`;
+	
+	// Add folders if required.
+	if ( `menuItem -q -cb mopMultiObjToolFolderChk` ) {
+		// Add the "up a level" option if required.
+		string $tokens[] = {};
+		int $numTokens = `tokenize $path "/" $tokens`;
+		if ( $numTokens > 1 ) textScrollList -e -a "[ .. ]" $fileList;
+		
+		// Populate the file list with a subfolder list and OBJ file list.
+		string $files[] = `getFileList -fld $path`;
+		for ( $file in $files ) {
+			if ( `filetest -d ( $path + $file )` ) {
+				int $show = 1;
+				if ( $filter != "" && $filter != "*" ) {
+					if ( `match $filter $file` == "" ) $show = 0;
+				}
+				if ( $show ) {
+					string $folderName = ( "[ " + $file + " ]" );
+					textScrollList -e -a $folderName $fileList;
+				}
+			}
+		}
+	}
+	
+	// Get OBJ files.
+	string $files[] = `getFileList -fld $path -fs "*.obj"`;
+	for ( $file in $files ) {
+		int $show = 1;
+		if ( $filter != "" && $filter != "*" ) {
+			if ( `match $filter $file` == "" ) $show = 0;
+		}
+		if ( $show ) {
+			textScrollList -e -a $file $fileList;
+			$numFiles++;
+		}
+	}
+	
+	// Try to reselect the original selection.
+	string $newItems[] = `textScrollList -q -ai $fileList`;
+	for ( $item in $origSel ) {
+		if ( `stringArrayContains $item $newItems` )
+			textScrollList -e -si $item $fileList;
+	}
+	
+	// Update the contents text.
+	if ( $numFiles == 0 )
+		text -e -l "没有找到 OBJ 文件." $contents;
+	else if ( $numFiles == 1 )
+		text -e -l "已找到 1 OBJ 文件" $contents;
+	else
+		text -e -l ( "找到 " +$numFiles + " 个OBJ文件" ) $contents;
+}
+ 
+// Procedure to import from a double-click command.
+global proc mopMultiObjTool.importDCC() {
+	string $fileList = "mopMultiObjToolFileList";
+	string $path = `textField -q -fi mopMultiObjToolSrcPath`;
+	
+	string $selection[] = `textScrollList -q -si $fileList`;
+	if ( `size $selection` == 0 ) error "No valid selection.";
+	
+	// Browse up a level.
+	string $item = $selection[ 0 ];
+	if ( $item == "[ .. ]" ) {
+		string $tokens[] = {};
+		int $numTokens = `tokenize $path "/" $tokens`;
+		if ( $numTokens > 1 ) {
+			string $newPath = "";
+			for ( $i = 0; $i < $numTokens - 1; $i++ ) {
+				$newPath += $tokens[ $i ] + "/";
+			}
+			textField -e -fi $newPath mopMultiObjToolSrcPath;
+		}
+		mopMultiObjTool.getFiles;
+		return;
+	}
+	
+	// Go into the subfolder.
+	if ( `match "\\[ " $item` == "[ " ) {
+		$item = `substitute "\\[ " $item ""`;
+		$item = `substitute " \\]" $item ""`;
+		string $folder = ( $path + $item );
+		
+		if ( !`file -q -ex $folder` ) {
+			mopMultiObjTool.getFiles;
+			error( "Folder not found: " + toNativePath( $folder ) );
+		}
+		
+		textField -e -fi $folder mopMultiObjToolSrcPath;
+		mopMultiObjTool.getFiles;
+		return;
+	}
+	
+	// Import the selected item.
+	string $file = ( $path + $item );
+	if ( !`file -q -ex $file` ) error( "File not found: " + toNativePath( $file ) );
+	
+	progressBar -e -min 0 -pr 1 -max 1 mopMultiObjToolProgress;
+	
+	string $options = mopMultiObjTool.getImportOptions();
+	int $namespace = `optionVar -q mopMultiObjToolImportNamespace`;
+	string $prefix = basename( `tolower $file`, ".obj" );
+	
+	string $cmd = "file -import -type \"OBJ\" ";
+	if ( $options == "\"mo=0\"" ) {
+		$cmd += "-ra true ";
+		if ( $namespace )
+			$cmd += ( "-ns \"" + $prefix + "\" " );
+		else
+			$cmd += ( "-rpr \"" + $prefix + "\" " );
+	}
+	else {
+		if ( $namespace )
+			$cmd += ( "-ns \"" + $prefix + "\" " );
+	}
+	$cmd += ( "-op " + $options + " -pr " );
+	$cmd += ( "\"" + $file + "\"" );
+	
+	eval( $cmd );
+	
+	progressBar -e -pr 0 mopMultiObjToolProgress;
+}
+ 
+ 
+// POPUP MENU COMMANDS
+ 
+// Procedure to export the selection to a specific file.
+global proc mopMultiObjTool.exportToFile() {
+	// Early out if no selection.
+	string $sel[] = `ls -sl`;
+	if ( `size $sel` == 0 ) error "No nodes were selected. Nothing to export.";
+	
+	string $fileList = "mopMultiObjToolFileList";
+	string $path = `textField -q -fi mopMultiObjToolSrcPath`;
+	
+	// Make sure there's only one item selected.
+	string $selection[] = `textScrollList -q -si $fileList`;
+	if ( `size $selection` != 1 ) error "Please select exactly one valid OBJ file from the list.";
+	
+	// Make sure it's actually a valid file.
+	string $file = $selection[ 0 ];
+	if ( !`file -q -ex ( $path + $file )` ) error "Please select exactly one valid OBJ file from the list.";
+	
+	// Prompt for overwriting.
+	string $msg = "Are you sure you want to overwrite this file?\n";
+	$msg += ( "\n " + $path + $file + "\n" );
+	
+	string $result = `confirmDialog
+		-title "导出选择"
+		-message $msg
+		-button "OK"
+		-button "Cancel"
+		-defaultButton "OK"
+		-cancelButton "Cancel"
+		-dismissString "Cancel"`;
+ 
+	if ( $result != "OK" ) return;
+	
+	string $options = mopMultiObjTool.getExportOptions();
+	file -f -es -type "OBJexport" -op $options ( $path + $file );
+	print ( "// Successfully exported selection to: " + $path + $file + " //\n" );
+}
+ 
+// Procedure to delete selected files.
+global proc mopMultiObjTool.delete() {
+	string $fileList = "mopMultiObjToolFileList";
+	string $path = `textField -q -fi mopMultiObjToolSrcPath`;
+	
+	string $selection[] = `textScrollList -q -si $fileList`;
+	
+	// Build list of names for prompt.
+	int $num = 0;
+	string $msg = "Are you sure you want to delete the following files?\n";
+	for ( $file in $selection ) {
+		if ( `file -q -ex ( $path + $file )` ) {
+			$msg += ( "\n " + $path + $file );
+			$num++;
+		}
+	}
+	$msg += "\n ";
+	
+	// Early out if no OBJs were selected.
+	if ( $num == 0 ) error "No valid OBJs selected.";
+	
+	string $result = `confirmDialog
+		-title "删除选择"
+		-message $msg
+		-button "OK"
+		-button "Cancel"
+		-defaultButton "OK"
+		-cancelButton "Cancel"
+		-dismissString "Cancel"`;
+ 
+	if ( $result != "OK" ) return;
+ 
+	progressBar -e -min 0 -pr 1 -max $num mopMultiObjToolProgress;
+	int $done = 0;
+	for ( $file in $selection ) {
+		if ( `file -q -ex ( $path + $file )` ) {
+			sysFile -del ( $path + $file );
+			progressBar -e -s 1 mopMultiObjToolProgress;
+			$done++;
+		}
+	}
+	
+	print ( "// Successfully deleted " + $done + " OBJ files. //\n" );
+	progressBar -e -pr 0 mopMultiObjToolProgress;
+	mopMultiObjTool.getFiles;
+}
+ 
+// Procedure to browse to the containing folder.
+global proc mopMultiObjTool.explore() {
+	string $path = `textField -q -fi mopMultiObjToolSrcPath`;
+	if ( `file -q -ex $path` )
+		system( "explorer /root," + toNativePath( $path ) );
+	else
+		error( "Path not found: " + $path );
+}
+ 
+ 
+// MAIN PROCEDURE.
+ 
+global proc mopMultiObjTool() {
+	// Create the window.
+	string $wnd = "mopMultiObjToolWnd";
+	int $width = 300;
+	if ( `window -q -ex $wnd` ) deleteUI -wnd $wnd;
+	window -s 0 -mxb 0 -mnb 0 -t "MoP's Multi OBJ Tools" $wnd;
+	
+	// Create the UI controls.
+	string $form = `formLayout -p $wnd`;
+	
+	// Source folder browser.
+	string $srcText = `text -l "源文件夹:"`;
+	string $srcFolder = `textField
+		-w ( $width - 38 )
+		-fi ""
+		-cc mopMultiObjTool.getFiles
+		mopMultiObjToolSrcPath`;
+	string $srcBtn = `button
+		-l "..."
+		-h 20
+		-ann "Browse for source folder..."
+		-c "fileBrowserDialog -m 4 -fc \"mopMultiObjTool.browse\" -ft \"directory\" -an \"Select Source Folder\""`;
+	
+	string $s1 = `separator -hr 1 -style "in"`;
+	
+	// Filter field.
+	string $filterText = `text -l "过滤器:"`;
+	string $filter = `textField
+		-text ""
+		-cc mopMultiObjTool.getFiles
+		mopMultiObjToolFilter`;
+		
+	// File list.
+	string $contents = `text -l "" mopMultiObjToolContents`;
+	string $fileList = `textScrollList
+		-ams 1
+		-h 350
+		-nr 25
+		-dcc mopMultiObjTool.importDCC
+		-dkc mopMultiObjTool.delete
+		mopMultiObjToolFileList`;
+	
+	// Popup menu.
+	popupMenu -button 3 -p $fileList;
+	string $exportToFile = `menuItem
+		-l "导出选择到这个文件"
+		-ann "Export the selected objects to this OBJ file"
+		-c mopMultiObjTool.exportToFile`;
+	menuItem
+		-l "删除选择的文件"
+		-ann "Delete all selected OBJ files"
+		-c mopMultiObjTool.delete;
+	menuItem -d 1;
+	menuItem
+		-l "刷新文件列表"
+		-ann "Scan the source folder for new files"
+		-c mopMultiObjTool.getFiles;
+	menuItem
+		-l "打开包含文件夹"
+		-ann "Open the folder containing these OBJ files in Explorer"
+		-c mopMultiObjTool.explore;
+	menuItem -d 1;
+	
+	// Import/Export Options sub-menu.
+	menuItem -l "导入/导出选项" -subMenu 1;
+	menuItem
+		-checkBox 0
+		-l "导出组 Groups"
+		-c mopMultiObjTool.setOptions
+		mopMultiObjToolExportGroups;
+	menuItem
+		-checkBox 0
+		-l "导出点组 Point Groups"
+		-c mopMultiObjTool.setOptions
+		mopMultiObjToolExportPointGroups;
+	menuItem
+		-checkBox 0
+		-l "导出材质 Materials"
+		-c mopMultiObjTool.setOptions
+		mopMultiObjToolExportMaterials;
+	menuItem
+		-checkBox 0
+		-l "导出光滑组 Smoothing"
+		-c mopMultiObjTool.setOptions
+		mopMultiObjToolExportSmoothing;
+	menuItem
+		-checkBox 0
+		-l "导出法线 Normals"
+		-c mopMultiObjTool.setOptions
+		mopMultiObjToolExportNormals;
+	menuItem -d 1;
+	menuItem
+		-checkBox 0
+		-l "作为多物体导入"
+		-c mopMultiObjTool.setOptions
+		mopMultiObjToolImportMultiple;
+	menuItem
+		-checkBox 0
+		-l "带名称空间导入"
+		-c mopMultiObjTool.setOptions
+		mopMultiObjToolImportNamespace;
+	setParent -menu ..;
+	
+	// Show Folders option.
+	menuItem
+		-checkBox 0
+		-l "显示文件夹"
+		-ann "Display folders for browsing in the file list"
+		-c mopMultiObjTool.getFiles
+		mopMultiObjToolFolderChk;
+	
+	// Progress bar.
+	string $progress = `progressBar -h 20 mopMultiObjToolProgress`;
+	
+	/*
+	// Replace is disabled for now since you can bring in objects with groups.
+	// TODO: Figure out a way to handle this nicely if possible.
+	string $replaceChk = `checkBox
+		-v 0
+		-l "Replace existing objects"
+		-ann "When importing, replace existing objects with the same name in the scene"
+		-vis 0
+		mopMultiObjToolReplaceChk`;
+	*/
+	
+	string $s2 = `separator -hr 1 -style "in"`;
+	
+	// Import/Export buttons
+	string $importBtn = `button
+		-l "导入"
+		-ann "Import selected files"
+		-c mopMultiObjTool.import`;
+	string $exportBtn = `button
+		-l "导出"
+		-ann "Export selection to OBJ using the object names as the file name"
+		-c mopMultiObjTool.export`;
+	string $closeBtn = `button
+		-l "关闭"
+		-ann "Close the Multi OBJ Tool window"
+		-c ( "mopMultiObjTool.setOptions; evalDeferred( \"deleteUI -wnd " + $wnd + "\" );" )`;
+	
+	// Lay out the UI controls.
+	formLayout -e
+		-af $srcText	"top"		5
+		-af $srcText	"left"		5
+		-ac $srcFolder	"top"		0	$srcText
+		-af $srcFolder	"left"		5
+		-ac $srcBtn		"top"		0	$srcText
+		-ac $srcBtn		"left"		0	$srcFolder
+		-af $srcBtn		"right"		5
+		-ac $s1			"top"		5	$srcFolder
+		-af $s1			"left"		5
+		-af $s1			"right"		5
+		-ac $filterText	"top"		8	$s1
+		-ap $filterText	"left"		50	50
+		-ac $filter		"top"		5	$s1
+		-ac $filter		"left"		0	$filterText
+		-af $filter		"right"		5
+		-ac $contents	"top"		8	$s1
+		-af $contents	"left"		5
+		-ac $fileList	"top"		5	$contents
+		-af $fileList	"left"		5
+		-af $fileList	"right"		5
+		-ac $progress	"top"		5	$fileList
+		-af $progress	"left"		5
+		-af $progress	"right"		5
+		-ac $s2			"top"		5	$progress
+		-af $s2			"left"		5
+		-af $s2			"right"		5
+		-af $importBtn	"left"		5
+		-af $importBtn	"bottom"	5
+		-ap $importBtn	"right"		1	33
+		-ap $exportBtn	"left"		1	33
+		-af $exportBtn	"bottom"	5
+		-ap $exportBtn	"right"		1	67
+		-ap $closeBtn	"left"		1	67
+		-af $closeBtn	"bottom"	5
+		-af $closeBtn	"right"		5
+		$form;
+	
+	// Get the saved options.
+	mopMultiObjTool.getOptions;
+	
+	// Get initial file list.
+	mopMultiObjTool.getFiles;
+	
+	// Show the window.
+	window -e -wh $width 500 $wnd;
+	showWindow $wnd;
+	
+	// Try to load the OBJExport.mll plugin if it isn't already.
+	string $plugin = "objExport";
+	if ( catch( `loadPlugin -quiet $plugin` ) ) {
+		warning( "Plug-in '" + $plugin + "' was not found. OBJ Export features will not be available." );
+		menuItem -e -en 0 $exportToFile;
+		button -e -en 0 $exportBtn;
+		return;
+	}
+}
+mopMultiObjTool;

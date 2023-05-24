@@ -1,0 +1,71 @@
+//粒子轨迹生成曲线动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+global proc gtMakeParticleCurveWin(){
+if(`window -ex gtMakeParticleCurveWin`==1){ deleteUI -window   gtMakeParticleCurveWin;}
+window -wh 650 400 -title "老船角色绑定-☆☆☆☆☆-粒子轨迹曲线生成工具！" gtMakeParticleCurveWin;
+columnLayout -adj 1 gtMaintColumnLay;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/998\"";
+
+
+text -l "使用粒子生成曲线\n--------------请注意本程序需要将已经有的表达式复制到下面对于文本框中------------" text1;
+separator -st  single sep1;
+text -l "需要将已有的-创建时-表达式复制到下面的文本框中" gttextF1;
+scrollField -h 60 -w 100 -text ""gtsfield1 ;
+
+text -l "需要将已有的-运行时之后-表达式复制到下面的文本框中:\n运行时之前-表达式不需要考虑：" gttextF2;
+scrollField -h 60 -w 100 -text ""gtsfield2 ;
+
+intFieldGrp -l "开始/结束帧" -nf 2 -v1 1 -v2 120 gtIntrangeFa;
+
+separator -st  single sep2;
+button -l "生成曲线" -c "gtMakeParticleCurve" but1;
+showWindow gtMakeParticleCurveWin;
+}
+
+///////////////////////////////
+global proc gtMakeParticleCurve(){
+string $creation=`scrollField -q -tx gtsfield1`;
+string $runtime=`scrollField -q -tx gtsfield2`;
+
+int $start=`intFieldGrp -q -v1  gtIntrangeFa`;
+int $end=`intFieldGrp -q -v2  gtIntrangeFa`;
+
+string $sel[]=`ls -sl`;
+string $creationE=$creation;
+
+$creationE+="\nint $id=particleId;\n";
+$creationE+="vector $pos=position;\n";
+$creationE+="curve -d 3 -p ($pos.x) ($pos.y) ($pos.z) -n (\"";
+$creationE+=($sel[0]);
+$creationE+="_gtCurve\"+$id);\n";
+
+string $runtimeE=$runtime;
+
+$runtimeE+="int $id=particleId;\n";
+$runtimeE+="vector $pos=position;\n";
+$runtimeE+="curve -a  -p ($pos.x) ($pos.y) ($pos.z) (\"";
+$runtimeE+=($sel[0]);
+$runtimeE+="_gtCurve\"+$id);\n";
+dynExpression -s ($creationE) -c ($sel[0]);
+dynExpression -s  ($runtimeE) -rad ($sel[0]);
+
+for($i=$start;$i<($end+1);$i++){
+currentTime -e $i;
+}
+
+dynExpression -s ($creation) -c ($sel[0]);
+dynExpression -s  ($runtime) -rad ($sel[0]);
+
+}
+gtMakeParticleCurveWin;
+/////////////////////////////////////////////////////////////

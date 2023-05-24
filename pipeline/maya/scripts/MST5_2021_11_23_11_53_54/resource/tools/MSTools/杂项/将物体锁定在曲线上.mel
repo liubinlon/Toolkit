@@ -1,0 +1,334 @@
+global proc Curve_locked_UI_pro()
+{
+if(`window -exists Curve_locked_win`)
+deleteUI Curve_locked_win;
+window -title "将物体锁定在曲线上" Curve_locked_win;
+columnLayout -adjustableColumn true -rowSpacing 5;
+
+ textFieldButtonGrp 	
+              -l "曲线名称:" 
+	      -bl "载入选择" 
+	      -bc "Curve_locked_selectCurve_pro;" 
+	      -editable 0
+	      -adj 2 
+          Curve_locked_textFieldButtonGrp01;
+
+    checkBoxGrp
+        -numberOfCheckBoxes 1
+        -label "是否创建控制器:"
+        -onCommand1 "radioButtonGrp -e -enable3 1 Curve_locked_radioButtonGrp01;floatSliderGrp -e -enable 1 Curve_locked_floatSliderGrp01;floatFieldGrp -e -enable 1 Curve_locked_floatFieldGrp01;radioButtonGrp -e -enable 1 Curve_locked_radioButtonGrp02;"
+        -offCommand1 "radioButtonGrp -e -enable3 0 Curve_locked_radioButtonGrp01;if(\`radioButtonGrp -q -select Curve_locked_radioButtonGrp01\`==3) radioButtonGrp -e -select 1 Curve_locked_radioButtonGrp01;floatSliderGrp -e -enable 0 Curve_locked_floatSliderGrp01;floatFieldGrp -e -enable 0 Curve_locked_floatFieldGrp01;radioButtonGrp -e -enable 0 Curve_locked_radioButtonGrp02;"
+         Curve_locked_checkBoxGrp01;
+
+
+ radioButtonGrp
+              -numberOfRadioButtons 2
+              -label "控制器约束的方式:"
+              -labelArray2 "点约束"  "父子约束"
+              -select 1
+              -enable 0
+              Curve_locked_radioButtonGrp02; 
+
+
+
+
+ radioButtonGrp 
+              -numberOfRadioButtons 3
+              -label "锁定的物体:"
+              -labelArray3 "骨骼"  "自定义物体"   "只锁定控制器"
+              -select 1
+              -enable3 0
+              -onCommand1 "floatSliderGrp -e -enable 1 Curve_locked_floatSliderGrp02;"
+              -offCommand1 "floatSliderGrp -e -enable 0 Curve_locked_floatSliderGrp02;"
+              -onCommand2 "frameLayout -e -enable 1 -collapse false Curve_locked_frameLayout01;intSliderGrp -e -enable 0 Curve_locked_intSliderGrp01;Curve_locked_estimate_pro;"
+              -offCommand2 "frameLayout -e -enable 0 -collapse true Curve_locked_frameLayout01;intSliderGrp -e -enable 1 Curve_locked_intSliderGrp01;"
+              Curve_locked_radioButtonGrp01; 
+               
+ intSliderGrp -label "创建的数量:" -field true
+    -minValue 1 -maxValue 100
+    -fieldMinValue 1 -fieldMaxValue 1000
+    -value 1
+    Curve_locked_intSliderGrp01;
+
+     textFieldGrp
+        -label "重命名:"
+        -text  ""
+        Curve_locked_textFieldGrp01;
+
+
+floatSliderGrp -label "控制器的大小" -field true
+    -minValue 0.1 -maxValue 10.0
+    -fieldMinValue 0.1 -fieldMaxValue 100.0
+    -value 1.0
+    -enable 0
+    Curve_locked_floatSliderGrp01;
+
+
+floatSliderGrp -label "骨骼的大小" -field true
+    -minValue 0.1 -maxValue 10.0
+    -fieldMinValue 0.1 -fieldMaxValue 100.0
+    -value 1.0
+    Curve_locked_floatSliderGrp02;
+
+floatFieldGrp -numberOfFields 3
+    -label "控制器的偏移:" -extraLabel "cm"
+    -value1 0.0 -value2 0.0 -value3 0.0
+    -enable 0
+    Curve_locked_floatFieldGrp01;
+
+frameLayout -enable 0 -collapsable true -collapse true -label "自定义物体设置" Curve_locked_frameLayout01;
+columnLayout -adjustableColumn true ;
+ 
+ button -w 60 -l "导入选择的自定义物体(注意选择顺序)" -c "Curve_locked_loadingObj_pro" Curve_locked_button01;
+
+ textScrollList 
+              -numberOfRows 4
+              -allowMultiSelection true
+              -showIndexedItem 2
+              Curve_locked_textScrollList01;
+
+checkBox -label "是否给物体创建组" Curve_locked_checkBox01;
+
+setParent ..;
+setParent ..;
+ text -label "";
+
+ button -w 60 -l "执行" -enable 0 -c "Curve_locked_execute_pro" Curve_locked_button02;	
+ text -label "";
+ button -w 60 -l "Close!" -c "deleteUI Curve_locked_win" Curve_locked_button03;
+
+showWindow;
+}
+
+global proc string Curve_locked_estimate_pro()
+{
+    string $error01 = "";
+    string $text = `textFieldButtonGrp -q -text Curve_locked_textFieldButtonGrp01`;    
+    if(!size($text))
+        $error01 = $error01 + "没有指定任何曲线.\n";
+    else if(!objExists($text))
+        $error01 = $error01 + "指定的曲线不存在.\n";
+    else
+    {
+        string $shapesNode[] = `listRelatives -s $text`;
+        if(`objectType $shapesNode[0]` != "nurbsCurve")
+            $error01 = $error01 + "这不是曲线,请重新指定.\n";
+    }
+    if(`radioButtonGrp -q -select Curve_locked_radioButtonGrp01` ==2)
+    {
+        string $objs[] = `textScrollList -q -allItems Curve_locked_textScrollList01`;
+        if(!size($objs))
+            $error01 = $error01 + "自定义物体没有指定,请先指定自定义物体.\n";
+        else
+            for($i=0;$i<(size($objs));$i++)
+                if(!objExists($objs[$i]))
+                    $error01 = $error01 + "自定义物体列表内\"" + $objs[$i] + "\"这个物体不存在.\n";
+    }
+    if(size($error01))
+        button -e -enable 0 Curve_locked_button02;
+    else
+        button -e -enable 1 Curve_locked_button02;
+    return $error01;
+}
+
+global proc Curve_locked_selectCurve_pro()
+{
+    string $Curve01[] = `ls -sl`;
+    string $shapesNode[] = `listRelatives -s $Curve01[0]`;
+    if(`objectType $shapesNode[0]` == "nurbsCurve")
+        textFieldButtonGrp -e -text $Curve01[0] Curve_locked_textFieldButtonGrp01;
+    else
+        error "这不是曲线,请重新指定.\n";
+    Curve_locked_estimate_pro;
+}
+global proc Curve_locked_loadingObj_pro()
+{
+    string $objs[] = `ls -sl`;
+    textScrollList -e -removeAll Curve_locked_textScrollList01;
+    for($i=0;$i<(size($objs));$i++)
+        textScrollList -e -append $objs[$i] Curve_locked_textScrollList01;
+    Curve_locked_estimate_pro;
+}
+
+global proc Curve_locked_execute_pro()
+{
+    string $error01 = `Curve_locked_estimate_pro`;
+    if(size($error01))
+        error $error01;
+
+    string $curveName = `textFieldButtonGrp -q -text Curve_locked_textFieldButtonGrp01`;
+    string $reName = `textFieldGrp -q -text Curve_locked_textFieldGrp01`;
+    if(!size($reName))
+        $reName = $curveName;
+    if(!endsWith($reName,"_"))
+        $reName = $reName + "_";
+
+
+
+    int $number;
+    string $objName[],$temp_obj[];
+    if(`radioButtonGrp -q -select Curve_locked_radioButtonGrp01`==2)
+    {
+        $number = `textScrollList -q -numberOfItems Curve_locked_textScrollList01`;
+        $objName = `textScrollList -q -allItems Curve_locked_textScrollList01`;
+        if(`checkBox -q -v Curve_locked_checkBox01`)
+            $objName = Curve_locked_transferGroup_pro($objName);
+        group -n ($reName + "AllCustomObjGrp#") $objName;xform -os -piv 0 0 0;
+    }
+    else
+    {
+        $number = `intSliderGrp -q -value Curve_locked_intSliderGrp01`;
+        if(`radioButtonGrp -q -select Curve_locked_radioButtonGrp01`==1)
+        {
+            float $jointSize = `floatSliderGrp -q -v Curve_locked_floatSliderGrp02`;
+            float $jointOffset[3] = {0.0,0.0,0.0};
+            for($i=0;$i<$number;$i++)
+                $objName[$i] = Curve_locked_createJoint_pro($jointOffset,$jointSize,$reName);
+            group -n ($reName + "AllJointGrp#") $objName;xform -os -piv 0 0 0;
+        }
+    }
+    
+    
+    if(`checkBoxGrp -q -value1 Curve_locked_checkBoxGrp01`)
+    {
+        float $con_size = `floatSliderGrp -q -value Curve_locked_floatSliderGrp01`;
+        float $con_offset[] = `floatFieldGrp -q -value Curve_locked_floatFieldGrp01`;
+        $temp_obj = $objName;
+        for($i=0;$i<$number;$i++)
+            $objName[$i] = Curve_locked_createCON_pro($con_offset,$con_size,$reName);
+        group -n ($reName + "AllConGrp#") $objName;xform -os -piv 0 0 0;
+        if(size($temp_obj))
+        {
+            //string $temp_con1[];
+            for($i=0;$i<size($temp_obj);$i++)
+            {
+                string $temp_con1[] = `pickWalk -d down $objName[$i]`;
+                select -r $temp_con1[0];
+                select -add $temp_obj[$i];
+
+                if(`radioButtonGrp -q -select Curve_locked_radioButtonGrp02`==1)
+                {
+                   doCreatePointConstraintArgList 1 { "0","0","0","0","0","0","0","1","","1" };
+                   pointConstraint -offset 0 0 0 -weight 1;
+                }
+                else
+                {
+                   doCreateParentConstraintArgList 1 { "0","0","0","0","0","0","0","1","","1" };
+                   parentConstraint -weight 1;
+                }
+            }
+            
+        }
+    }
+    
+    float $parameter[] = Curve_locked_parameter_pro($objName);
+    Curve_locked_lockedLink_pro($curveName,$objName,$parameter,$reName);    
+}
+
+global proc string Curve_locked_createCON_pro(float $con_offset[],float $con_size,string $reName)
+{
+    $reName = $reName + "con#";
+    string $conName = `curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 -0.5 0.5 -p 0.5 -0.5 -0.5 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 -0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -name $reName`;
+    setAttr ($conName + ".translate") -type "double3" $con_offset[0] $con_offset[1] $con_offset[2];
+    setAttr ($conName + ".scale") -type "double3" $con_size $con_size $con_size;
+    xform -ws -piv 0 0 0 $conName;
+    makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 $conName;
+
+    string $con_grp = `group -n ($conName + "_grp#") $conName`; xform -os -piv 0 0 0 $con_grp;
+    return $con_grp;
+}
+
+global proc string Curve_locked_createJoint_pro(float $joint_offset[],float $joint_size,string $reName)
+{
+    $reName = $reName + "joint#";
+    select -cl  ;
+    string $jointName = `joint -p $joint_offset[0] $joint_offset[1] $joint_offset[2] -n $reName -rad $joint_size`;
+    return $jointName;
+}
+
+//将选中的物体的translate和rotate属性值都转移在它的组上
+global proc string[] Curve_locked_transferGroup_pro(string $objName[])
+{
+	string $temp_str;
+	float $temp_flo_01[3],$temp_flo_T[3],$temp_flo_R[3];
+	for($i=0;$i<size($objName);$i++)
+	{
+	    //select -r $objName[$i];
+	    $temp_str = Curve_locked_endCharName_pro($objName[$i]);
+	    if(endsWith($objName[$i], "_grp"))
+	        $temp_str = `group -n ($temp_str + "#") $objName[$i]`;
+	    else
+	        $temp_str = `group -n ($temp_str + "_grp#") $objName[$i]`;
+	    
+	    $temp_flo_T = `getAttr ($objName[$i] + ".translate")`;
+	    setAttr ($objName[$i] + ".translate") -type "double3" 0 0 0;
+	    
+	    $temp_flo_R = `getAttr ($objName[$i] + ".rotate")`;
+	    setAttr ($objName[$i] + ".rotate") -type "double3" 0 0 0;
+	    
+	    $temp_flo_01 = `xform -q -ws -rp $objName[$i]`;
+	    //xform -os -piv $temp_flo_01[0] $temp_flo_01[1] $temp_flo_01[2] $temp_str;
+	    move $temp_flo_01[0] $temp_flo_01[1] $temp_flo_01[2] ($temp_str + ".scalePivot") ($temp_str + ".rotatePivot") ;
+	    
+	    setAttr ($temp_str + ".translate") -type "double3" $temp_flo_T[0] $temp_flo_T[1] $temp_flo_T[2];
+	    setAttr ($temp_str + ".rotate") -type "double3" $temp_flo_R[0] $temp_flo_R[1] $temp_flo_R[2];
+	    $objName[$i] = $temp_str;
+	}
+	return $objName;
+}
+
+global proc string Curve_locked_endCharName_pro(string $name)
+{
+    string $lastChar = endString($name, 1);
+    if(`gmatch $lastChar "[0-9]"`)
+    {
+        $name = `substring $name 1 (size($name)-1)`;
+        $name = `Curve_locked_endCharName_pro $name`;
+    }
+    return $name;
+}
+
+
+
+global proc float[] Curve_locked_parameter_pro(string $objName[])
+{
+    float $parameter[];
+    if(size($objName)==0)
+        return $parameter;
+    else if(size($objName)==1)
+    {
+        $parameter[0] = 0.5;
+    }
+    else if(size($objName)==2)
+    {
+        $parameter[0] = 0.3333;
+        $parameter[1] = 0.6666;
+    }
+    else
+    {
+        for($i=0;$i<size($objName);$i++)
+        {
+            $parameter[$i] = float($i)/(size($objName)-1);
+        }
+    }
+    return $parameter;
+}
+
+global proc Curve_locked_lockedLink_pro(string $curveName,string $objName[],float $parameter[],string $reName)
+{
+    string $infoNode[];
+    for($i=0;$i<size($objName);$i++)
+    {
+        $infoNode[$i] = `pointOnCurve -ch on -pr $parameter[$i] -top 1 $curveName`;
+        connectAttr -f ($infoNode[$i]+".position") ($objName[$i]+".translate");
+    }
+    if(size($reName))
+    {
+        for($i=0;$i<size($infoNode);$i++)
+        {
+            rename $infoNode[$i] ($reName+"Info#") ;
+        }
+    }    
+}
+
+Curve_locked_UI_pro;

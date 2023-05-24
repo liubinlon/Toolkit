@@ -1,0 +1,846 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QDialog" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>621</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>681</width>
+    <height>16777215</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>NormalEditTool</string>
+  </property>
+  <widget class="QPushButton" name="addX1">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>350</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>+0.1</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="front">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>270</y>
+     <width>81</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>前</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.polyNormalPerVertex(xyz=(0,0,1))&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="Dot">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>540</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>中心点球状</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ShowVertexNoraml">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>15</y>
+     <width>340</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>显示/隐藏顶点法线</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.ToggleVertexNormalDisplay()&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="LockNoraml">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>60</y>
+     <width>150</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>锁定法线</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.polyNormalPerVertex (fn=1)&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="UnlockNormal">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>60</y>
+     <width>150</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>解锁法线</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.polyNormalPerVertex (ufn=1)&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="HardEdge">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>100</y>
+     <width>150</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>硬化边</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;hardenEdge()&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="SoftEdge">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>100</y>
+     <width>150</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>软化边</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;softEdge()&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ModelTransmit">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>140</y>
+     <width>150</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>模型法线传递</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;transferNoraml()&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="VertexTransfer">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>180</y>
+     <width>151</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>顶点传递</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="noramlEdit">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>140</y>
+     <width>151</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>法线编辑</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.PolygonNormalEditTool()&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="back">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>300</y>
+     <width>81</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>后</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.polyNormalPerVertex(xyz=(0,0,-1))&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="copyNormal">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>180</y>
+     <width>71</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>复制</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;copyNormal()&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pasteNormal">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>180</y>
+     <width>71</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>粘贴</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;pasteNormal()&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="matchingFace">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>220</y>
+     <width>71</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>匹配面(硬)</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.polySetToFaceNormal(setUserNormal=True)&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="left">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>270</y>
+     <width>81</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>左</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.polyNormalPerVertex(xyz=(-1,0,0))&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="up">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>270</y>
+     <width>81</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>上</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.polyNormalPerVertex(xyz=(0,1,0))&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="down">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>300</y>
+     <width>81</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>下</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.polyNormalPerVertex(xyz=(0,-1,0))&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="right">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>300</y>
+     <width>81</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>右</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.polyNormalPerVertex(xyz=(1,0,0))&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="addX5">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>350</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>+0.5</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="subX1">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>380</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>-0.1</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="subX5">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>380</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>-0.5</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="subY5">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>380</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>-0.5</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="subY1">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>380</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>-0.1</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="addY1">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>350</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>+0.1</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="addY5">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>350</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>+0.5</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="addZ5">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>350</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>+0.5</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="subZ5">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>380</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>-0.5</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="addZ1">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>350</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>+0.1</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="subZ1">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>380</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>-0.1</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="averageNormal">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>450</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>平均法线</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>460</y>
+     <width>31</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>范围</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="cLocator">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>500</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>创建定位器</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.spaceLocator(p=(0,0,0))&quot;</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_6">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>550</y>
+     <width>31</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>强度</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="rangeDot">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>550</y>
+     <width>91</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_7">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>330</y>
+     <width>31</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>X</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="rangeSoomth">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>460</y>
+     <width>91</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>330</y>
+     <width>31</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Y</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_9">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>330</y>
+     <width>31</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Z</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="soomthvalue">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>460</y>
+     <width>51</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>99</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="dotvalue">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>550</y>
+     <width>51</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ClearHistory">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>220</y>
+     <width>71</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>删除历史</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="sommthbush">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>220</y>
+     <width>71</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>平滑顶点</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="matchingFaceS">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>220</y>
+     <width>71</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>匹配面(软)</string>
+   </property>
+   <property name="+command" stdset="0">
+    <string>&quot;mc.polySetToFaceNormal(setUserNormal=True)&quot;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="mulX5">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>410</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>X0.5</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="mulZ1">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>410</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>X0.1</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="mulY1">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>410</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>X0.1</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="mulY5">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>410</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>X0.5</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="mulZ5">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>410</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>X0.5</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="mulX1">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>410</y>
+     <width>31</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>X0.1</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="LocatorDot">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>500</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>定位球状(散）</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="LocatorDot_2">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>500</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>定位球状(聚）</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>590</y>
+     <width>71</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>By-馒头</string>
+   </property>
+  </widget>
+  <widget class="Line" name="line">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>570</y>
+     <width>341</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>soomthvalue</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>rangeSoomth</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>93</x>
+     <y>578</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>168</x>
+     <y>576</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rangeSoomth</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>soomthvalue</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>177</x>
+     <y>585</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>102</x>
+     <y>588</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dotvalue</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>rangeDot</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>97</x>
+     <y>622</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>162</x>
+     <y>616</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rangeDot</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>dotvalue</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>171</x>
+     <y>627</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>105</x>
+     <y>627</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

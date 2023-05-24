@@ -1,0 +1,191 @@
+
+//粒子龙卷风生成动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+
+global proc gtLJFwin(){
+
+if(`window -ex gtLJFwin`==1) deleteUI -window gtLJFwin;
+window -t "老船动画吧-粒子龙卷风生成动画工具" -wh 400 200 gtLJFwin;
+columnLayout -adj 1   mainColumnL;
+text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 45  -c "showHelp -a \"http://www.animate8.com/archives/1319\"";
+string $form=`formLayout`;
+textFieldGrp  -l "龙卷风名称：" -tx "gtLjf" -cw2 140 82  gtLjfTextF1;
+
+intFieldGrp -l "控制器数量：" -nf 1 -v1 5 gtnumConV;
+string $but1=`button -l "创建粒子龙卷风"  -c "gtLJF;"`;
+formLayout -e 
+ -af gtLjfTextF1 top 12  -af gtLjfTextF1 left 30 -af gtLjfTextF1 right 30
+
+ -ac gtnumConV top 12 gtLjfTextF1-af gtnumConV left 30 -af gtnumConV right 30
+
+ -ac $but1 "top" 12 gtnumConV -af $but1 "left" 30 -af $but1 "right" 30 
+  $form;
+showWindow gtLJFwin;
+
+}
+////////////////////////////
+global proc gtLJF(){
+string $name=`textFieldGrp -q -text gtLjfTextF1`;
+int $numCon[]=`intFieldGrp -q -v gtnumConV`;
+
+if(`objExists ($name+"_ctrl_curve")`==1){
+confirmDialog -title "重新指定名称" -message "请重新输入其它名称" -button "应用";}
+else{
+string $curve="curve -d 3 ";
+for($i=0;$i<$numCon[0];$i++){
+    float $x=rand(-1.0,3.5);
+    float $z=rand(1,3);
+   // float $per=10.0/$numCon[0];
+    $curve+="-p "+($i*$x*0.6)+" "+($i*5)+" "+($i*$z*0.6)+" ";
+}
+eval ($curve);
+rename ($name+"_ctrl_curve");
+string $shap[]=`listRelatives -s ($name+"_ctrl_curve")`;
+float $max=`getAttr ($shap[0]+".maxValue")`;
+
+
+setAttr ($name+"_ctrl_curve.overrideEnabled") 1;
+setAttr ($name+"_ctrl_curve.overrideDisplayType") 2;
+
+for($i=0;$i<$numCon[0];$i++){
+select -r ($name+"_ctrl_curveShape.cv["+$i+"]");
+newCluster " -envelope 1";
+rename ($name+"_ctrl_root"+$i);
+}
+
+circle -c 0 0 0 -nr 0 1 0 -sw 360 -r ($numCon[0]*0.5) -d 3 -ut 0 -tol 0.01 -s 8 -ch 0 -n ($name+"Con");
+group -n  ($name+"ConGrp");
+
+select -cl;
+
+for($i=0;$i<$numCon[0];$i++){
+select -add ($name+"_ctrl_root"+$i);
+setAttr ($name+"_ctrl_root"+$i+".v") 0;
+setAttr -l 1 ($name+"_ctrl_root"+$i+".v");
+}
+/////////////////
+string $sel[]=`ls -sl`;
+for($i=0;$i<size($sel);$i++){
+    
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($sel[$i]+"Con");
+group -n ($sel[$i]+"ConGrp");
+group -n ($sel[$i]+"ConGrpA");
+scale -r (0.5) (0.5) (0.5);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+scale -r ($numCon[0]*0.5) ($numCon[0]*0.5) ($numCon[0]*0.5);
+  string $shape[]=`listRelatives -s ($sel[$i]+"Con")`;
+    setAttr ($shape[0]+".overrideEnabled") 1;
+    setAttr ($shape[0]+".overrideColor") 13;   
+
+select -r ($sel[$i]);
+select -add ($sel[$i]+"ConGrpA");
+delete `pointConstraint`;
+select -r ($sel[$i]);
+select -add ($sel[$i]+"Con");
+parent;
+select -r ($sel[$i]+"ConGrpA");
+select -add ($name+"Con");
+parent;
+}
+
+//////////////////////
+emitter -pos 0 0 0 -type omni -r 100 -sro 0 -nuv 0 -cye none -cyi 1 -spd 15 -srn 0 -nsp 1 -tsp 0 -mxd 0 -mnd 0 -dx 1 -dy 0 -dz 0 -sp 0 -n ($name+"_spray");
+particle -n ($name+"_dust");
+connectDynamic -em ($name+"_spray") ($name+"_dust");
+
+createNode pointOnCurveInfo -n ($name+"_particlePosition");
+connectAttr -f ($name+"_ctrl_curveShape.worldSpace[0]") ($name+"_particlePosition.inputCurve");
+
+setAttr ($name+"_dustShape.lifespanMode") 1;
+setAttr ($name+"_dustShape.lifespan") 7;
+
+setAttr ($name+"_dustShape.particleRenderType") 0;
+addAttr -is true -ln "colorAccum" -at bool -dv false ($name+"_dustShape");
+addAttr -is true -ln "useLighting" -at bool -dv false ($name+"_dustShape");
+addAttr -is true -ln "pointSize" -at long -min 1 -max 60 -dv 2 ($name+"_dustShape");
+addAttr -is true -ln "multiCount" -at long -min 1 -max 60 -dv 10 ($name+"_dustShape");
+addAttr -is true -ln "multiRadius" -at "float" -min 0 -max 10 -dv 0.3 ($name+"_dustShape");
+addAttr -is true -ln "normalDir" -at long -min 1 -max 3 -dv 2 ($name+"_dustShape");
+setAttr ($name+"_dustShape.multiCount") 35;
+
+setAttr ($name+"_spray.rate") 500;
+setAttr ($name+"_spray.speed") 0;
+
+addAttr -ln "rate" -keyable 1 -min 0 -dv 500  ($name+"Con");
+addAttr -ln "rootRadius" -keyable 1 -min 0.1 -dv 0.4  ($name+"Con");
+addAttr -ln "topGrow"    -keyable 1 -min 0.1 -dv 2.5  ($name+"Con");
+addAttr -ln "sprialNumber" -keyable 1 -min 0.1 -dv 0.75  ($name+"Con");
+connectAttr -f ($name+"Con.rate") ($name+"_spray.rate");
+
+select -r ($name+"_dustShape");
+string $expLJF="float $rootRadius=`getAttr ";
+       $expLJF+=($name);
+       $expLJF+="Con.rootRadius`;\n";
+
+       $expLJF+="float $topGrow=`getAttr ";
+       $expLJF+=($name);
+       $expLJF+="Con.topGrow`;\n";
+
+       $expLJF+="float $sprialNum=`getAttr ";
+       $expLJF+=($name);
+       $expLJF+="Con.sprialNumber`;\n";
+
+       $expLJF+="float $age=sin(1.57*";
+       $expLJF+=($name);
+       $expLJF+="_dustShape.age/";
+       $expLJF+=($name);
+       $expLJF+="_dustShape.lifespan);\n";
+
+       $expLJF+="setAttr ";
+       $expLJF+=($name);
+       $expLJF+="_particlePosition.parameter ($age*"+$max+");\n";
+
+       $expLJF+="float $pos[]=`getAttr ";
+       $expLJF+=($name);
+       $expLJF+="_particlePosition.position`;\n";
+
+       $expLJF+="float $rad=$rootRadius+pow(";
+       $expLJF+=($name);
+       $expLJF+="_dustShape.age/$topGrow,3.6);\n";
+
+       $expLJF+="float $ang=";
+       $expLJF+=($name);
+       $expLJF+="_dustShape.age*3.1+(";
+       $expLJF+=($name);
+       $expLJF+="_dustShape.particleId+rand(0.5))*$sprialNum;\n";
+
+       $expLJF+="float $xpos=$rad*sin($ang);\n";
+       $expLJF+="float $zpos=$rad*cos($ang);\n";
+       $expLJF+=($name);
+       $expLJF+="_dustShape.position=<<($pos[0]+$xpos),$pos[1],($pos[2]+$zpos)>>;\n";
+
+dynExpression -s $expLJF -rad -n ($name+"_dustExp_runtime");
+dynExpression -s $expLJF -c -n ($name+"_dustExp_creation");
+
+playbackOptions -ast 1 -aet 240;
+playbackOptions -min 1 -max 240;
+currentTime 1;
+select -r ($name+"_spray");
+select -add ($name+"_dust") ;
+select -add ($name+"_ctrl_curve") ;
+select -add ($name+"ConGrp") ;
+group -n ($name+"Grp");
+select -r ($name+"Con");
+    }
+}
+
+/////////////////////////
+gtLJFwin;

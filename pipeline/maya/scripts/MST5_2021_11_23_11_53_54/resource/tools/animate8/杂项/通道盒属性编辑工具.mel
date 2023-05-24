@@ -1,0 +1,113 @@
+//通道盒变换及显示属性编辑动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+
+global proc gtAttrChannelBoxWin(){
+
+if(`window -ex gtAttrChannelBoxWin`==1){deleteUI -window gtAttrChannelBoxWin;}
+window -wh 500 300 -t "老船角色绑定-☆-通道盒变换及显示属性编辑动画工具!"  gtAttrChannelBoxWin;
+    columnLayout -adj 1 mainColumnattr;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1646\"";
+ setParent..;
+   
+formLayout colOut;
+
+frameLayout -l "操作选项" -cll 0  optFarm;
+
+radioButtonGrp  -cw3 110  130  130   -numberOfRadioButtons 2 -l "对象物体" 
+               -la2 "选择的物体" "所有子物体"  -sl 1 optRangRad;
+
+setParent..;
+frameLayout -l "属性" -cll 0  atrFarm;
+columnLayout;
+
+checkBoxGrp -cw5 60 80 80 80 80 -numberOfCheckBoxes 4 -l "总控制选项" -la4 "位移" "旋转" "缩放" "显示"  -v1 1 -v2 1 -v3 1 -v4 1 
+            -on1 "checkBoxGrp -e -en 1 traCheckBox" 
+            -of1 "checkBoxGrp -e -en 0 traCheckBox"
+            -on2 "checkBoxGrp -e -en 1 rotCheckBox"
+            -of2 "checkBoxGrp -e -en 0 rotCheckBox"
+            -on3 "checkBoxGrp -e -en 1 scaCheckBox"
+            -of3 "checkBoxGrp -e -en 0 scaCheckBox"
+            -on4 "checkBoxGrp -e -en 1 visCheckBox"
+            -of4 "checkBoxGrp -e -en 0 visCheckBox"         tagCheckBox;
+
+checkBoxGrp -numberOfCheckBoxes 2 -l "位移" -la2 "keyable" "lock" -v1 1 -v2 0 traCheckBox;
+checkBoxGrp -numberOfCheckBoxes 2 -l "旋转"    -la2 "keybale" "lock" -v1 1 -v2 0 rotCheckBox;
+checkBoxGrp -ncb 2 -l "缩放" -la2 "keyable" "lock" -v1 1 -v2 0 scaCheckBox;
+checkBoxGrp -ncb 2 -l "显示" -la2 "keyable" "lock" -v1 1 -v2 0 visCheckBox;
+setParent..;
+setParent..;
+
+button -l "应用" -c "gtAttrConAct;" but2;
+setParent..;
+formLayout -e 
+-af optFarm "top" 5 -af optFarm "left" 5 -af optFarm "right" 5
+-ac atrFarm "top" 5 optFarm -af atrFarm "left" 5 -af atrFarm "right" 5
+-af but2 "bottom" 5 -af but2 "left" 5  -af but2 "right" 5
+colOut;
+showWindow gtAttrChannelBoxWin;
+
+}
+
+//////////////////////
+global proc gtAttrConAct(){
+int $optTra=`checkBoxGrp -q -v1 tagCheckBox`;
+
+int $optRot=`checkBoxGrp -q -v2 tagCheckBox`;
+
+int $optScl=`checkBoxGrp -q -v3 tagCheckBox`;
+
+int $optVis=`checkBoxGrp -q -v4 tagCheckBox`;
+
+int $trKey=`checkBoxGrp -q -v1 traCheckBox`;
+int $trLoc=`checkBoxGrp -q -v2 traCheckBox`;
+int $roKey=`checkBoxGrp -q -v1 rotCheckBox`;
+int $roLoc=`checkBoxGrp -q -v2 rotCheckBox`;
+int $scKey=`checkBoxGrp -q -v1 scaCheckBox`;
+int $scLoc=`checkBoxGrp -q -v2 scaCheckBox`;
+int $vsKey=`checkBoxGrp -q -v1 visCheckBox`;
+int $vsLoc=`checkBoxGrp -q -v2 visCheckBox`;
+int $optRang=`radioButtonGrp -q -sl optRangRad`;
+
+string $sel[];
+if($optRang==1){
+
+      $sel=`ls -l -sl`;
+       }
+   else if($optRang==2){
+    select -hi;
+    $sel=`ls -l -sl`;
+       }
+
+string $attr;
+for($i=0;$i<size($sel);$i++){
+if((`nodeType $sel[$i]`=="joint")||(`nodeType $sel[$i]`=="transform")||(`nodeType $sel[$i]`=="ikHandle")){
+   
+   if($optTra==1){
+  setAttr -k $trKey -l $trLoc ($sel[$i]+".tx");
+  setAttr -k $trKey -l $trLoc ($sel[$i]+".ty");
+  setAttr -k $trKey -l $trLoc ($sel[$i]+".tz");
+}
+if($optScl==1){
+  setAttr -k $scKey -l $scLoc ($sel[$i]+".sx");
+  setAttr -k $scKey -l $scLoc ($sel[$i]+".sy");
+  setAttr -k $scKey -l $scLoc ($sel[$i]+".sz");}
+if($optRot==1){
+  setAttr -k $roKey -l $roLoc ($sel[$i]+".rx");
+  setAttr -k $roKey -l $roLoc ($sel[$i]+".ry");
+  setAttr -k $roKey -l $roLoc ($sel[$i]+".rz");}
+if($optVis==1){
+  setAttr -k $vsKey -l $vsLoc ($sel[$i]+".v");
+                }
+            }
+        }
+    }
+///////////////////////////
+gtAttrChannelBoxWin;

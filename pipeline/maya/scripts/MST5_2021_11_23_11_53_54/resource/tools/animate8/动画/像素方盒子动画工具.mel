@@ -1,0 +1,215 @@
+//粒子替换贴图浮雕动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+global proc gtfakeBrickProcWin(){
+if(`window -ex gtfakeBrickProcWin`==1){ deleteUI -window gtfakeBrickProcWin;}
+window -wh 350 200 -title "像素方块" gtfakeBrickProcWin;
+columnLayout -adj 1 gtMaintColumnLay;
+text -l "查看程序说明，了解更多应用细节\n老船动画吧：http://www.animate8.com/";
+button -l "访 问 老 船 动 画 吧！" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com\"";
+floatSliderGrp -l "像素尺寸："  -f 1 -pre 5 -v 0.2  gtfloatSizeBox;
+rowColumnLayout -nc 3 -cw 1 60 -cw 2 140  -cw 3 140;
+text -l "";
+checkBox -l "附着模型" -v 1  gtObjCheck;
+checkBox -l "实体像素" -v 0  gtObjCheckshixin;
+setParent..;
+rowColumnLayout -nc 2 -cw 1 200 -cw 2 140;
+text -l "---选择多边形物体---";
+button -l "创建像素方块" -c "gtfakeBrickProc;" ;
+setParent..;
+showWindow gtfakeBrickProcWin;
+}
+gtfakeBrickProcWin;
+//////////////////////  
+proc gtfakeBrickProc(){
+float $size=`floatSliderGrp -q -v gtfloatSizeBox`;
+int $attach=`checkBox -q -v   gtObjCheck`;
+int $shixin=`checkBox -q -v   gtObjCheckshixin`;
+
+string $mesh[] = `ls -sl`;
+//load plugin
+//string $plug_path =`pluginInfo  -q -path nearestPointOnMesh`;
+//if(!`pluginInfo -q -l $plug_path`)
+//    loadPlugin $plug_path;
+for($a=0;$a<size($mesh);$a++){   
+string $mesh_shape[] = `listRelatives -s $mesh[$a]`;
+// create nearest node    
+string $nearestNodeList[] =` listConnections -type nearestPointOnMesh $mesh_shape[0]`;
+string $nearestNode ;
+if($nearestNodeList[0] == "")
+    {
+     $nearestNode = `createNode nearestPointOnMesh`;
+    connectAttr -f ($mesh_shape[0]+".worldMesh[0]") ($nearestNode+".inMesh");
+    }
+else
+    $nearestNode = $nearestNodeList[0];
+  
+int $ex=`objExists ($mesh[$a]+"BoxsGrp") `;
+if($ex==0){
+    select -cl;
+    group -empty -n ($mesh[$a]+"BoxsGrp");
+}
+  
+// boundingBox, xmin xmax ymin ymax zmin zmax
+float $bounding[] = `polyEvaluate -boundingBox $mesh[$a]`;
+int $num=($bounding[1]-$bounding[0])/$size;
+string $boxs[];
+clear ($boxs);
+global string $gMainProgressBar;
+global string $gSelect;
+setToolTo $gSelect;
+progressBar -e -st ("生成像素方块") -bp -ii 1 -min 0 -max ($num*3) $gMainProgressBar;			 			
+for($i = $bounding[0]; $i <= $bounding[1]; $i += $size){
+if (`progressBar -q -ic $gMainProgressBar`)
+	break;
+	progressBar -e -s 1 $gMainProgressBar;   
+    for($j = $bounding[2]; $j <= $bounding[3]; $j += $size)
+         for($k = $bounding[4]; $k <= $bounding[5]; $k += $size)  
+         { 
+            setAttr ($nearestNode+".inPositionX") $i;
+            setAttr ($nearestNode+".inPositionY") $j;
+            setAttr ($nearestNode+".inPositionZ") $k;
+                        
+            vector $normal_p = `getAttr ($nearestNode+".normal")`;           
+            float $pos_p[] = `getAttr ($nearestNode+".position")`;     
+            vector $normal_new = <<($i -$pos_p[0]), ($j -$pos_p[1]), ($k -$pos_p[2])>>;          
+            float $dot = dot($normal_new, $normal_p);
+            float $dis=1000000;
+            if($shixin==0){
+                $dis=mag(<<$pos_p[0],$pos_p[1],$pos_p[2]>>-<<$i,$j,$k>>);                        
+            if($dis<$size){
+            if($dot < 0){
+                $normal_p = abs($normal_p);//some normal values are negative
+                string $cube[] = `polyCube -w $size -h $size -d $size -ch 0`; 
+                string $cube_shape[] = `listRelatives -s $cube[0]`;
+                move -r $i $j $k $cube[0]; 
+                //add prim attr
+                addAttr -ln "rmanCmyColor"  -at double3  $cube_shape[0];
+                addAttr -ln "rmanCmyColorX"  -at double -p rmanCmyColor  $cube_shape[0];
+                addAttr -ln "rmanCmyColorY"  -at double -p rmanCmyColor  $cube_shape[0];
+                addAttr -ln "rmanCmyColorZ"  -at double -p rmanCmyColor  $cube_shape[0];            
+                setAttr -type double3 ($cube_shape[0]+".rmanCmyColor") ($normal_p.x) ($normal_p.y) ($normal_p.z);
+                setAttr -e-keyable true ($cube_shape[0]+".rmanCmyColor");
+                setAttr -e-keyable true ($cube_shape[0]+".rmanCmyColorX");
+                setAttr -e-keyable true ($cube_shape[0]+".rmanCmyColorY");
+                setAttr -e-keyable true ($cube_shape[0]+".rmanCmyColorZ");
+                int $sizeb=size($boxs);
+                $boxs[$sizeb]=$cube[0];
+                parent $cube[0] ($mesh[$a]+"BoxsGrp"); 
+                  }
+              }
+         }else{
+ 			if($dot < 0){
+                $normal_p = abs($normal_p);//some normal values are negative
+                string $cube[] = `polyCube -w $size -h $size -d $size -ch 0`; 
+                string $cube_shape[] = `listRelatives -s $cube[0]`;
+                move -r $i $j $k $cube[0]; 
+                //add prim attr
+                addAttr -ln "rmanCmyColor"  -at double3  $cube_shape[0];
+                addAttr -ln "rmanCmyColorX"  -at double -p rmanCmyColor  $cube_shape[0];
+                addAttr -ln "rmanCmyColorY"  -at double -p rmanCmyColor  $cube_shape[0];
+                addAttr -ln "rmanCmyColorZ"  -at double -p rmanCmyColor  $cube_shape[0];            
+                setAttr -type double3 ($cube_shape[0]+".rmanCmyColor") ($normal_p.x) ($normal_p.y) ($normal_p.z);
+                setAttr -e-keyable true ($cube_shape[0]+".rmanCmyColor");
+                setAttr -e-keyable true ($cube_shape[0]+".rmanCmyColorX");
+                setAttr -e-keyable true ($cube_shape[0]+".rmanCmyColorY");
+                setAttr -e-keyable true ($cube_shape[0]+".rmanCmyColorZ");
+                int $sizeb=size($boxs);
+                $boxs[$sizeb]=$cube[0];
+                parent $cube[0] ($mesh[$a]+"BoxsGrp"); 
+                 }
+             }	
+         }        
+     }
+progressBar -e -ep $gMainProgressBar;	
+
+if($attach==1){
+string $plane=$mesh[$a];   
+spaceLocator -p 0 0 0 -n ($plane+"SclLoc");
+group -n ($plane+"SclLocGrp");
+string $shapMN[]=`listRelatives -s ($plane)`;
+string $type=`objectType  $shapMN[0]`;
+$ex=`objExists ($plane+"follicleGrp")`;
+if($ex==0){
+select -cl;
+group -empty -n ($plane+"follicleGrp");
+setAttr ($plane+"follicleGrp.v") 0;
+setAttr -lock true ($plane+"follicleGrp.v");
+}       
+string $cvs[];
+$cvs=$boxs;
+  
+setToolTo $gSelect;
+progressBar -e -st ("像素方块附着绑定") -bp -ii 1 -min 0 -max `size($cvs)` $gMainProgressBar;			 			
+for($j=0;$j<size($cvs);$j++){
+if (`progressBar -q -ic $gMainProgressBar`)
+	break;
+	progressBar -e -s 1 $gMainProgressBar;  
+float $pos[]=`xform -q -ws -t ($cvs[$j])`;
+spaceLocator -p 0 0 0 -n ($plane+"LocA"+$j);
+group -n ($plane+"LocAGrp"+$j);        
+setAttr -type float3 ($plane+"LocAGrp"+$j+".t") $pos[0]  $pos[1] $pos[2];      
+parentConstraint ($plane+"LocA"+$j) $cvs[$j];
+scaleConstraint ($plane+"LocA"+$j) $cvs[$j];
+
+if($type=="mesh"){
+createNode closestPointOnMesh -n ($plane+"cpom"+$j);
+string $shape[]=`listRelatives -s $plane`;
+connectAttr -f ($shape[0]+".outMesh") ($plane+"cpom"+$j+".inMesh");
+setAttr -type float3 ($plane+"cpom"+$j+".inPosition") $pos[0]  $pos[1] $pos[2]; 
+float $u=`getAttr ($plane+"cpom"+$j+".parameterU")`;
+float $v=`getAttr ($plane+"cpom"+$j+".parameterV")`;
+
+createNode follicle -n ($plane+"follicleShape"+$j);
+select -r ($plane+"follicleShape"+$j);
+pickWalk -d up;
+rename ($plane+"follicle"+$j);
+connectAttr -f ($shape[0]+".outMesh") ($plane+"follicleShape"+$j+".inputMesh");
+connectAttr -f ($shape[0]+".worldMatrix[0]") ($plane+"follicleShape"+$j+".inputWorldMatrix");
+
+connectAttr -f ($plane+"follicleShape"+$j+".outTranslate") ($plane+"follicle"+$j+".translate");
+connectAttr -f ($plane+"follicleShape"+$j+".outRotate") ($plane+"follicle"+$j+".rotate");
+setAttr  ($plane+"follicleShape"+$j+".parameterU") $u;
+setAttr  ($plane+"follicleShape"+$j+".parameterV") $v;
+
+parent ($plane+"follicle"+$j) ($plane+"follicleGrp");
+delete ($plane+"cpom"+$j);
+}else{   
+createNode closestPointOnSurface -n ($plane+"cpom"+$j);
+string $shape[]=`listRelatives -s $plane`;
+connectAttr -f ($shape[0]+".worldSpace") ($plane+"cpom"+$j+".inputSurface");
+setAttr -type float3 ($plane+"cpom"+$j+".inPosition") $pos[0]  $pos[1] $pos[2]; 
+
+float $u=`getAttr ($plane+"cpom"+$j+".parameterU")`;
+float $v=`getAttr ($plane+"cpom"+$j+".parameterV")`;
+
+createNode follicle -n ($plane+"follicleShape"+$j);
+select -r ($plane+"follicleShape"+$j);
+pickWalk -d up;
+rename ($plane+"follicle"+$j);
+connectAttr -f ($shape[0]+".local") ($plane+"follicleShape"+$j+".inputSurface");
+connectAttr -f ($shape[0]+".worldMatrix[0]") ($plane+"follicleShape"+$j+".inputWorldMatrix");
+
+connectAttr -f ($plane+"follicleShape"+$j+".outTranslate") ($plane+"follicle"+$j+".translate");
+connectAttr -f ($plane+"follicleShape"+$j+".outRotate") ($plane+"follicle"+$j+".rotate");
+
+setAttr  ($plane+"follicleShape"+$j+".parameterU") $u;
+setAttr  ($plane+"follicleShape"+$j+".parameterV") $v;
+
+parent  ($plane+"follicle"+$j) ($plane+"follicleGrp");
+delete ($plane+"cpom"+$j);
+}    
+scaleConstraint  ($plane+"SclLoc")   ($plane+"follicle"+$j);//缩放约束毛囊
+parent  ($plane+"LocAGrp"+$j) ($plane+"follicle"+$j);
+        }
+progressBar -e -ep $gMainProgressBar;	
+        }
+    }
+}
+/////////////////

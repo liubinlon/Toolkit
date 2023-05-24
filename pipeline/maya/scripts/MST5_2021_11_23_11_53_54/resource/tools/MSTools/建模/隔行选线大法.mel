@@ -1,0 +1,50 @@
+
+global proc int getIndex10(string $getsize[],string $com){
+int $the_index;
+for($i =0; $i<size($getsize); $i++) 
+{
+if($getsize[$i] == $com)  
+{$the_index= $i;}  
+}
+return $the_index;
+}
+
+
+global proc xuanxian(){
+string $a[]=`ls -sl -fl`;
+pickWalk -d up -type edgering;
+string $a1[]=`ls -sl -fl`;
+int $num_a=`size($a1)`;
+
+
+select -cl;
+for ($i1=0;$i1<$num_a;$i1++)
+{
+    select -add $a1[$i1];
+   int $a4=getIndex10($a1,$a[0])%2;
+   
+    if ($i1%2==1-$a4){
+        select -d $a1[$i1];
+    }
+  SelectContiguousEdges;
+    
+}
+
+}
+
+
+if(`window -ex FY_tool_1`) deleteUI FY_tool_1; 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 0 -tlb 0 FY_tool_1 ;
+rowColumnLayout -numberOfColumns 1  ;
+text -l "";
+text -l "";
+text -fn "boldLabelFont" -l "   奥义之隔行选线大法 - 先单独随意选择一根边线   ";
+text -l "";
+text -l "";
+button -l "执行" -c "xuanxian()";
+text -l "";
+text -l "";
+setParent ..;   
+showWindow FY_tool_1;

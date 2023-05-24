@@ -1,0 +1,112 @@
+//次级扭曲关节绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtSecJointsetupWin(){
+
+if(`window -ex gtSecJointsetupWin`) deleteUI  -window gtSecJointsetupWin;
+window -wh 400 200 -title "老船动画吧-次级扭曲关节绑定工具" gtSecJointsetupWin;
+columnLayout -adj 1   mainColumnL;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1644\"";
+   
+	intSliderGrp -l "次级关节段数"  -f 1 -v 3 -min 1 -max 10  gtIntsecoundBnNum;
+	button  -l "创建次级扭曲关节" -c "gtAddSubBindBnproc" gtIntsecoundBnBut;
+separator -style double;	
+showWindow gtSecJointsetupWin;
+}
+////////////////////////////
+global proc gtAddSubBindBnproc(){
+int $subbnnum=`intSliderGrp -q -v gtIntsecoundBnNum`;
+string $sel[]=`ls -sl`;
+for($ii=0;$ii<size($sel);$ii++){
+
+int $atrexist=`objExists ($sel[$ii]+".subBnnum")`;
+if($atrexist==1){
+    string $tempnode[]=`listConnections -s 0 -d 1 ($sel[$ii]+".subBnnum")`;
+    if(size($tempnode)>0){
+    select -r ($tempnode);
+    delete;
+    }
+}
+
+setAttr ($sel[$ii]+".radius") 0.01;
+float $p1[]=`joint -q -p ($sel[$ii])`;
+select -r ($sel[$ii]);
+pickWalk -d down;
+string $endBn[]=`ls -sl`;
+float $p2[]=`joint -q -p ($endBn[0])`;
+
+distanceDimension -sp 0 0 0 -ep 1 0 0;
+string $selloc[]=`ls -sl`;
+select -r $selloc[1];
+rename ($sel[$ii]+"Dis");
+select -r $selloc[0];
+pickWalk -d up;
+rename ($sel[$ii]+"Disloc1");
+string $loc2[]=`listConnections -s 1 -d 0  ($sel[$ii]+"DisShape.startPoint")`;
+rename $loc2[0] ($sel[$ii]+"Disloc2");
+
+select -r ($sel[$ii]);
+select -add ($sel[$ii]+"Disloc1");
+pointConstraint;
+
+select -r ($endBn[0]);
+select -add ($sel[$ii]+"Disloc2");
+pointConstraint;
+float $armDis=`getAttr  ($sel[$ii]+"DisShape.distance")`;
+select -r ($sel[$ii]+"Disloc2");
+select -add ($sel[$ii]+"Disloc1");
+select -add ($sel[$ii]+"Dis");
+delete ;
+    select -r ($sel[$ii]);
+    int $attrExist=`objExists ($sel[$ii]+".subBnnum")`;
+    if($attrExist==0){
+    addAttr -ln "subBnnum"  -at long -dv ($subbnnum);
+    setAttr -l true ($sel[$ii]+".subBnnum");
+    }else{
+    setAttr -l 0 ($sel[$ii]+".subBnnum");
+    setAttr ($sel[$ii]+".subBnnum") $subbnnum;
+    setAttr -l 1 ($sel[$ii]+".subBnnum");
+    }
+for($i=0;$i<$subbnnum;$i++){
+    select -cl;
+    joint -p ($p1[0]) ($p1[1]) ($p1[2]) -n ($sel[$ii]+"_BJT"+$i);
+    addAttr -ln "num"  -at long; 
+    connectAttr -f ($sel[$ii]+".subBnnum") ($sel[$ii]+"_BJT"+$i+".num");
+    setAttr -l true ($sel[$ii]+"_BJT"+$i+".num");
+joint -p ($p2[0]) ($p2[1]) ($p2[2]) -n ($sel[$ii]+"_endbjt"+$i);
+joint -e -zso -oj xyz -sao yup ($sel[$ii]+"_BJT"+$i);
+  select -r ($sel[$ii]+"_BJT"+$i);
+  select -add ($sel[$ii]);
+  parent;
+  
+    delete ($sel[$ii]+"_endbjt"+$i);
+    float $per=($armDis/$subbnnum);
+    setAttr ($sel[$ii]+"_BJT"+$i+".tx") (($per/2)+$per*$i);
+    shadingNode -asUtility multiplyDivide -n ($sel[$ii]+"_bone"+$i+"multiply");
+    addAttr -ln "num"  -at long; 
+    connectAttr -f ($sel[$ii]+".subBnnum") ($sel[$ii]+"_bone"+$i+"multiply.num");
+
+    connectAttr -f ($sel[$ii]+".rotateX") ($sel[$ii]+"_bone"+$i+"multiply.input1X");
+    connectAttr -f ($sel[$ii]+".subBnnum") ($sel[$ii]+"_bone"+$i+"multiply.input2X");
+    setAttr ($sel[$ii]+"_bone"+$i+"multiply.operation") 2;
+    shadingNode -asUtility multiplyDivide -n ($sel[$ii]+"_bone"+$i+"multiplyA");
+     addAttr -ln "num"  -at long; 
+    connectAttr -f ($sel[$ii]+".subBnnum") ($sel[$ii]+"_bone"+$i+"multiplyA.num");
+
+    connectAttr -f ($sel[$ii]+"_bone"+$i+"multiply.outputX") ($sel[$ii]+"_bone"+$i+"multiplyA.input1X");
+
+    setAttr ($sel[$ii]+"_bone"+$i+"multiplyA.input2X") (0-($subbnnum-($i+1)));
+    connectAttr -f ($sel[$ii]+"_bone"+$i+"multiplyA.outputX") ($sel[$ii]+"_BJT"+$i+".rotateX");
+        }
+
+    }
+}
+/////////////////////
+gtSecJointsetupWin;

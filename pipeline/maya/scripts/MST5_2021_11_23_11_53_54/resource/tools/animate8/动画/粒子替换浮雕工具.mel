@@ -1,0 +1,348 @@
+//粒子替换贴图浮雕动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+global proc gtTextureParticleWin(){
+if(`window -ex gtTextureParticleWin`==1){ deleteUI -window gtTextureParticleWin;}
+window -wh 450 250 -title "纹理粒子" gtTextureParticleWin;
+columnLayout -adj 1 gtMaintColumnLay;
+text -l "查看程序说明，了解更多应用细节\n老船动画吧：http://www.animate8.com/";
+button -l "访 问 老 船 动 画 吧！" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com\"";
+text -l "粒子替换与贴图序列（MAYA2103/2014两个本版有BUG不能正常播放）\n---------请注意本程序需要手动完成一次载入文件纹理的操作---------\n程序会自动创建粒子、粒子替换，以及物体浮雕动画……" text1;
+textFieldButtonGrp -cw3 80 300 70 -l ("序列贴图文件") -text "载入纹理序列" -bl "浏    览" -bc "gtTexGetDir;" gtTextField;
+textFieldButtonGrp -cw3 80 300 70 -l ("粒子替换物体") -text "载入替换物体名" -bl "载    入" -bc "gtloadName" gtTextFielda;
+textFieldButtonGrp -cw3 80 300 70 -l ("目标平面物体") -text "载入目标物体名" -bl "载    入" -bc "gtloadNameb" gtTextFieldb;
+
+formLayout -h 130 gtform;
+
+intFieldGrp -l "行/列数" -nf 2 -v1 30 -v2 30 gtIntFa;
+
+	rowColumnLayout -nc 3 -cw 1 60 -cw 2 100  -cw 3 265 gtrow;
+text -l "";
+checkBox -l "创建浮雕物体" -v 0  gtObjCheck;
+button -l "应用" -c "gtTextureParticle;" but1;
+
+formLayout -e
+
+-af gtIntFa left 3 -af gtIntFa top 5  -af gtIntFa right 3
+-af gtrow left 3 -af gtrow right 3 -ac gtrow top 5 gtIntFa 
+
+ gtform;
+setParent..;
+showWindow gtTextureParticleWin;
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+global proc gtTexGetDir(){
+    string $filename[] = `fileDialog2 -fileMode 4 -caption "Import Image"`;
+    if (1 == `size($filename)`)
+    {
+       gtCheckTexGetName($filename[0], "");
+    }
+}    
+///////////////////////////////////////
+global proc gtCheckTexGetName(string $dir,string $type){
+textFieldButtonGrp -e -text ($dir)  gtTextField;
+}
+////////////////////////////
+global proc gtloadName(){
+string $sel[]=`ls -sl`;
+textFieldButtonGrp -e -tx $sel[0] gtTextFielda;}
+global proc gtloadNameb(){
+string $sel[]=`ls -sl`;
+textFieldButtonGrp -e -tx $sel[0] gtTextFieldb;}
+///////////////////////////////////////////
+global proc gtTextureParticle(){
+string $filePath=`textFieldButtonGrp -q -tx gtTextField`;
+string $instanser=`textFieldButtonGrp -q -tx gtTextFielda`;
+string $plane=`textFieldButtonGrp -q -tx gtTextFieldb`;
+int $objCheck=`checkBox -q -v gtObjCheck`;
+int $cycle=10;
+int $vv=`intFieldGrp -q -v1 gtIntFa`;
+int $uu=`intFieldGrp -q -v2 gtIntFa`;
+int $numP=$vv*$uu;
+string $sel[]=`ls -sl`;
+string $type="";
+
+int $size=size($sel);
+if($size==1){
+string $shape[]=`listRelatives -s ($sel[0])`;
+int $ss=size($shape);
+if($ss==1){$type=`nodeType ($shape[0])`;}
+}
+
+string $particle;
+if($size==0||$type!="particle"){
+string $emit[]=`emitter -pos 0 0 0 -type omni -r 500 -sro 0 -nuv 1 -cye none -cyi 1 
+-spd 2 -srn 2 -nsp 2 -tsp 0 -mxd 0 -mnd 0 -dx 1 -dy 0 -dz 0 -sp 0`;
+string $part[]=`particle`;
+connectDynamic -em ($emit[0]) ($part[0]);
+$particle=$part[0];}
+else{
+$particle=$sel[0];
+}
+
+string $emit[]=`listConnections -s 0 -d 1 ($particle+".startTime")`;
+setAttr ($emit[0]+".rate") 200;
+//playbackOptions -e -min 1 -max 200;
+
+string $fil=`shadingNode -asTexture file`;
+string $placeM=`shadingNode -asUtility place2dTexture`;
+connectAttr -f ($placeM+".coverage") ($fil+".coverage");
+connectAttr -f ($placeM+".translateFrame") ($fil+".translateFrame");
+connectAttr -f ($placeM+".rotateFrame") ($fil+".rotateFrame");
+connectAttr -f ($placeM+".mirrorU") ($fil+".mirrorU");
+connectAttr -f ($placeM+".mirrorV") ($fil+".mirrorV");
+connectAttr -f ($placeM+".stagger") ($fil+".stagger");
+connectAttr -f ($placeM+".wrapU") ($fil+".wrapU");
+connectAttr -f ($placeM+".wrapV") ($fil+".wrapV");
+connectAttr -f ($placeM+".repeatUV") ($fil+".repeatUV");
+connectAttr -f ($placeM+".offset") ($fil+".offset");
+connectAttr -f ($placeM+".rotateUV") ($fil+".rotateUV");
+connectAttr -f ($placeM+".noiseUV") ($fil+".noiseUV");
+connectAttr -f ($placeM+".vertexUvOne") ($fil+".vertexUvOne");
+connectAttr -f ($placeM+".vertexUvTwo") ($fil+".vertexUvTwo");
+connectAttr -f ($placeM+".vertexUvThree") ($fil+".vertexUvThree");
+connectAttr -f ($placeM+".vertexCameraOne") ($fil+".vertexCameraOne");
+connectAttr ($placeM+".outUV") ($fil+".uv");
+connectAttr ($placeM+".outUvFilterSize") ($fil+".uvFilterSize");
+
+setAttr -type "string"   ($fil+".fileTextureName")  ($filePath);
+
+select -r $fil;
+lockNode -l 1;
+setAttr ($fil+".useFrameExtension") 1;
+
+select -r ($particle);
+select -add ($plane) ;
+goal -w 1 -utr 0   -g ($plane)  ($particle);
+string $pShap[]=`listRelatives -s ($particle)`;
+addAttr -ln goalU -dt doubleArray ($pShap[0]);
+addAttr -ln goalU0 -dt doubleArray ($pShap[0]);
+addAttr -ln goalV -dt doubleArray ($pShap[0]);
+addAttr -ln goalV0 -dt doubleArray ($pShap[0]);
+
+float $bbX=`getAttr ($plane+".boundingBoxMinX")`;
+float $bbMX=`getAttr ($plane+".boundingBoxMaxX")`;
+float $rad=($bbMX-$bbX)/2.0;
+
+circle -ch 0 -o on -nr 0 1 0 -r ($rad*1.3) -n ($plane+"Con");
+group -n ($plane+"ConGrp");
+select -r ($plane);
+select -add ($plane+"ConGrp");
+delete `parentConstraint`;
+select -r ($plane);
+select -add ($plane+"Con");
+parent;
+
+addAttr -ln "multiH"  -at double -dv 1 -k 1 ($plane+"Con");
+addAttr -ln "cut"  -at bool -dv 0 -k 1 ($plane+"Con");
+ if($objCheck==1)addAttr -ln "showObj"  -at bool -dv 1 -k 1 ($plane+"Con");
+addAttr -ln "showInstance"  -at bool -dv 0 -k 1 ($plane+"Con");
+addAttr -ln "showParticle"  -at bool -dv 0 -k 1 ($plane+"Con");
+
+string $shape[]=`listRelatives -s ($plane+"Con")`;
+setAttr ($shape[0]+".overrideEnabled") 1;
+setAttr ($shape[0]+".overrideColor") 22;
+
+int $u;
+int $v;
+if($uu>=$vv){
+$u=$uu;
+$v=$vv;}
+else{
+$u=$vv;
+$v=$uu;}
+
+select -cl;
+group -em -n ($plane+"LocGrp");
+
+global string $gMainProgressBar;
+ progressBar -e -st ($plane+"创建物体浮雕：") -bp -ii 1 -min 0 -max ($u*$v) $gMainProgressBar;
+
+     for($i=0;$i<($u*$v);$i++){
+         if (`progressBar -q -ic $gMainProgressBar`)
+		break;
+	    progressBar -e -s 1 $gMainProgressBar;
+
+       spaceLocator -p 0 0 0 -n ($plane+"Loc"+$i);
+        select -r ($plane+"Loc"+$i);
+       select -add ($plane+"LocGrp");
+       parent;
+}
+	progressBar -e -ep $gMainProgressBar;
+
+string $pExp="";
+	$pExp+=($pShap[0]);
+	$pExp+=".goalU=particleId%";
+	$pExp+=($u);
+	$pExp+="/";
+	$pExp+=($u-1);
+	$pExp+=".0;\r\n";
+	$pExp+=($pShap[0]);
+	$pExp+=".goalV=int(particleId/";
+	$pExp+=($u);
+	$pExp+=")/";
+	$pExp+=($v-1);
+	$pExp+=".0;";
+
+dynExpression -s ($pExp) -c ($pShap[0]);
+setAttr ($pShap[0]+".maxCount") ($u*$v);
+
+addAttr -ln "scl0"  -dt vectorArray  ($pShap[0]);
+addAttr -ln "scl"  -dt vectorArray  ($pShap[0]);
+
+addAttr -ln "aimP0"  -dt vectorArray  ($pShap[0]);
+addAttr -ln "aimP"  -dt vectorArray  ($pShap[0]);
+
+string $instance=`particleInstancer  -addObject -object  $instanser -cycle None -cycleStep 1 
+-cycleStepUnits Frames -levelOfDetail Geometry -rotationUnits Degrees 
+-rotationOrder XYZ -position worldPosition -age age ($pShap[0])`;
+connectAttr -f ($plane+"Con.showInstance") ($instance+".visibility");
+
+string $ppExp="";
+	$ppExp+="\nfloat $u=goalU;\n";
+	$ppExp+="float $v=goalV;\n";
+	$ppExp+="float $c[]=`colorAtPoint -o RGB -u $u -v $v ";
+	$ppExp+=($fil);
+	$ppExp+="`;\nfloat $cut="+$plane+"Con.cut;\n";
+	$ppExp+="if($cut==0||$c[0]>0)\n";
+	$ppExp+="scl=<<($c[0]*"+$plane+"Con.multiH)+1,1,1>>;\n";
+	$ppExp+="else\n";
+	$ppExp+="scl=<<0,0,0>>;\n";
+	$ppExp+="int $id=particleId;\n";
+	$ppExp+="float $p[]=`getAttr (\"";
+	$ppExp+=($plane+"Loc");
+	$ppExp+="\"+$id+\".translate\")`;\n";
+	$ppExp+="aimP=<<$p[0],$p[1],$p[2]>>;\n";
+dynExpression -s ($pExp+$ppExp) -c ($pShap[0]);
+dynExpression -s ($ppExp) -rad ($pShap[0]);
+
+particleInstancer -e -name $instance -scale scl ($pShap[0]);
+particleInstancer -e -name $instance -aimPosition aimP ($pShap[0]);
+for($i=0;$i<($numP/200*24+20);$i++){
+    currentTime -e $i;
+    }
+saveInitialState $particle ;
+ select -r $plane;
+ gtTectureParticleAim;
+setAttr ($plane+".visibility") 0;
+setAttr -lock true ($plane+".visibility");
+ 
+ if($objCheck==1){
+     int $ex=`objExists ($plane+"ObjGrp")`;
+     if($ex==0){
+         select -cl;
+         group -empty -n ($plane+"ObjGrp");
+         select -r ($plane+"Con");
+         select -add ($plane+"ObjGrp");
+         parentConstraint;
+         scaleConstraint;
+     connectAttr -f ($plane+"Con.showObj") ($plane+"ObjGrp.visibility");        
+     }
+     
+progressBar -e -st ($plane+"创建物体浮雕：") -bp -ii 1 -min 0 -max ($u*$v) $gMainProgressBar;
+
+     for($i=0;$i<($u*$v);$i++){
+         if (`progressBar -q -ic $gMainProgressBar`)
+		break;
+	    progressBar -e -s 1 $gMainProgressBar;
+     
+         select -r $instanser;
+         duplicate -rr;
+         rename ($plane+"Obj"+$i);
+         float $objU[]=`getParticleAttr -at goalU ($pShap[0]+".pt["+$i+"]")`;
+         float $objV[]=`getParticleAttr -at goalV ($pShap[0]+".pt["+$i+"]")`;
+         float $pos[]=`getParticleAttr -at worldPosition ($pShap[0]+".pt["+$i+"]")`;
+
+         addAttr -ln "objU"  -at double -dv $objU[0] ($plane+"Obj"+$i);
+         addAttr -ln "objV"  -at double -dv $objV[0] ($plane+"Obj"+$i);
+         addAttr -ln "pt"  -at long -dv $i ($plane+"Obj"+$i);
+         setAttr -l true ($plane+"Obj"+$i+".pt");
+         setAttr -l true ($plane+"Obj"+$i+".objV");
+         setAttr -l true ($plane+"Obj"+$i+".objU");
+         setAttr ($plane+"Obj"+$i+".t") -type float3 $pos[0] $pos[1] $pos[2];
+         select -r ($plane);
+         select -add ($plane+"Obj"+$i);
+         delete`normalConstraint -weight 1 -aimVector 0 1 0 -upVector 1 0 0 -worldUpType "vector" -worldUpVector 0 1 0`;
+         select -r ($plane+"Obj"+$i);
+         select -add  ($plane+"ObjGrp"); 
+         parent; 
+         string $ppExp="";
+	$ppExp+="\nfloat $u="+$plane+"Obj"+$i+".objU;\n";
+	$ppExp+="float $v="+$plane+"Obj"+$i+".objV;\n";
+	$ppExp+="float $c[]=`colorAtPoint -o RGB -u $u -v $v ";
+	$ppExp+=($fil);
+	$ppExp+="`;\nfloat $cut="+$plane+"Con.cut;\n";
+	$ppExp+="if($cut==0||$c[0]>0)\n";
+	$ppExp+=$plane+"Obj"+$i+".sy=($c[0]*"+$plane+"Con.multiH+0.1);\n";
+	$ppExp+="else\n";
+	$ppExp+=$plane+"Obj"+$i+".sy=0;\n";
+	$ppExp+="if("+$plane+"Obj"+$i+".sy<0.01)\n";	
+	$ppExp+=$plane+"Obj"+$i+".v=0;\nelse\n";
+	$ppExp+=$plane+"Obj"+$i+".v=1;\n";
+		
+	expression -s ($ppExp)  -o "" -ae 1 -uc all -n ($plane+"ObjExp"+$i);
+     }
+	progressBar -e -ep $gMainProgressBar;
+
+   } else{
+    setAttr  ($plane+"Con.showInstance") 1;  
+   }
+connectAttr -f ($plane+"Con.showParticle") ($particle+".visibility");
+   select -r ($particle);
+   $ex=`objExists ($plane+"ObjGrp")`;
+   if($ex==1)
+       select -add ($plane+"ObjGrp");
+   select -add ($instance);
+   select -add $instanser;
+   select -add ($plane+"LocGrp");
+   select -add ($plane+"ConGrp");
+   select -add ($emit[0]);
+   group -n ($plane+"Grp");
+   select -r $fil;
+
+ShowAttributeEditorOrChannelBox;
+for($i=0;$i<10;$i++){
+    currentTime -e $i;
+    }
+   currentTime -e 1;
+}
+///////////
+global proc gtTectureParticleAim(){
+string $sel[]=`ls -sl`;
+string $part[]=`listConnections -d 1 -s 0 ($sel[0]+".worldSpace[0]")`;
+string $shp[]=`listRelatives -fullPath -c -s $part[0]`;
+
+string $loc=($sel[0]+"Loc");
+int $count=`getAttr ($shp[0]+".count")`;
+int $mcount=`getAttr ($shp[0]+".maxCount")`;
+if($count!=$mcount) error "请将粒子全部播放出来！！！";
+for($i=0;$i<$count;$i++){
+float $pos[]=`getParticleAttr -at worldPosition ($shp[0]+".pt["+$i+"]")`;
+setAttr ($loc+$i+".tx") $pos[0];
+setAttr ($loc+$i+".ty") $pos[1];
+setAttr ($loc+$i+".tz") $pos[2];
+move -r 0 1 0 ($loc+$i);
+select -r $sel[0];
+select -add ($loc+$i);
+parentConstraint -mo;
+}
+select -r ($loc+"0");
+pickWalk -d up;
+$sel=`ls -sl`;
+setAttr ($sel[0]+".v") 0;
+setAttr -lock true ($sel[0]+".tx");
+setAttr -lock true ($sel[0]+".ty");
+setAttr -lock true ($sel[0]+".tz");
+setAttr -lock true ($sel[0]+".rx");
+setAttr -lock true ($sel[0]+".ry");
+setAttr -lock true ($sel[0]+".rz");
+setAttr -lock true ($sel[0]+".v");
+}
+////////////////////////////////
+gtTextureParticleWin;

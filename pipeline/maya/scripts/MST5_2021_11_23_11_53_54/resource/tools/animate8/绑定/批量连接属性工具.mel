@@ -1,0 +1,83 @@
+//批量属性连接绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtConnectOneAttrToAllWin(){
+   if(`window -ex gtConnectOneAttrToAllWin`) deleteUI -window gtConnectOneAttrToAllWin;
+    window -wh 600 200  -t "老船角色绑定-☆-批量属性连接绑定工具!" gtConnectOneAttrToAllWin;
+    columnLayout -adj 1 mainColumnattr;
+  text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频！" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1310\"";
+     text -l "一个属性连接给N个属性，使用此绑定工具，提高工作效率";
+
+    formLayout  gtCOTAF;
+    textFieldGrp -l "物体名字" -text "name"  gtCOTATFG;
+    button  -l "载入选择物体的名字" -c "gtConnectOneToAllsouceN" but1;
+    
+    textFieldGrp -l "属性名字" -text "可以手动输入属性名字" gtCOTATFGAttr;
+    button  -l "载入通道盒选择的属性" -c "gtConnectOneToAllsouceAttr" but2;
+    textFieldGrp -l "被连接物体的属性名字" -text "可以手动输入属性名字" gtCOTATFGAttr2;
+    button  -l "载入通道盒选择的属性" -c "gtConnectOneToAllTargetAttr" but3;
+
+    button -l "选择被连接的物体-点击连接属性"   -c "gtConnectOneToAll" but4;
+
+    formLayout -e
+    -af gtCOTATFG left 5 -af gtCOTATFG top 10 -ap gtCOTATFG right 0 70
+    -ac but1 left 5 gtCOTATFG -af but1 top 10 -af but1 right 10
+    -af gtCOTATFGAttr left 5 -ac gtCOTATFGAttr top 5 but1 -ap gtCOTATFGAttr right 0 70
+    -ac but2 left 5 gtCOTATFGAttr -ac but2 top 5 but1 -af but2 right 10 
+    -af gtCOTATFGAttr2 left 5 -ac gtCOTATFGAttr2 top 5 but2 -ap gtCOTATFGAttr2 right 0 70
+    -ac but3 left 5 gtCOTATFGAttr2 -af but3 right 10 -ac but3 top 5 but2
+    -af but4 left 5 -ac but4 top 5 but3 -af but4 right 10 
+    
+    gtCOTAF;    
+    showWindow gtConnectOneAttrToAllWin;   
+}
+////////////////////////
+global proc gtConnectOneToAllsouceN(){
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+if($size>1) error "只能选择一个物体";
+textFieldGrp -e -text ($sel) gtCOTATFG;
+
+}
+
+////////////////////////////////////
+global proc gtConnectOneToAllsouceAttr(){
+string $sel[]=`channelBox -q -sma mainChannelBox`;
+int $size=size($sel);
+if($size>1) error "只能选择一个属性";
+textFieldGrp -e -text ($sel) gtCOTATFGAttr;
+
+}
+///////////////////////////////////////////
+global proc gtConnectOneToAllTargetAttr(){
+string $sel[]=`channelBox -q -sma mainChannelBox`;
+int $size=size($sel);
+if($size>1) error "只能选择一个属性";
+textFieldGrp -e -text ($sel) gtCOTATFGAttr2;
+
+}
+
+////////////////////////////////////////////////
+global proc gtConnectOneToAll(){
+string $sNam=`textFieldGrp -q -text gtCOTATFG`;
+string $aNam=`textFieldGrp -q -text gtCOTATFGAttr`;
+string $sN=($sNam+"."+$aNam);
+string $tNam=`textFieldGrp -q -text gtCOTATFGAttr2`;
+string $sel[]=`ls -sl`;
+
+for($i=0;$i<size($sel);$i++){
+    string $tN=($sel[$i]+"."+$tNam);    
+    connectAttr -f ($sN) ($tN);
+    }
+}
+
+/////////////////////////////
+gtConnectOneAttrToAllWin;

@@ -1,0 +1,21 @@
+{
+    "public": {
+        "Link maya cgtw": "link_maya_cgtw"
+    },
+    "rig": {
+        "Replace mod": "replaceMod",
+        "CorrectiveBlendshape": "showCorrectiveBlendshapeWindow"
+    },
+    "cfx": {
+        "Car bon": "CarBon_tool",
+        "Copy skin": "copyskin",
+        "CFXtool": "mel:showWindow attrChange",
+        "selectCurvePoint": "selectCurvePoint",
+        "tjh nDynamic management tool": "mel:tjh_nDynamic_management_tool",
+        "Romcolor": "Romcolor"
+    },
+    "ani": {
+        "Snappers": "SnappersRigAManager",
+        "Screen": "screen_ani"
+    }
+}

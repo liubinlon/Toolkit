@@ -1,0 +1,245 @@
+//Global UI
+
+global proc ArnoldMasks(){
+    if (`window -exists arnMaskWind`){
+   
+       deleteUI -window arnMasksWind;
+    }
+    window -title "Arnold Masks" arnMasksWind;
+    columnLayout -columnAttach "both" 5 -rowSpacing 10 -columnWidth 250;
+    button -label "Shader Masks" -c "ShaderMaskWind()";
+    button -label "Object Masks" -c "ArnoldObjectMasks()";
+    showWindow;
+}
+
+//////////////////////////////////////////////OBJECT MASKS/////////////////////////////////////////////////////////
+
+//MainUI
+
+global string $redMask;
+global string $greenMask;
+global string $blueMask;
+
+global proc ArnoldObjectMasks(){
+    
+    if (`window -exists objMasks`){
+   
+   deleteUI -window objMasks;
+}
+
+string $objMaskWindow = `window -title "Arnold Object Masks"
+                             -wh 100 100
+                             objMasks`;
+
+
+columnLayout -cat "both" 5 -cw 250 -adjustableColumn on;
+text -label "First creat AOV, than add attributes for your objects and set colors.";
+separator -height 15 -style "none";
+button -label "Create AOV" -c "CreateMasks()";
+button -label "Add Attributes" -c "SetMaskAttr()";
+button -label "Set Red"   -c "SetRedColor()";
+button -label "Set Green" -c "SetGreenColor()";
+button -label "Set Blue"  -c "SetBlueColor()";
+                            
+showWindow $objMaskWindow;
+}
+
+
+global proc CreateMasks(){
+    $utMaskNode = `createNode -name "objmask" aiUtility`;
+    setAttr ($utMaskNode + ".shadeMode") 2;
+    global string $redMask;
+    $redMask = `createNode -name "red" aiUserDataFloat`;
+    global string $greenMask;
+    $greenMask = `createNode -name "green" aiUserDataFloat`;
+    global string $blueMask;
+    $blueMask = `createNode -name "blue" aiUserDataFloat`;
+    setAttr -type "string" ($redMask + ".floatAttrName") $redMask;
+    connectAttr -f ($redMask + ".outValue") ($utMaskNode + ".colorR");
+    setAttr -type "string" ($greenMask + ".floatAttrName") $greenMask;
+    connectAttr -f ($greenMask + ".outValue") ($utMaskNode + ".colorG");
+    setAttr -type "string" ($blueMask + ".floatAttrName") $blueMask;
+    connectAttr -f ($blueMask + ".outValue") ($utMaskNode + ".colorB");
+    select -r $utMaskNode $redMask $greenMask $blueMask;
+    container -name "MaskAsset" -includeShaders -includeShapes -includeTransform -force -addNode `ls -sl`;
+
+    $AOVnames = "AOV_" + $utMaskNode;
+    python("import mtoa.aovs as ma ;ctc = ma.AOVInterface(); ctc.addAOV ('"+$AOVnames+"');");
+    connectAttr -force ($utMaskNode + ".outColor") ("aiAOV_" + $AOVnames + ".defaultValue");
+    setAttr ("aiAOV_" + $AOVnames + ".type") 5;
+
+    
+}
+proc string [] getMesh(){
+    string  $output[] = {};
+    string $dumys[] = `listRelatives -s -children`;
+    for ($i in $dumys){
+        if (endsWith( $i, "ShapeDeformed"))
+            {
+                 $output=stringArrayCatenate($output,{$i});
+            }
+        }
+    return $output;
+}
+
+global proc SetMaskAttr(){
+    
+    //ls -sl;
+    //pickWalk -d down;
+    string $allsel[] = `ls -sl -l`;
+    for ($i in $allsel){
+    $objSel = `listRelatives -s -f -children $i`;
+    global string $redMask;
+    catchQuiet (`addAttr -ln ("mtoa_constant_" + $redMask) -at double $objSel`);
+    global string $greenMask;
+    catchQuiet(`addAttr -ln ("mtoa_constant_" + $greenMask) -at double $objSel`);
+    global string $blueMask;
+    catchQuiet(`addAttr -ln ("mtoa_constant_" + $blueMask) -at double $objSel`);
+    }
+}
+
+global proc SetRedColor(){
+    //ls -sl;
+    //pickWalk -d down;
+    string $objSel[];
+    $objSel = `listRelatives -f -s -children`;
+    for ($item in $objSel){
+    global string $redMask;
+    setAttr ($item + ".mtoa_constant_" + $redMask) 1;
+    global string $greenMask;
+    setAttr ($item + ".mtoa_constant_" + $greenMask) 0;
+    global string $blueMask;
+    setAttr ($item + ".mtoa_constant_" + $blueMask) 0;
+};
+    
+}
+
+
+global proc SetGreenColor(){
+    //ls -sl;
+    //pickWalk -d down;
+    //string $objSel[];
+    $objSel = `listRelatives -f -s -children`;
+    for ($item in $objSel){
+    global string $redMask;
+    setAttr ($item + ".mtoa_constant_" + $redMask) 0;
+    global string $greenMask;
+    setAttr ($item + ".mtoa_constant_" + $greenMask) 1;
+    global string $blueMask;
+    setAttr ($item + ".mtoa_constant_" + $blueMask) 0;
+};
+}
+global proc SetBlueColor(){
+    
+    //ls -sl;
+    //pickWalk -d down;
+    //string $objSel[];
+    $objSel = `listRelatives -f -s -children`;
+    for ($item in $objSel){
+    global string $redMask;
+    setAttr ($item + ".mtoa_constant_" + $redMask) 0;
+    global string $greenMask;
+    setAttr ($item + ".mtoa_constant_" + $greenMask) 0;
+    global string $blueMask;
+    setAttr ($item + ".mtoa_constant_" + $blueMask) 1;
+};
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////SHADER MASKS////////////////////////////////////////////////////////////////////////////
+
+//Create UI for Shader Masks
+
+global proc ShaderMaskWind(){
+if (`window -exists ezMasks`){
+   
+   deleteUI -window ezMasks;
+}
+
+string $maskWindow = `window -title "Arnold Shader Masks"
+                             -wh 70 70
+                             ezMasks`;
+
+columnLayout -cat "both" 5 -cw 250 -adjustableColumn on;
+text -label "First select shader!!!";
+separator -height 10 -style "none";
+button -label "Red"   -c "ArnoldRedMask()";
+button -label "Green" -c "ArnoldGreenMask()";
+button -label "Blue"  -c "ArnoldBlueMask()";
+                            
+showWindow $maskWindow;
+}
+
+//Creation of shader masks using aiWriteColor nodes and adding custom AOV's for each one.
+
+global proc ArnoldGreenMask(){
+$shaderNode = `ls -sl`;
+$maskNode = `createNode -name ($shaderNode[0] + "_Mask") aiWriteColor`;
+string $textureNode;
+$textureNode = `connectionInfo -sfd ($shaderNode[0] + ".color")`;
+if ($textureNode == ""){
+    float $nodeColorA[];
+    $nodeColorA = `getAttr ($shaderNode[0] + ".color")`;
+    setAttr ($maskNode + ".beauty.beautyR") ($nodeColorA[0]);
+    setAttr ($maskNode + ".beauty.beautyG") ($nodeColorA[1]);
+    setAttr ($maskNode + ".beauty.beautyB") ($nodeColorA[2]);
+    connectAttr -f ($maskNode + ".outColor") ($shaderNode[0] + ".color");
+}else{
+    connectAttr -f ($textureNode) ($maskNode + ".beauty");
+    disconnectAttr ($textureNode) ($shaderNode[0] + ".color");
+    connectAttr -f ($maskNode + ".outColor") ($shaderNode[0] + ".color");
+}
+setAttr ($maskNode + ".input") -type double3 0 1 0;
+$AOVname = ($shaderNode[0] + "_mask");
+python("import mtoa.aovs as ma ;ctc = ma.AOVInterface(); ctc.addAOV ('"+$AOVname+"');");
+python("import pymel.core as pm;node = pm.PyNode('"+ $maskNode+"');node.aovName.set('"+$AOVname+"');");
+}
+
+global proc ArnoldRedMask(){
+$shaderNode = `ls -sl`;
+$maskNode = `createNode -name ($shaderNode[0] + "_Mask") aiWriteColor`;
+string $textureNode;
+$textureNode = `connectionInfo -sfd ($shaderNode[0] + ".color")`;
+if ($textureNode == ""){
+    float $nodeColorA[];
+    $nodeColorA = `getAttr ($shaderNode[0] + ".color")`;
+    setAttr ($maskNode + ".beauty.beautyR") ($nodeColorA[0]);
+    setAttr ($maskNode + ".beauty.beautyG") ($nodeColorA[1]);
+    setAttr ($maskNode + ".beauty.beautyB") ($nodeColorA[2]);
+    connectAttr -f ($maskNode + ".outColor") ($shaderNode[0] + ".color");
+}else{
+    connectAttr -f ($textureNode) ($maskNode + ".beauty");
+    disconnectAttr ($textureNode) ($shaderNode[0] + ".color");
+    connectAttr -f ($maskNode + ".outColor") ($shaderNode[0] + ".color");
+}
+setAttr ($maskNode + ".input") -type double3 1 0 0;
+$AOVname = ($shaderNode[0] + "_mask");
+python("import mtoa.aovs as ma ;ctc = ma.AOVInterface(); ctc.addAOV ('"+$AOVname+"');");
+python("import pymel.core as pm;node = pm.PyNode('"+ $maskNode+"');node.aovName.set('"+$AOVname+"');");
+}
+
+global proc ArnoldBlueMask(){
+$shaderNode = `ls -sl`;
+$maskNode = `createNode -name ($shaderNode[0] + "_Mask") aiWriteColor`;
+string $textureNode;
+$textureNode = `connectionInfo -sfd ($shaderNode[0] + ".color")`;
+if ($textureNode == ""){
+    float $nodeColorA[];
+    $nodeColorA = `getAttr ($shaderNode[0] + ".color")`;
+    setAttr ($maskNode + ".beauty.beautyR") ($nodeColorA[0]);
+    setAttr ($maskNode + ".beauty.beautyG") ($nodeColorA[1]);
+    setAttr ($maskNode + ".beauty.beautyB") ($nodeColorA[2]);
+    connectAttr -f ($maskNode + ".outColor") ($shaderNode[0] + ".color");
+}else{
+    connectAttr -f ($textureNode) ($maskNode + ".beauty");
+    disconnectAttr ($textureNode) ($shaderNode[0] + ".color");
+    connectAttr -f ($maskNode + ".outColor") ($shaderNode[0] + ".color");
+}
+setAttr ($maskNode + ".input") -type double3 0 0 1;
+$AOVname = ($shaderNode[0] + "_mask");
+python("import mtoa.aovs as ma ;ctc = ma.AOVInterface(); ctc.addAOV ('"+$AOVname+"');");
+python("import pymel.core as pm;node = pm.PyNode('"+ $maskNode+"');node.aovName.set('"+$AOVname+"');");
+}
+ArnoldMasks();

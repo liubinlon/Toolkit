@@ -1,0 +1,146 @@
+//老船绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtAdvReplaceConProcWin(){
+if(`window -ex gtAdvReplaceConProcWin`) deleteUI  -window gtAdvReplaceConProcWin;
+window -wh 400 200 -title "老船动画吧-曲线控制器绑定工具" gtAdvReplaceConProcWin;
+columnLayout -adj 1   mainColumnL;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1894\"";
+rowColumnLayout -nc 3 -cw 1 100 -cw 2 100 ; 
+text -l "";
+checkBox -l "…球形控制器…" -v 0 gtAdvReplaceConShapeCB; 
+setParent..;       
+button  -l "曲线/曲面控制器转换" -c "gtAdvReplaceConProc" ;
+separator -style double;	
+showWindow gtAdvReplaceConProcWin;
+}
+/////////////////////
+gtAdvReplaceConProcWin;
+///////////////////////
+global proc gtAdvReplaceConProc(){    
+string $sel[]=`ls -sl`;
+int $shapCon=`checkBox -q -v  gtAdvReplaceConShapeCB`; 
+for($i=0;$i<size($sel);$i++){
+int $ex=`objExists   ($sel[$i]+".tgNew")`; 
+if($ex==1){
+  string $oldC[]=`listConnections -s 0 -d 1  ($sel[$i]+".t")`;
+    setAttr -lock 0 ($oldC[0]+".v");
+    setAttr ($oldC[0]+".v") 1;
+    delete ($sel[$i]);
+    rename ($oldC[0]) ($sel[$i]);
+    select -r ($sel[$i]);    
+}else{   
+setAttr ($sel[$i]+".translateZ") 0;
+setAttr ($sel[$i]+".translateY") 0;
+setAttr ($sel[$i]+".translateX") 0;
+setAttr ($sel[$i]+".rx") 0;
+setAttr ($sel[$i]+".ry") 0;
+setAttr ($sel[$i]+".rz") 0;
+if($shapCon==1){
+ ttgCSimbolCreate; 
+ rename ($sel[$i]+"Con");  
+}else{
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 -0.5 0.5 -p 0.5 -0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 0.5 0.5 -p 0.5 -0.5 0.5 
+-p -0.5 -0.5 0.5 -p -0.5 0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0.5 0.5 
+-p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 
+-k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -n   ($sel[$i]+"Con");
+}
+float $bb[]=`getAttr ($sel[$i]+".boundingBoxSize")`;
+select -r ($sel[$i]+"Con");
+if($shapCon==1)
+scale -r ($bb[0]*0.9) ($bb[0]*0.9) ($bb[0]*0.9);
+else
+scale -r ($bb[0]*0.8) ($bb[0]*0.8) ($bb[0]*0.8);
+
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+string $parent[]=`listRelatives -p ($sel[$i])`;
+select -r ($sel[$i]+"Con");
+select -add $parent[0];
+parent;
+
+select -r ($sel[$i]);
+select -add ($sel[$i]+"Con");
+delete`parentConstraint`;
+string $shap[]=`listRelatives -s $sel[$i]`;
+string $type=`nodeType $shap[0]`;
+if($type=="mesh")select -r ($sel[$i]+".vtx[0:99999]") ;
+else 
+select -r ($sel[$i]+".cv[0:1000][0:1000]") ;
+newCluster " -envelope 1";
+rename ($sel[$i]+"tempCluser");
+
+string $shap[]=`listRelatives -s ($sel[$i]+"Con")`;
+select -cl;
+for($j=0;$j<size($shap);$j++){
+select -add ($shap[$j]+".cv[0:1000]") ;
+}
+newCluster " -envelope 1";
+rename ($sel[$i]+"tempCluserA");
+
+select -r ($sel[$i]+"tempCluser");
+select -add ($sel[$i]+"tempCluserA");
+delete`pointConstraint`;
+
+select -r ($sel[$i]+"Con");
+DeleteHistory;
+delete ($sel[$i]+"tempCluser");
+
+select -r ($sel[$i]+"Con");
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+connectAttr -f ($sel[$i]+"Con.translate") ($sel[$i]+".translate");
+connectAttr -f ($sel[$i]+"Con.rotate") ($sel[$i]+".rotate");
+connectAttr -f ($sel[$i]+"Con.scale") ($sel[$i]+".scale");
+setAttr -lock 0 ($sel[$i]+".visibility"); 
+setAttr ($sel[$i]+".visibility") 0;
+setAttr -lock true ($sel[$i]+".visibility"); 
+
+string $shap[]=`listRelatives -s ($sel[$i]+"Con")`;
+for($j=0;$j<size($shap);$j++){
+setAttr ($shap[$j]+".overrideEnabled") 1;
+setAttr ($shap[$j]+".overrideColor") 22; 
+}
+addAttr -ln "tgNew"  -at bool ($sel[$i]+"Con");
+rename ($sel[$i]) ($sel[$i]+"Old");
+rename ($sel[$i]+"Con") ($sel[$i]);
+        }
+    }    
+}
+global proc ttgCSimbolCreate(){
+circle -ch 0 -o on -r 0.5 -n "gttempSimbol"  ;
+select -r "gttempSimbol";
+duplicate -rr;
+rotate -r -os 0 90 0 ;
+select -r "gttempSimbol";
+duplicate -rr;
+rotate -r -os 90 0 0 ;
+select -r gttempSimbol gttempSimbol1  gttempSimbol2 ;
+string $sel[]=`ls -sl`;
+int $num=size($sel)-1;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n  0;
+select -d $sel[$num];
+if($num==0){
+confirmDialog -title "makeSymbolError" - message "there are more objects needed" - button "ok";}
+else{
+select -hi;
+string $child[]=`ls -sl`;
+for($i=0;$i<size($child);$i++){
+string $type=`nodeType $child[$i]`;
+if(($type=="mesh")||($type=="nurbsCurve")|| ($type=="nurbsSurface")||($type=="subdiv") ||     ($type=="locator")){
+parent -s -add $child[$i] $sel[$num];
+}
+select -cl;
+}
+select $sel;
+select -d $sel[$num];
+doDelete;
+select -r $sel[$num];
+    }
+}
+////////////////2017-12-15

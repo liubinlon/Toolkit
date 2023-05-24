@@ -1,0 +1,2 @@
+add_subdirectory(pxrUsd)
+add_subdirectory(pxrUsdPreviewSurface)

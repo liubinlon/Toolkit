@@ -1,0 +1,106 @@
+//替换添加多属性连接绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtReplaceConnectOneToAllWin(){
+   if(`window -ex gtReplaceConnectOneToAllWin`) deleteUI -window gtReplaceConnectOneToAllWin;
+    window -wh 500 250 -t "老船角色绑定-☆-替换添加多属性连接绑定工具!"  gtReplaceConnectOneToAllWin;
+    columnLayout -adj 1 mainColumnattr;
+      text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1289\"";
+    formLayout  gtCOTAF;
+    
+    textFieldGrp -l "载入控制物体名称" -text "可以手动输入属性名字" gtConOjbName;
+    text -l "为控制物体创建通道盒选择的对应类型的属性，并连接给当前选择物体对应的属性\n勾选最小最大数值选项，新添加的除布尔属性之外会被限制最小最大数值\n选择所有需要被控制的物体，然后选择属性通道盒\n点击“为控制物体-创建通道盒选择的属性-并连接属性”按钮" but5;
+
+    button  -l "载入选择物体名称" -c "gtConnectOneToAllsouceName" but4a;
+    
+    checkBox -l "连接属性" -v 1  gtattributAddcheck;  
+
+    
+    checkBox -l "最小最大数值：" -v 0  -onc "floatFieldGrp -e -en 1 gtattributMinM;"  -ofc "floatFieldGrp -e -en 0 gtattributMinM;" gtattributcheckmm;
+
+    floatFieldGrp -nf 2 -en 0 -v1 0.00  -v2 0.00  -cw2 120 120 gtattributMinM;
+
+    button -l  "为控制物体-创建通道盒选择的属性-并连接属性" -c "gtAttributeCreateAndConnect;" but6;
+      
+    formLayout -e
+
+        -af but5 left 5 -af but5 top 5 -af but5 right 10
+        
+    -af gtConOjbName left 5 -ac gtConOjbName top 5 but5 -ap gtConOjbName right 0 70
+    -ac but4a left 5 gtConOjbName -ac but4a top 5 but5 -af but4a right 10 
+
+    -af gtattributAddcheck left 120 -ac gtattributAddcheck top 5 gtConOjbName -af gtattributAddcheck right 10
+
+    -af gtattributcheckmm left 120 -ac gtattributcheckmm top 5 gtattributAddcheck -ap  gtattributcheckmm right 0 40
+    -ac gtattributMinM left 5 gtattributcheckmm -ac gtattributMinM top 5 gtattributAddcheck -af gtattributMinM right 10
+        
+    -af but6 left 5 -ac but6 top 5 gtattributcheckmm -af but6 right 10
+    
+    gtCOTAF;
+    
+    showWindow gtReplaceConnectOneToAllWin;   
+}
+
+//////////////////////////
+global proc gtAttributeCreateAndConnect(){
+
+int $minMax=`checkBox -q -v gtattributcheckmm`;
+float $min=`floatFieldGrp -q -v1 gtattributMinM`;
+float $max=`floatFieldGrp -q -v2 gtattributMinM`;
+string $conNam=`textFieldGrp -q -text gtConOjbName`;
+int $connect=`checkBox -q -v gtattributAddcheck`;
+
+string $sel[]=`ls -sl`;
+string $attr[]=`channelBox -q -sma mainChannelBox`;
+int $num=size($sel);
+
+int $size=size($attr);
+for($i=0;$i<$size;$i++){
+    string $typ=`attributeQuery -at -n ($sel[$num-1]) ($attr[$i]) `;
+
+    select -r $conNam;
+    if($minMax==1&&$typ!="bool"){
+    int $ex=`objExists ($conNam+"."+$attr[$i])`;   
+    if($ex==0){
+    addAttr -ln ($attr[$i])  -at $typ -min $min -max $max -k 1;
+        }
+        
+    }else{
+        
+    int $ex=`objExists ($conNam+"."+$attr[$i])`;   
+    if($ex==0){
+    addAttr -ln ($attr[$i])  -at $typ  -k 1;  
+    }      
+        }
+    }
+    
+    if($connect==1){
+for($j=0;$j<size($sel);$j++){
+    
+for($i=0;$i<$size;$i++){
+    int $ex=`objExists ($sel[$j]+"."+$attr[$i])`;
+    
+    if($ex==1){
+    connectAttr -f ($conNam+"."+$attr[$i]) ($sel[$j]+"."+$attr[$i]);
+                }
+            }
+        }
+    }
+}
+////////////////////
+global proc gtConnectOneToAllsouceName(){
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+if($size>1) error "只能选择一个物体";
+textFieldGrp -e -text ($sel) gtConOjbName;
+}
+///////////////////////
+gtReplaceConnectOneToAllWin;

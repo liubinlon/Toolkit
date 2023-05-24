@@ -1,0 +1,259 @@
+//批量属性编辑工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtPLAttributeWin(){
+if(`window -ex gtPLAttributeWin`==1) deleteUI -window gtPLAttributeWin;
+window -title "老船角色绑定-☆-批量属性编辑工具!" -wh 400 400 gtPLAttributeWin;
+scrollLayout mainFrameL;
+
+formLayout gtMainformL;
+columnLayout -adj 1 gtFrameL;
+text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 45  -c "showHelp -a \"http://www.animate8.com/archives/1340\"";
+frameLayout -cl 0 -cll 1 -l "一元属性" gtSFrameL;
+columnLayout -adj 1;
+
+rowLayout -nc 4 ;
+text -l "" -w 60;
+text -l "属性名称:";
+textField -text "" -w 180 gtSTextF;
+button -l "载入属性" -c "gtLoadChannelAttrProcA" -w 120 butAct1;
+setParent..;
+rowLayout -nc 4;
+text -l "" -w 60;
+text -l "属性数值:";
+floatSliderGrp -v 0 -w 240 -f 1 gtSfloatF;
+
+setParent..;
+rowLayout -nc 4 ;
+text -l "" -w 60;
+text -l "属性名称:";
+textField -text "" -w 180 gtSTextF2;
+button -l "载入属性" -c "gtLoadChannelAttrProcA2" -w 120 butAct2;
+setParent..;
+rowLayout -nc 4;
+text -l "" -w 60;
+text -l "属性数值:";
+floatSliderGrp -v 0 -w 240 -f 1 gtSfloatF2;
+
+setParent..;
+rowLayout -nc 4 ;
+text -l "" -w 60;
+text -l "属性名称:";
+textField -text "" -w 180 gtSTextF3;
+button -l "载入属性" -c "gtLoadChannelAttrProcA3" -w 120 butAct3;
+setParent..;
+rowLayout -nc 4;
+text -l "" -w 60;
+text -l "属性数值:";
+floatSliderGrp -v 0 -w 240 -f 1 gtSfloatF3;
+
+setParent..;
+rowLayout -nc 4 ;
+text -l "" -w 60;
+text -l "属性名称:";
+textField -text "" -w 180 gtSTextF4;
+button -l "载入属性" -c "gtLoadChannelAttrProcA4" -w 120 butAct4;
+setParent..;
+rowLayout -nc 4;
+text -l "" -w 60;
+text -l "属性数值:";
+floatSliderGrp -v 0 -w 240 -f 1 gtSfloatF4;
+
+setParent..;
+rowLayout -nc 4 ;
+text -l "" -w 60;
+text -l "属性名称:";
+textField -text "" -w 180 gtSTextF5;
+button -l "载入属性" -c "gtLoadChannelAttrProcA5" -w 120 butAct5;
+setParent..;
+rowLayout -nc 4;
+text -l "" -w 60;
+text -l "属性数值:";
+floatSliderGrp -v 0 -w 240 -f 1 gtSfloatF5;
+
+setParent..;
+rowLayout -nc 2 ;
+text -l "" -w 60;
+button -l "应           用" -w 355 -c "gtSModifyAttribute;";
+
+setParent..;
+setParent..;
+setParent..;
+
+frameLayout -cl 1 -cll 1 -l "二元属性"  gtDFrameL;
+columnLayout -adj 1;
+rowLayout -nc 3;
+text -l "" -w 60;
+text -l "属性名称:";
+textField -text "attr" -w 300 gtDTextF;
+
+setParent..;
+rowLayout -nc 3 -cw3 60 60 240;
+text -l "" -w 60;
+text -l "属性数值:";
+floatFieldGrp -nf 2 -v1 0.00  -v2 0.00  -cw2 120 120 gtDfloatF;
+setParent..;
+rowLayout -nc 2 -cw4 60 110 110 110;
+text -l "" -w 60;
+button -l "应           用" -w 355 -c "gtDModifyAttribute;";
+
+setParent..;
+setParent..;
+setParent..;
+
+frameLayout -cl 1 -cll 1 -l "三元属性"  gtTFrameL;
+columnLayout -adj 1;
+rowLayout -nc 3;
+text -l "" -w 60;
+text -l "属性名称:";
+textField -text "attr" -w 300 gtTTextF;
+
+setParent..;
+rowLayout -nc 3 -cw3 60 60 240;
+text -l "" -w 60;
+text -l "属性数值:";
+floatFieldGrp -nf 3 -v1 0.00  -v2 0.00 -v3 0.00 -w 240 gtTfloatF;
+setParent..;
+rowLayout -nc 2;
+text -l "" -w 60;
+button -l "应           用" -w 355 -c "gtTModifyAttribute;";
+setParent..;
+setParent..;
+setParent..;
+
+formLayout -e
+ -af gtFrameL left 12 -af gtFrameL right 12 -af gtFrameL top 12 -af gtFrameL bottom 12 gtMainformL;
+showWindow gtPLAttributeWin;
+}
+////////////////////
+global proc gtLoadChannelAttrProcA(){
+string $sel[]=`channelBox -q -sma mainChannelBox`;
+int $size=size($sel);
+if($size>1) error "只能选择一个属性";
+textField -e -text ($sel) gtSTextF;
+}
+///////////
+global proc gtLoadChannelAttrProcA2(){
+string $sel[]=`channelBox -q -sma mainChannelBox`;
+int $size=size($sel);
+if($size>1) error "只能选择一个属性";
+textField -e -text ($sel) gtSTextF2;
+}
+///////////
+global proc gtLoadChannelAttrProcA3(){
+string $sel[]=`channelBox -q -sma mainChannelBox`;
+int $size=size($sel);
+if($size>1) error "只能选择一个属性";
+textField -e -text ($sel) gtSTextF3;
+}
+///////////
+
+global proc gtLoadChannelAttrProcA4(){
+string $sel[]=`channelBox -q -sma mainChannelBox`;
+int $size=size($sel);
+if($size>1) error "只能选择一个属性";
+textField -e -text ($sel) gtSTextF4;
+}
+///////////
+
+global proc gtLoadChannelAttrProcA5(){
+string $sel[]=`channelBox -q -sma mainChannelBox`;
+int $size=size($sel);
+if($size>1) error "只能选择一个属性";
+textField -e -text ($sel) gtSTextF5;
+}
+////////////////
+global proc gtSModifyAttribute(){
+string $sel[]=`ls -sl`;
+string $name=`textField -q -text gtSTextF`;
+float $value=`floatSliderGrp -q -v gtSfloatF`;
+
+string $name2=`textField -q -text gtSTextF2`;
+float $value2=`floatSliderGrp -q -v gtSfloatF2`;
+
+string $name3=`textField -q -text gtSTextF3`;
+float $value3=`floatSliderGrp -q -v gtSfloatF3`;
+
+string $name4=`textField -q -text gtSTextF4`;
+float $value4=`floatSliderGrp -q -v gtSfloatF4`;
+
+string $name5=`textField -q -text gtSTextF5`;
+float $value5=`floatSliderGrp -q -v gtSfloatF5`;
+
+int $size=`size($sel)`;
+if($size==0) error "为选择物体";
+
+for($i=0;$i<$size;$i++){
+    
+string $attrName=($sel[$i]+"."+$name);
+int $exists=`objExists $attrName`;
+if($exists==1&&$name!=""){
+setAttr $attrName $value;
+        }
+string $attrName=($sel[$i]+"."+$name2);
+int $exists=`objExists $attrName`;
+if($exists==1&&$name2!=""){
+setAttr $attrName $value2;
+        }        
+ string $attrName=($sel[$i]+"."+$name3);
+int $exists=`objExists $attrName`;
+if($exists==1&&$name3!=""){
+setAttr $attrName $value3;
+        }  
+string $attrName=($sel[$i]+"."+$name4);
+int $exists=`objExists $attrName`;
+if($exists==1&&$name4!=""){
+setAttr $attrName $value4;
+        }          
+string $attrName=($sel[$i]+"."+$name5);
+int $exists=`objExists $attrName`;
+if($exists==1&&$name5!=""){
+setAttr $attrName $value5;
+        }                 
+    }
+}
+////////////////////
+global proc gtTModifyAttribute(){
+string $sel[]=`ls -sl`;
+string $name=`textField -q -text gtTTextF`;
+float $value1=`floatFieldGrp -q -v1 gtTfloatF`;
+float $value2=`floatFieldGrp -q -v2 gtTfloatF`;
+float $value3=`floatFieldGrp -q -v3 gtTfloatF`;
+int $size=`size($sel)`;
+if($size==0) error "nothing selected";
+
+for($i=0;$i<$size;$i++){
+string $attrName=($sel[$i]+"."+$name);
+int $exists=`objExists $attrName`;
+if($exists){
+setAttr $attrName $value1 $value2 $value3;
+        }
+    }
+}
+////////////////////////
+global proc gtDModifyAttribute(){
+string $sel[]=`ls -sl`;
+string $name=`textField -q -text gtDTextF`;
+float $value1=`floatFieldGrp -q -v1 gtDfloatF`;
+float $value2=`floatFieldGrp -q -v2 gtDfloatF`;
+int $size=`size($sel)`;
+if($size==0) error "nothing selected";
+
+for($i=0;$i<$size;$i++){
+string $attrName=($sel[$i]+"."+$name);
+int $exists=`objExists $attrName`;
+if($exists){
+setAttr $attrName $value1 $value2;
+        }
+    }
+}
+/////////////////////////////
+gtPLAttributeWin;

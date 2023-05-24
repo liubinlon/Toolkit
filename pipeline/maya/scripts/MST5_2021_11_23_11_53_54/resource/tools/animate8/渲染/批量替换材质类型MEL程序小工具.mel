@@ -1,0 +1,128 @@
+//材质替换工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+//此脚本程序是简易版，后续老船角色绑定工作室会继续完善其为升级版。
+//敬请关注老船动画吧：http://www.animate8.com/
+//////////////
+
+global proc gtMaterialReplaceWin(){
+   if(`window -ex gtMaterialReplaceWin`) deleteUI -window gtMaterialReplaceWin;
+    window -wh 600 200 -t "老船角色绑定-☆☆☆☆☆-不同材质类型批量替换工具！！" gtMaterialReplaceWin;
+    columnLayout -adj 1 mainColumnattrma;
+  text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/940\"";
+
+
+    formLayout  gtCOTAFma;
+   
+    textFieldGrp -l "载入准备好的材质球名称：" -text "可以手动输入材质球名字" gtLoadMaterialObj;
+    button  -l "载入材质球节点" -c "ttgLaodMatreialObjNamProc" but2;
+    checkBox -l "删除原始材质球" -v 0 gtMaterialOld;
+    button  -l "替换指定材质" -c "gtMaterialRemap" but2a;
+    formLayout -e    
+    -af gtLoadMaterialObj left 5 -af gtLoadMaterialObj top 10 -ap gtLoadMaterialObj right 2 70
+    -ac but2 left 5 gtLoadMaterialObj -af but2 top 10 -af but2 right 10 
+    -af gtMaterialOld left 5 -ac gtMaterialOld top 5 but2 -ap gtMaterialOld right 10 50
+    -ac but2a left 5 gtMaterialOld -ac but2a top 5 but2  -af but2a right 10    
+    
+    gtCOTAFma;     
+    showWindow gtMaterialReplaceWin;   
+}
+////////////////////
+global proc ttgLaodMatreialObjNamProc(){
+
+string $sel[]=`ls -sl`;
+string $teststring=$sel[0];
+$gtCname=$teststring;
+textFieldGrp  -e -text $gtCname gtLoadMaterialObj;
+}
+////////////////////
+global proc gtMaterialRemap(){
+string $sel[] = `ls -sl`;
+int $n = size($sel);
+string $map[];
+string $aiShader[];
+    string $material=`textFieldGrp -q -tx gtLoadMaterialObj`;
+    int $oldM=`checkBox -q -v gtMaterialOld`;
+
+int $ex=`objExists ($material)`;
+if($ex==0)error "指定的材质不存在，请从新载入材质节点名称";
+for( $i=0; $i<$n; $i++ ){    
+
+        select -r $material ;duplicate -rr;$aiShader = `ls -sl`;
+    
+        int $ex=`objExists ($aiShader[0]+".color")`;
+        int $oldex=`objExists ($sel[$i]+".color")`;
+        if($ex==1&&$oldex==1){
+        string $map[]=  `listConnections -source 1 -destination 0 ($sel[$i]+".color")`;
+        int $ex=`objExists ($map[0])`;
+        if($ex==1){
+        connectAttr -force ($map[0]+".outColor") ($aiShader[0]+".color");
+        }else{
+        float $color[]=`getAttr ($sel[$i]+".color")`;
+        setAttr ($aiShader[0]+".color") ($color[0]) ($color[1]) ($color[2]);
+            }
+        }
+        //////////////////////////
+        int $ex=`objExists ($aiShader[0]+".transparency")`;
+        int $oldex=`objExists ($sel[$i]+".transparency")`;
+        if($ex==1&&$oldex==1){
+        string $map[]=  `listConnections -source 1 -destination 0 ($sel[$i]+".transparency")`;
+        int $ex=`objExists ($map[0])`;
+        if($ex==1){
+        connectAttr -force ($map[0]+".outColor") ($aiShader[0]+".transparency");
+        }else{
+        float $color[]=`getAttr ($sel[$i]+".transparency")`;
+        setAttr ($aiShader[0]+".transparency") ($color[0]) ($color[1]) ($color[2]);
+            }
+        }
+         //////////////////////////
+        int $ex=`objExists ($aiShader[0]+".ambientColor")`;
+        int $oldex=`objExists ($sel[$i]+".ambientColor")`;
+        if($ex==1&&$oldex==1){
+        string $map[]=  `listConnections -source 1 -destination 0 ($sel[$i]+".ambientColor")`;
+        int $ex=`objExists ($map[0])`;
+        if($ex==1){
+        connectAttr -force ($map[0]+".outColor") ($aiShader[0]+".ambientColor");
+        }else{
+        float $color[]=`getAttr ($sel[$i]+".ambientColor")`;
+        setAttr ($aiShader[0]+".ambientColor") ($color[0]) ($color[1]) ($color[2]);
+            }
+        }
+         //////////////////////////
+        int $ex=`objExists ($aiShader[0]+".incandescence")`;
+        int $oldex=`objExists ($sel[$i]+".incandescence")`;
+        if($ex==1&&$oldex==1){
+        string $map[]=  `listConnections -source 1 -destination 0 ($sel[$i]+".incandescence")`;
+        int $ex=`objExists ($map[0])`;
+        if($ex==1){
+        connectAttr -force ($map[0]+".outColor") ($aiShader[0]+".incandescence");
+        }else{
+        float $color[]=`getAttr ($sel[$i]+".incandescence")`;
+        setAttr ($aiShader[0]+".incandescence") ($color[0]) ($color[1]) ($color[2]);
+            }
+        }
+         //////////////////////////
+        int $ex=`objExists ($aiShader[0]+".normalCamera")`;
+        int $oldex=`objExists ($sel[$i]+".normalCamera")`;
+        if($ex==1&&$oldex==1){
+        string $map[]=  `listConnections -source 1 -destination 0 ($sel[$i]+".normalCamera")`;
+        int $ex=`objExists ($map[0])`;
+        if($ex==1){
+        connectAttr -force ($map[0]+".outNormal") ($aiShader[0]+".normalCamera");
+            }
+        }                
+        hyperShade -objects $sel[$i];
+        hyperShade -assign $aiShader[0];
+        if($oldM==1)delete $sel[$i];
+        print $i;print "  ";print $map[0];print "  ";print $aiShader[0];print "\n";
+    }
+}
+gtMaterialReplaceWin;

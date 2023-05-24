@@ -1,0 +1,127 @@
+//替换曲线控制器形态绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+global proc gtReplaceConShpWin(){
+
+if(`window -ex gtReplaceConShpWin`) deleteUI  -window gtReplaceConShpWin;
+window -wh 400 200 -title "老船角色绑定-☆☆☆☆☆-替换控制器行节点绑定工具！！！！！！" gtReplaceConShpWin;
+columnLayout -adj 1   mainColumnL;
+ text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1126\"";	
+	separator -style double;
+textFieldButtonGrp -cw3 80 200 65 -l (" 目标曲线:") -text "需要载入目标曲线" -bl   "载    入" -bc "gtloadcurveConName;" gtTextFieldconshp;
+	separator -style double;
+button -l "替换曲线控制器形态" -c "ttgCharactorReplaceConShape" butH;
+	separator -style double;
+//button -l "镜像插件绑定控制器形态" -c "" butHh;
+showWindow gtReplaceConShpWin;
+
+}
+/////////////////////////////
+global proc gtloadcurveConName(){
+string $sel[]=`ls -sl`;
+textFieldButtonGrp -e -tx $sel[0] gtTextFieldconshp;
+}
+/////////////////////////
+
+global proc ttgCharactorReplaceConShape(){
+string $sel[]=`ls -sl`;
+string $curve=`textFieldButtonGrp -q -tx gtTextFieldconshp`;
+
+for($i=0;$i<size($sel);$i++){
+string $aimobj=$curve;
+    select -r ($aimobj);
+      duplicate -rr;
+      rename ($sel[$i]+"temp");
+     for($ii=0;$ii<12;$ii++){
+   string $childs[]=`listRelatives -c ($sel[$i]+"temp")`; 
+   int $size=size($childs);
+   if($size>1){
+       select -r ($sel[$i]+"temp");
+       pickWalk -d down;
+       pickWalk -d left;
+       string $s[]=`ls -sl`;
+       string $transform=`objectType ($s[0])`;
+       if($transform!="nurbsCurve"){ delete ;}
+       } 
+ }
+ 
+     for($ii=0;$ii<12;$ii++){
+   string $childs[]=`listRelatives -c -fullPath ($sel[$i]+"temp")`; 
+   int $size=size($childs);
+   if($size>1){
+       select -r ($sel[$i]+"temp");
+       pickWalk -d down;
+       string $s[]=`ls -sl`;
+       string $transform=`objectType ($s[0])`;
+       if($transform!="nurbsCurve"){ delete ;}
+       } 
+ }
+       string $childs[]=`listRelatives -c -fullPath ($sel[$i]+"temp")`; 
+       select -r ($childs[0]);
+       rename ($sel[$i]+"tempShape");
+       
+setAttr -lock 0 ($sel[$i]+"temp.tx");
+setAttr -lock 0 ($sel[$i]+"temp.ty");
+setAttr -lock 0 ($sel[$i]+"temp.tz");
+setAttr -lock 0 ($sel[$i]+"temp.rx");
+setAttr -lock 0 ($sel[$i]+"temp.ry");
+setAttr -lock 0 ($sel[$i]+"temp.rz");  
+setAttr -lock 0 ($sel[$i]+"temp.sx");
+setAttr -lock 0 ($sel[$i]+"temp.sy");
+setAttr -lock 0 ($sel[$i]+"temp.sz");     
+ select -r     ($sel[$i]+"temp");
+ string $shape[]=`listRelatives -s ($sel[$i]+"temp")`;
+
+
+  string $pcon[]=`listRelatives -p ($sel[$i]+"temp")`;
+  int $pnum=size($pcon);
+  if($pnum>0){
+        select -r ($sel[$i]+"temp");
+         parent -world;
+  }
+      select -cl;
+      group -empty -n ($sel[$i]+"tempGrp");
+      xform -os -piv 0 0 0;
+      select -r ($sel[$i]+"tempGrp");
+      select -add ($sel[$i]+"temp");
+      delete`pointConstraint`;
+   string $oldshape[]=`listRelatives -s ($sel[$i])`;
+   
+for($ii=0;$ii<size($shape);$ii++){
+string $inputv[]=`listConnections -s 1 -d 0 -p 1  -scn 1 ($oldshape[$ii]+".v")`;
+string $inputlodv[]=`listConnections -s 1 -d 0 -p 1  -scn 1 ($oldshape[$ii]+".lodVisibility")`;
+    if(size($inputv)>0){
+     connectAttr -f ($inputv[0])  ($shape[$ii]+".v");
+ }
+  if(size($inputlodv)>0){
+     connectAttr -f ($inputlodv[0])   ($shape[$ii]+".lodVisibility");
+ }
+}
+select -r ($oldshape);
+string $shapename[]=`ls -sl`;
+delete;   
+    string $shape[]=`listRelatives -s ($sel[$i]+"temp")`;
+    for($ii=0;$ii<size($shape);$ii++){
+      select -r ($shape[$ii]);
+      select -add ($sel[$i]);
+      parent -r -s;
+}
+     select -r ($sel[$i]+"tempGrp");
+     select -add ($sel[$i]+"temp");
+     delete;
+     string $shape[]=`listRelatives -s ($sel[$i])`;
+     for($ii=0;$ii<size($shape);$ii++){
+        select -r ($shape[$ii]);
+        rename ($sel[$i]+"shape"+$ii);
+        }
+    }
+}
+//////////////////////
+gtReplaceConShpWin;

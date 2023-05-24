@@ -1,0 +1,41 @@
+
+
+
+global proc find_t_f(){
+string $a1[]=`ls -sl`;
+ConvertSelectionToFaces ;
+string $a2[]=`ls -sl -fl`;
+string $a3[];
+clear $a3;
+for ($i=0;$i<size($a2);$i++)
+{
+    select -r $a2[$i];
+    ConvertSelectionToVertices;
+    string $a4[]=`ls -sl -fl`;
+    if(size($a4)<4){
+        $a3[size($a3)]=$a2[$i];
+    }
+}
+
+select -r $a3;
+
+}
+
+
+if(`window -ex FY_tool_3`) deleteUI FY_tool_3; 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 0 -tlb 0 FY_tool_3 ;
+rowColumnLayout -numberOfColumns 1  ;
+text -l "";
+text -l "";
+text -fn "boldLabelFont" -l "       奥义之隔行找三角面大法 - 先选择一个模型       ";
+
+text -l "";
+
+text -l "";
+button -l "执行" -c "find_t_f()";
+text -l "";
+text -l "";
+setParent ..;   
+showWindow FY_tool_3;

@@ -1,0 +1,55 @@
+
+global proc get_J_curve(){
+//选择所有模型 
+string $getobj[]=`ls -sl`;
+
+assignNewPfxToon;
+
+string $gettoon_s[]=`ls -sl`;
+
+string $gettoon_t[]=`listRelatives -p $gettoon_s[0]`;
+
+string $new_toon=`rename $gettoon_t[0] ($getobj[0]+"_J_toon")`;
+
+string $new_toon_shape[]=`listRelatives -c $new_toon`;
+setAttr ($new_toon_shape[0]+".borderLines") 0;
+setAttr ($new_toon_shape[0]+".intersectionLines") 1;
+setAttr ($new_toon_shape[0]+".creaseLines") 0;
+setAttr ($new_toon_shape[0]+".profileLines") 0;
+select -r $new_toon;
+doPaintEffectsToCurve( 0);
+string $J_curves[]=`listConnections ($new_toon_shape[0]+".outMainCurves")`;
+float $num_Jcurves=`size($J_curves)`;
+for($jc=0;$jc<$num_Jcurves;$jc++){
+rename $J_curves[$jc] ("J_curve_"+$getobj[0]+"_"+($jc+1));
+
+}
+
+string $J_curves_temp[]=`listConnections ($new_toon_shape[0]+".outMainCurves")`;
+string $del_grp_a[]=`listRelatives -ap $J_curves_temp[0]`;
+string $del_grp_b[]=`listRelatives -ap $del_grp_a[0]`;
+parent -w $J_curves_temp;
+string $new_grp=`group`; 
+xform -os -piv 0 0 0;
+
+string $new_grp_2 = `rename $new_grp ("all_curve_"+$getobj[0])`;
+select -r $del_grp_b[0];
+doDelete ;
+select -r $new_grp_2; 
+}
+
+
+
+if(`window -ex FY_tool_3gjc`) {deleteUI FY_tool_3gjc;} 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 0 -tlb 0 FY_tool_3gjc;
+rowColumnLayout -numberOfColumns 1 ;
+  text -l "";
+
+  text -label "===选择两个已相交的poly模型===";
+    text -l "";
+button -label "执行" -recomputeSize 1 -w 180 -command "get_J_curve()";
+
+setParent ..;   
+showWindow FY_tool_3gjc;

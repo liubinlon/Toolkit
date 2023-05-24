@@ -1,0 +1,671 @@
+//表情控制框绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtfaceSetupWinA(){
+
+
+if(`window -ex gtfaceSetupWinA`) deleteUI -window gtfaceSetupWinA;
+window -wh 500 350 -title "老船角色绑定-☆-表情控制框绑定工具!" gtfaceSetupWinA;
+columnLayout -adj 1 gtColL;
+
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 30  -c "showHelp -a \"http://www.animate8.com/archives/1492\"";
+
+
+formLayout gtfaceFrom;
+text -l "     名  字：" textNameEF;
+textField -text "name" -ed 1 ttgRigNameEF;
+
+string $vh="floatFieldGrp -e -en1 1 -en2 1 gtfield2;floatFieldGrp -e -en1 1 -en2 1 gtfield1;checkBox -e -en 1 gtcheckB;";
+string $v="floatFieldGrp -e -en1 0 -en2 0 gtfield1;floatFieldGrp -e -en1 1 -en2 1 gtfield2;checkBox -e -en 0 gtcheckB;";
+string $h="floatFieldGrp -e -en1 0 -en2 0  gtfield2;floatFieldGrp -e -en1 1 -en2 1 gtfield1;checkBox -e -en 0 gtcheckB;";
+string $hv="floatFieldGrp -e -en1 0 -en2 0  gtfield2;floatFieldGrp -e -en1 0 -en2 0 gtfield1;checkBox -e -en 0 gtcheckB;";
+
+button -l "载入角色名字" -c  "ttgLaodCharactorNamEFProcA;"   loadNamButEF;
+
+button -l "创  建  边  框" -c "gtfaceSetupFrame;" but1;
+separator -style single  sep1;
+radioButtonGrp -la4 "方形"  "横向" "竖向" "眼睛" -nrb  4 -on1 ($vh)  -on2 ($v)  -on3  ($h)  -on4 ($hv) -select 1 gtradioBut;
+
+checkBox -l "方向-V" -v  0 gtcheckB;
+
+floatFieldGrp -l "上下限制" -nf  2 -v1 -1 -v2 1 gtfield1;
+floatFieldGrp -l "左右限制" -nf  2 -v1 -1 -v2 1 gtfield2;
+textFieldGrp -l "控制钮名字："  -tx  "faceCon" gttext1;
+button -l "创建控制钮" -c "gtfaceSetupFrameH;"but2;
+
+separator -style single  sep2;
+button -l "完成控制" -c "gtfaceSetupFrameHFinal;" but3;
+button -l "编辑控制钮" -c "gtfaceSetupFrameHEdit;" but4;
+formLayout -e 
+
+-af textNameEF left 10 -af textNameEF top 5 -ap textNameEF right 0 18
+-ac ttgRigNameEF left 5 textNameEF  -ap ttgRigNameEF right 0 50 -af ttgRigNameEF top 5 
+-ac loadNamButEF left 5 ttgRigNameEF -af loadNamButEF right 10 -af loadNamButEF top 5
+
+-af but1 left 10 -af but1 right 10 -ac but1 top 5 ttgRigNameEF
+
+-af sep1 left 10 -af sep1 right 10 -ac sep1 top 5 but1
+-af gtradioBut left 36 -af gtradioBut right 10 -ac gtradioBut top 5 sep1
+-af gtcheckB left 152 -af gtcheckB right 10 -ac gtcheckB top 5 gtradioBut
+
+-af gtfield1 left 10 -af gtfield1 right 10 -ac gtfield1 top 5 gtcheckB
+-af gtfield2 left 10 -af gtfield2 right 10 -ac gtfield2 top 5 gtfield1
+-af gttext1 left 10 -af gttext1 right 10 -ac gttext1 top 5 gtfield2
+-af but2 left 10 -af but2 right 10 -ac but2 top 5 gttext1
+-af sep2 left 10 -af sep2 right 10 -ac sep2 top 5 but2
+-af but4 left 10 -ap but4 right 0  30 -ac but4 top 5 sep2 
+-ac but3 left 5 but4 -af but3 right 10 -ac but3 top 5 sep2 gtfaceFrom;
+showWindow  gtfaceSetupWinA;
+}
+////////////////////
+global proc ttgLaodCharactorNamEFProcA(){
+
+string $gtCname="";
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+string $gtCname;
+string $tokens[];
+int $num=`tokenize $sel[0] "_" $tokens`;
+string $teststring=$tokens[0];
+$gtCname=$teststring;
+textField  -e -text $gtCname ttgRigNameEF;
+}
+//////////////////////
+global proc gtfaceSetupFrame(){
+$teststring=`textField -q -text  "ttgRigNameEF"`;
+$gtCN=$teststring;
+
+string $gtCname;
+$gtCname=$gtCN+"_";
+
+int $state=`objExists  ($gtCname+"faceFrame")`;
+
+if($state==1) error "当前名字已被使用，请用其它名字!!!";
+
+curve -d 3 -p -6 -6 0 -p 6 -6 0 -p 6 -6 0 -p 6 -6 0 -p 6 6 0 -p 6 6 0 -p 6 6 0 -p -6 6 0 -p -6 6 0 
+-p -6 6 0 -p -6 -6 0 -k 0 -k 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 8 -k 8  -n ($gtCname+"faceFrame");
+select -r ($gtCname+"faceFrame");
+duplicate -rr -n ($gtCname+"faceFrame1");
+scale 0.975 0.975 0.975;
+makeIdentity -apply true -t 0 -r 1 -s 1 -n 0;
+
+pickWalk -d down;
+select -add ($gtCname+"faceFrame");
+parent -s -r;
+delete ($gtCname+"faceFrame1");
+
+select -r ($gtCname+"faceFrame");
+addAttr -ln "FrameHnum"  -at long;
+
+}
+////////////////////////
+global proc gtfaceSetupFrameH(){
+$teststring=`textField -q -text  "ttgRigNameEF"`;
+$gtCN=$teststring;
+
+string $gtCname;
+$gtCname=$gtCN+"_";
+int $selec=`radioButtonGrp -q -sl gtradioBut`;
+float $minH=`floatFieldGrp -q -v1 gtfield2`;
+float $maxH=`floatFieldGrp -q -v2 gtfield2`;
+float $minV=`floatFieldGrp -q -v1 gtfield1`;
+float $maxV=`floatFieldGrp -q -v2 gtfield1`;
+string $name=`textFieldGrp -q -tx gttext1`;
+int $fnm=`getAttr ($gtCname+"faceFrame.FrameHnum")`;
+setAttr ($gtCname+"faceFrame.FrameHnum") ($fnm+1);
+
+if($selec==1){
+int $vv=`checkBox -q -v gtcheckB`;
+//////////////////////////////
+curve -d 3 -p -1 1 0 -p 1 1 0 -p 1 1 0 -p 1 1 0 -p 1 -1 0 -p 1 -1 0 -p 1 -1 0 -p -1 -1 0 -p -1 -1 0 
+-p -1 -1 0 -p -1 1 0 -k 0 -k 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 8 -k 8 -n ($gtCname+"faceFrameH"+$fnm);
+
+select -r ($gtCname+"faceFrameH"+$fnm);
+
+duplicate -rr -n ($gtCname+"faceFrameH"+$fnm+"_temp");
+scale 1.1 1.1 1.1;
+makeIdentity -apply true -t 0 -r 1 -s 1 -n 0;
+pickWalk -d down;
+
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent -s -r;
+delete ($gtCname+"faceFrameH"+$fnm+"_temp");
+
+select -r ($gtCname+"faceFrameH"+$fnm);
+scale 1.2 1.2 1.2;
+makeIdentity -apply true -t 0 -r 1 -s 1 -n 0;
+
+if($vv==1){
+setAttr ($gtCname+"faceFrameH"+$fnm+".rz") 45;
+select -r ($gtCname+"faceFrameH"+$fnm+".cv[0:*]");
+rotate -r 0 0 -45;
+}
+
+circle -ch 0 -o on -r 0.15 -n ($gtCname+$name);
+string $b[]=`ls -sl`;
+
+setAttr -lock true ($b[0]+".rx");
+setAttr -lock true ($b[0]+".ry");
+setAttr -lock true ($b[0]+".rz");
+setAttr -lock true ($b[0]+".sx");
+setAttr -lock true ($b[0]+".sy");
+setAttr -lock true ($b[0]+".sz");
+setAttr -lock true ($b[0]+".v");
+setAttr -lock true ($b[0]+".tz");
+
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent;
+string $tempN[]=`ls -sl`;
+transformLimits -tx $minH $maxH -etx 1 1 ($tempN[0]);
+transformLimits -ty $minV $maxV -ety 1 1 ($tempN[0]);
+transformLimits -tz 0 0  -etz 1 1 ($tempN[0]);
+
+textCurves -ch 0 -f "Times New Roman|h-13|w400|c0" -t $name;
+string $sel[]=`ls -sl`;
+rename $sel[0] ($gtCname+$name+"temp");
+string $childs[]=`listRelatives -fullPath -c  ($gtCname+$name+"temp")`;
+
+for($i=0;$i<size($childs);$i++){
+string $c[]=`listRelatives -fullPath -c ($childs[$i])`;
+for($j=0;$j<size($c);$j++){
+select -r ($c[$j]);
+select -add ($gtCname+$name+"temp");
+parent;
+}
+delete ($childs[$i]);
+}
+
+string $childs[]=`listRelatives -fullPath -c  ($gtCname+$name+"temp")`;
+select -r $childs[0];
+rename $name;
+string $currentN[]=`ls -sl`;
+
+for($i=1;$i<size($childs);$i++){
+select -r ($childs[$i]);
+makeIdentity -apply true -t 1 -r 1 -s 0 -n 0;
+pickWalk -d down;
+select -add $currentN[0];
+parent -s -r;
+delete ($childs[$i]);
+}
+
+
+select -r $currentN[0];
+CenterPivot;
+scale 0.2 0.2 0.2;
+spaceLocator -p 0 0 0 -n ($name+"temp");
+move 0 -1.5 0 ;
+select -add $currentN[0];
+delete `pointConstraint`;
+delete ($name+"temp");
+select -r $currentN[0];;
+group -n ($gtCname+"faceConName");
+CenterPivot;
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent;
+delete ($gtCname+$name+"temp");
+
+
+select -r ($gtCname+"faceFrameH"+$fnm);
+select -add ($gtCname+"faceFrame") ;
+parent;
+setAttr ($gtCname+"faceFrameH"+$fnm+".tx") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".ty") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".tz") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sx") 1;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sy") 1;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sz") 1;
+
+}
+/////////////////////////////////////////////////
+if($selec==2){
+curve -d 3 -p -1 1 0 -p 1 1 0 -p 1 1 0 -p 1 1 0 -p 1 0 0 -p 1 0 0 -p 1 0 0 -p -1 0 0 -p -1 0 0 -p -1 0 0 -p -1 1 0 
+-k 0 -k 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 8 -k 8 -n ($gtCname+"faceFrameH"+$fnm);
+
+select -r ($gtCname+"faceFrameH"+$fnm);
+CenterPivot;
+setAttr ($gtCname+"faceFrameH"+$fnm+".scaleY") 0.15;
+makeIdentity -apply true -t 0 -r 1 -s 1 -n 0;
+
+duplicate -rr -n ($gtCname+"faceFrameH"+$fnm+"_temp");
+scale 1.1 2 1.1;
+makeIdentity -apply true -t 0 -r 1 -s 1 -n 0;
+pickWalk -d down;
+
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent -s -r;
+delete ($gtCname+"faceFrameH"+$fnm+"_temp");
+
+circle -ch 0 -o on -r 0.24 -n ($gtCname+$name);
+move 0 0.5 0;
+makeIdentity -apply true -t 1 -r 1 -s 0 -n 0;
+
+string $b[]=`ls -sl`;
+
+
+select -r ($b[0]+".cv[1]") ($b[0]+".cv[5]") ;
+select -tgl ($b[0]+".cv[3]") ($b[0]+".cv[7]") ;
+scale  0.6 0.6 0.6 ;
+select -r ($b[0]+".cv[0:7]");
+scale 1 1.3 1;
+
+setAttr -lock true ($b[0]+".rx");
+setAttr -lock true ($b[0]+".ry");
+setAttr -lock true ($b[0]+".rz");
+setAttr -lock true ($b[0]+".sx");
+setAttr -lock true ($b[0]+".sy");
+setAttr -lock true ($b[0]+".sz");
+setAttr -lock true ($b[0]+".v");
+setAttr -lock true ($b[0]+".tz");
+setAttr -lock true ($b[0]+".ty");
+select -r $b;
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent;
+
+
+string $tempN[]=`ls -sl`;
+transformLimits -tx $minH $maxH -etx 1 1 ($tempN[0]);
+transformLimits -ty 0 0 -ety 1 1 ($tempN[0]);
+transformLimits -tz 0 0  -etz 1 1 ($tempN[0]);
+
+textCurves -ch 0 -f "Times New Roman|h-13|w400|c0" -t $name;
+string $sel[]=`ls -sl`;
+rename $sel[0] ($gtCname+$name+"temp");
+string $childs[]=`listRelatives -fullPath -c  ($gtCname+$name+"temp")`;
+
+for($i=0;$i<size($childs);$i++){
+string $c[]=`listRelatives -fullPath -c ($childs[$i])`;
+for($j=0;$j<size($c);$j++){
+select -r ($c[$j]);
+select -add ($gtCname+$name+"temp");
+parent;
+}
+delete ($childs[$i]);
+}
+
+string $childs[]=`listRelatives -fullPath -c  ($gtCname+$name+"temp")`;
+select -r $childs[0];
+rename $name;
+string $currentN[]=`ls -sl`;
+for($i=1;$i<size($childs);$i++){
+select -r ($childs[$i]);
+makeIdentity -apply true -t 1 -r 1 -s 0 -n 0;
+pickWalk -d down;
+select -add $currentN[0];
+parent -s -r;
+delete ($childs[$i]);
+}
+
+
+select -r $currentN[0];
+CenterPivot;
+scale 0.2 0.2 0.2;
+spaceLocator -p 0 0 0 -n ($name+"temp");
+move 0 -0.05 0 ;
+select -add $currentN[0];
+delete `pointConstraint`;
+delete ($name+"temp");
+select -r $currentN[0];;
+group -n ($gtCname+"faceConName");
+CenterPivot;
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent;
+delete ($gtCname+$name+"temp");
+
+
+select -r ($gtCname+"faceFrameH"+$fnm);
+select -add ($gtCname+"faceFrame") ;
+parent;
+setAttr ($gtCname+"faceFrameH"+$fnm+".tx") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".ty") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".tz") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sx") 1;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sy") 1;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sz") 1;
+setAttr ($gtCname+"faceFrameH"+$fnm+".rx") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".ry") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".rz") 0;
+}
+///////////////////////////////////////////////////////
+
+
+if($selec==3){
+curve -d 3 -p 0 -1 0 -p 1 -1 0 -p 1 -1 0 -p 1 -1 0 -p 1 1 0 -p 1 1 0 -p 1 1 0 -p 0 1 0 -p 0 1 0 -p 0 1 0 -p 0 -1 0 
+-k 0 -k 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 8 -k 8 -n ($gtCname+"faceFrameH"+$fnm);
+
+select -r ($gtCname+"faceFrameH"+$fnm);
+CenterPivot;
+
+scale 0.15 1 1 ($gtCname+"faceFrameH"+$fnm);
+makeIdentity -apply true -t 0 -r 1 -s 1 -n 0;
+
+duplicate -rr -n ($gtCname+"faceFrameH"+$fnm+"_temp");
+scale 2 1.1 1.1;
+makeIdentity -apply true -t 0 -r 1 -s 1 -n 0;
+pickWalk -d down;
+
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent -s -r;
+delete ($gtCname+"faceFrameH"+$fnm+"_temp");
+
+circle -ch 0 -o on -r 0.25 -n ($gtCname+$name);
+move 0.5 0 0;
+makeIdentity -apply true -t 1 -r 1 -s 0 -n 0;
+string $b[]=`ls -sl`;
+select -r ($b[0]+".cv[1]") ($b[0]+".cv[5]") ;
+select -tgl ($b[0]+".cv[3]") ($b[0]+".cv[7]") ;
+scale  0.6 0.6 0.6 ;
+select -r ($b[0]+".cv[0:7]");
+scale 1.3 1 1;
+
+setAttr -lock true ($b[0]+".rx");
+setAttr -lock true ($b[0]+".ry");
+setAttr -lock true ($b[0]+".rz");
+setAttr -lock true ($b[0]+".sx");
+setAttr -lock true ($b[0]+".sy");
+setAttr -lock true ($b[0]+".sz");
+setAttr -lock true ($b[0]+".v");
+setAttr -lock true ($b[0]+".tz");
+setAttr -lock true ($b[0]+".tx");
+
+select -r $b;
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent;
+
+
+string $tempN[]=`ls -sl`;
+transformLimits -tx 0 0 -etx 1 1 ($tempN[0]);
+transformLimits -ty $minV $maxV -ety 1 1 ($tempN[0]);
+transformLimits -tz 0 0  -etz 1 1 ($tempN[0]);
+
+textCurves -ch 0 -f "Times New Roman|h-13|w400|c0" -t $name;
+string $sel[]=`ls -sl`;
+rename $sel[0] ($gtCname+$name+"temp");
+string $childs[]=`listRelatives -fullPath -c  ($gtCname+$name+"temp")`;
+
+for($i=0;$i<size($childs);$i++){
+string $c[]=`listRelatives -fullPath -c ($childs[$i])`;
+for($j=0;$j<size($c);$j++){
+select -r ($c[$j]);
+select -add ($gtCname+$name+"temp");
+parent;
+}
+delete ($childs[$i]);
+}
+
+string $childs[]=`listRelatives -fullPath -c  ($gtCname+$name+"temp")`;
+select -r $childs[0];
+rename $name;
+string $currentN[]=`ls -sl`;
+for($i=1;$i<size($childs);$i++){
+select -r ($childs[$i]);
+makeIdentity -apply true -t 1 -r 1 -s 0 -n 0;
+pickWalk -d down;
+select -add $currentN[0];
+parent -s -r;
+delete ($childs[$i]);
+}
+
+
+select -r $currentN[0];
+CenterPivot;
+scale 0.2 0.2 0.2;
+spaceLocator -p 0 0 0 -n ($name+"temp");
+move 0.5 -1.5 0 ;
+select -add $currentN[0];
+delete `pointConstraint`;
+delete ($name+"temp");
+select -r $currentN[0];;
+group -n ($gtCname+"faceConName");
+CenterPivot;
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent;
+delete ($gtCname+$name+"temp");
+
+
+
+
+select -r ($gtCname+"faceFrameH"+$fnm);
+select -add ($gtCname+"faceFrame") ;
+parent;
+setAttr ($gtCname+"faceFrameH"+$fnm+".tx") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".ty") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".tz") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sx") 1;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sy") 1;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sz") 1;
+setAttr ($gtCname+"faceFrameH"+$fnm+".rx") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".ry") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".rz") 0;
+}
+
+//////////////////////////////////////////////
+
+
+if($selec==4){
+curve -d 3 -p -1 1 0 -p 1 1 0 -p 1 1 0 -p 1 1 0 -p 1 -1 0 -p 1 -1 0 -p 1 -1 0 -p -1 -1 0 -p -1 -1 0 
+-p -1 -1 0 -p -1 1 0 -k 0 -k 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 8 -k 8 -n ($gtCname+"faceFrameH"+$fnm);
+
+select -r ($gtCname+"faceFrameH"+$fnm);
+
+duplicate -rr -n ($gtCname+"faceFrameH"+$fnm+"_temp");
+scale 1.1 1.1 1.1;
+makeIdentity -apply true -t 0 -r 1 -s 1 -n 0;
+pickWalk -d down;
+
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent -s -r;
+delete ($gtCname+"faceFrameH"+$fnm+"_temp");
+
+select -r ($gtCname+"faceFrameH"+$fnm);
+scale 1.2 1.2 1.2;
+makeIdentity -apply true -t 0 -r 1 -s 1 -n 0;
+
+
+circle -ch 0 -o on -r 0.35 -n ($gtCname+$name);
+string $b[]=`ls -sl`;
+scale 1 0.75 1 $b[0];
+
+setAttr -lock true ($b[0]+".rx");
+setAttr -lock true ($b[0]+".ry");
+setAttr -lock true ($b[0]+".rz");
+setAttr -lock true ($b[0]+".sx");
+setAttr -lock true ($b[0]+".sy");
+setAttr -lock true ($b[0]+".sz");
+setAttr -lock true ($b[0]+".v");
+setAttr -lock true ($b[0]+".tz");
+select -r $b;
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent;
+string $tempN[]=`ls -sl`;
+transformLimits -tx -1 1 -etx 1 1 ($tempN[0]);
+transformLimits -ty -.5 .5 -ety 1 1 ($tempN[0]);
+transformLimits -tz 0 0  -etz 1 1 ($tempN[0]);
+///////////////
+circle -ch 0 -o on -r 0.35 -n ($gtCname+$name+"Up");
+string $b[]=`ls -sl`;
+move 0 0.5 0 $b[0];
+select -r $b;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+
+select -r ($b[0]+".cv[5]") ;
+move -r 0 0.225 0 ;
+select -r ($b[0]+".cv[4:6]") ;
+move -r 0 0.225 0 ;
+
+
+setAttr -lock true ($b[0]+".rx");
+setAttr -lock true ($b[0]+".ry");
+setAttr -lock true ($b[0]+".rz");
+setAttr -lock true ($b[0]+".sx");
+setAttr -lock true ($b[0]+".sy");
+setAttr -lock true ($b[0]+".sz");
+setAttr -lock true ($b[0]+".v");
+setAttr -lock true ($b[0]+".tz");
+select -r ($b);
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent;
+string $tempN[]=`ls -sl`;
+
+transformLimits -tx -1 1 -etx 1 1 ($tempN[0]);
+transformLimits -ty -.5 .5 -ety 1 1 ($tempN[0]);
+transformLimits -tz 0 0  -etz 1 1 ($tempN[0]);
+
+///////////////////////////
+
+circle -ch 0 -o on -r 0.35 -n ($gtCname+$name+"Down");
+string $b[]=`ls -sl`;
+move 0 -0.5 0 $b[0];
+select -r ($b);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+select -r ($b[0]+".cv[1]") ;
+move -r 0 -0.225 0 ;
+select -r ($b[0]+".cv[0:2]") ;
+move -r 0 -0.225 0 ;
+
+setAttr -lock true ($b[0]+".rx");
+setAttr -lock true ($b[0]+".ry");
+setAttr -lock true ($b[0]+".rz");
+setAttr -lock true ($b[0]+".sx");
+setAttr -lock true ($b[0]+".sy");
+setAttr -lock true ($b[0]+".sz");
+setAttr -lock true ($b[0]+".v");
+setAttr -lock true ($b[0]+".tz");
+select -r ($b);
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent;
+string $tempN[]=`ls -sl`;
+
+transformLimits -tx -1 1 -etx 1 1 ($tempN[0]);
+transformLimits -ty -.5 .5 -ety 1 1 ($tempN[0]);
+transformLimits -tz 0 0  -etz 1 1 ($tempN[0]);
+//////////////////////////////////////////
+
+textCurves -ch 0 -f "Times New Roman|h-13|w400|c0" -t $name;
+string $sel[]=`ls -sl`;
+rename $sel[0] ($gtCname+$name+"temp");
+string $childs[]=`listRelatives -fullPath -c  ($gtCname+$name+"temp")`;
+
+for($i=0;$i<size($childs);$i++){
+string $c[]=`listRelatives -fullPath -c ($childs[$i])`;
+for($j=0;$j<size($c);$j++){
+select -r ($c[$j]);
+select -add ($gtCname+$name+"temp");
+parent;
+}
+delete ($childs[$i]);
+}
+
+string $childs[]=`listRelatives -fullPath -c  ($gtCname+$name+"temp")`;
+select -r $childs[0];
+rename $name;
+string $currentN[]=`ls -sl`;
+for($i=1;$i<size($childs);$i++){
+select -r ($childs[$i]);
+makeIdentity -apply true -t 1 -r 1 -s 0 -n 0;
+pickWalk -d down;
+select -add $currentN[0];
+parent -s -r;
+delete ($childs[$i]);
+}
+
+select -r $currentN[0];
+CenterPivot;
+scale 0.2 0.2 0.2;
+spaceLocator -p 0 0 0 -n ($name+"temp");
+move 0 -1.5 0 ;
+select -add $currentN[0];
+delete `pointConstraint`;
+delete ($name+"temp");
+select -r $currentN[0];;
+group -n ($gtCname+"faceConName");
+CenterPivot;
+select -add ($gtCname+"faceFrameH"+$fnm);
+parent;
+delete ($gtCname+$name+"temp");
+
+select -r ($gtCname+"faceFrameH"+$fnm);
+select -add ($gtCname+"faceFrame") ;
+parent;
+setAttr ($gtCname+"faceFrameH"+$fnm+".tx") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".ty") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".tz") 0;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sx") 1;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sy") 1;
+setAttr ($gtCname+"faceFrameH"+$fnm+".sz") 1;
+    }
+}
+///////////////////////////////////////////
+global proc gtfaceSetupFrameHFinal(){
+$teststring=`textField -q -text  "ttgRigNameEF"`;
+$gtCN=$teststring;
+
+string $gtCname;
+$gtCname=$gtCN+"_";
+string $shape[]=`listRelatives  -s ($gtCname+"faceFrame")`;
+
+for($j=0;$j<size($shape);$j++){
+setAttr ($shape[$j]+".overrideEnabled") 1;
+setAttr ($shape[$j]+".overrideColor") 22;
+}
+
+string $frameH[]=`listRelatives  -c -type "transform" ($gtCname+"faceFrame")`;
+for($i=0;$i<size($frameH);$i++){
+
+string $shape[]=`listRelatives  -c -s ($frameH[$i])`;
+for($j=0;$j<size($shape);$j++){
+setAttr ($shape[$j]+".overrideEnabled") 1;
+setAttr ($shape[$j]+".overrideDisplayType") 1;
+}
+
+string $childs[]=`listRelatives -fullPath -c -type "transform" ($frameH[$i])`;
+int $size=size($childs);
+
+setAttr ($childs[($size-1)]+".overrideEnabled") 1;
+setAttr ($childs[($size-1)]+".overrideDisplayType") 1;
+
+for($j=0;$j<size($childs)-1;$j++){
+setAttr ($childs[$j]+".overrideEnabled") 1;
+setAttr ($childs[$j]+".overrideColor") 22;
+        }
+    }   
+}
+/////////////////////////////
+global proc gtfaceSetupFrameHEdit(){
+$teststring=`textField -q -text  "ttgRigNameEF"`;
+$gtCN=$teststring;
+
+string $gtCname;
+$gtCname=$gtCN+"_";
+
+string $frameH[]=`listRelatives -fullPath -c -type "transform"  ($gtCname+"faceFrame")`;
+for($i=0;$i<size($frameH);$i++){
+
+string $shape[]=`listRelatives -fullPath -c -s ($frameH[$i])`;
+for($j=0;$j<size($shape);$j++){
+setAttr ($shape[$j]+".overrideEnabled") 0;
+setAttr ($shape[$j]+".overrideDisplayType") 0;
+}
+
+string $childs[]=`listRelatives -fullPath -c -type "transform"  ($frameH[$i])`;
+
+int $size=size($childs);
+
+setAttr ($childs[($size-1)]+".overrideEnabled") 0;
+setAttr ($childs[($size-1)]+".overrideDisplayType") 0;
+
+    }
+}
+
+/////////////////////////////////
+gtfaceSetupWinA;

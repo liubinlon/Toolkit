@@ -1,0 +1,27 @@
+global proc deleteAudio()
+{
+string $switchAudio=`confirmDialog -title "-_-|||" -message "你真的要删除所有音频文件吗?" -button "是的,我确定" -button "取消" -defaultButton "是的,我确定" -cancelButton "取消" -dismissString "取消"`;
+switch ($switchAudio)
+{
+case "是的,我确定":
+string $ifAudioes[]=`ls -type audio`;
+if($ifAudioes[0]=="")
+{
+error "此文件没有音频文件";
+}
+else
+{
+delete `ls -type audio`;
+}
+
+break;
+case "取消":
+break;
+default:
+break;
+}
+
+
+}
+
+deleteAudio();

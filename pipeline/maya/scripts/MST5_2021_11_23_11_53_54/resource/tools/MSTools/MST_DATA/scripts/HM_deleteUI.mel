@@ -1,0 +1,6 @@
+global proc HM_deleteUI()
+{
+python "from unloadUI import *";
+python "deleteUI()";
+}
+

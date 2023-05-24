@@ -1,0 +1,86 @@
+//批量添加自定义属性绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtAddMultiAttrWin(){
+   if(`window -ex gtAddMultiAttrWin`) deleteUI -window gtAddMultiAttrWin;
+    window -wh 500 200 -t "老船角色绑定-☆☆☆☆☆-批量添加自定义属性绑定工具!" gtAddMultiAttrWin;
+    columnLayout -adj 1 mainColumnattr;
+    text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1266\"";
+
+    formLayout  gtCOTAF;
+        
+    radioButtonGrp  -l "属性类型" -nrb  3 -la3 "整数" "浮点数" "布尔"  -select 2 gtattributetype;
+    
+    checkBox -l "最小最大数值：" -v 0  -onc "floatFieldGrp -e -en 1 gtattributMinMax;"  -ofc "floatFieldGrp -e -en 0 gtattributMinMax;" gtattributcheck;
+
+    floatFieldGrp -nf 2 -en 0 -v1 0.00  -v2 0.00  -cw2 120 120 gtattributMinMax;
+     textFieldGrp -l "属性名称：" -text "" gtattributtext;
+
+     button -l  "创建属性" -c "gtAttributeCreateNew;" but7;
+
+    
+    formLayout -e
+ 
+    -af gtattributetype left 5 -af gtattributetype top 5  -af gtattributetype right 10
+
+    -af gtattributcheck left 120 -ac gtattributcheck top 5 gtattributetype -ap  gtattributcheck right 0 40
+    -ac gtattributMinMax left 5 gtattributcheck -ac gtattributMinMax top 5 gtattributetype -af gtattributMinMax right 10
+    
+    -af gtattributtext left 5 -ac gtattributtext top 5 gtattributcheck -af gtattributtext right 10
+    
+
+    -af but7 left 5 -ac but7 top 5  gtattributtext  -af but7 right 10
+    
+    gtCOTAF;
+    
+    showWindow gtAddMultiAttrWin;   
+}
+//////////////////////////////
+global proc gtAttributeCreateNew(){
+
+string $attrinam=`textFieldGrp -q -tx gtattributtext`;
+int $attrityp=`radioButtonGrp -q -select gtattributetype`;
+int $minMax=`checkBox -q -v gtattributcheck`;
+float $min=`floatFieldGrp -q -v1 gtattributMinMax`;
+float $max=`floatFieldGrp -q -v2 gtattributMinMax`;
+
+string $sel[]=`ls -sl`;
+string $tm[];
+int $tmm=`tokenize $attrinam " " $tm`;
+string $type=$attrityp;
+string $typ;
+if($type==1){
+    $typ="long";
+}
+if($type==2){
+    $typ="double";
+}
+if($type==3){
+     $typ="bool";   
+}
+
+for($j=0;$j<size($sel);$j++){
+for($i=0;$i<$tmm;$i++){
+    select -r ($sel[$j]);
+    if($minMax==1&&$type!=3){
+    addAttr -ln ($tm[$i])  -at $typ -min $min -max $max -k 1;
+    }else{
+    addAttr -ln ($tm[$i])  -at $typ  -k 1;        
+        }
+    }
+}
+
+select -r ($sel);
+}
+//////////////////////////////////////
+
+//////////////////////////////
+gtAddMultiAttrWin;

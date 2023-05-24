@@ -1,0 +1,480 @@
+
+//路径生长动力学动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+
+global proc gtGrowTopWin(){
+if(`window -ex gtGrowTopWin`==1){ deleteUI -window gtGrowTopWin;}
+window -wh 400 500 -title "老船角色绑定-☆☆☆☆☆-路径生长动力学动画工具！！" gtGrowTopWin;
+columnLayout -adj 1 gtMaintColumnLay;
+//text -l "" texta;
+text -l "点击下方按钮↓↓↓↓↓" texta1;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/931\"";
+text -l "生长动画+路径动画+动力学解算动画\n--------------请注意本程序需要手动选择所有路径曲线------------" text1;
+
+separator -st  single sep1;
+button -l "点击按钮打开生成曲线窗口" -bgc 0.3 0.2 0.1 -c "gtMakeParticleCurveWin" butCurve;
+separator -st  single sep2;
+
+textFieldButtonGrp -cw3 80 200 65 -l (" 名        字：") -text "name" -bl "载      入" -bc "gtloadName;" gtTextField;
+textFieldButtonGrp -cw3 80 200 65 -l (" 路径动画物体:") -text "动画物体" -bl   "载    入" -bc "gtloadNamea;" gtTextFielda;
+textFieldButtonGrp -cw3 80 200 65 -l (" 生长界面曲线：") -text "挤压界面" -bl   "载    入" -bc "gtloadNameb" gtTextFieldb;
+
+formLayout -h 300 gtform;
+intFieldGrp -l "开始/结束中心帧" -nf 2 -v1 10 -v2 120 gtIntFa;
+intFieldGrp -l "开始/结束随机范围帧" -nf 2 -v1 10 -v2 10 gtIntFb;
+floatFieldGrp -l "随即缩放" -nf 2 -v1 1 -v2 1 gtIntFc;
+button -l "整体缩放" -c "gtGrowScaleAll;" but2;
+button -l "选择缩放" -c "gtGrowScaleSelected;" but3;
+checkBox -l "     飘     动" -v 0 chbF;
+
+//setParent..;
+//columnLayout -adj 1 gtSoftCol;
+floatFieldGrp -l "扰乱场强度随机范围" -nf 2 -v1 3 -v2 5 gtIntsFa;
+floatFieldGrp -l "扰乱场相位表达式随机" -nf 2 -v1 0.5 -v2 1 gtIntsFb;
+floatFieldGrp -l "扰乱场相频率随机" -nf 2 -v1 0.5 -v2 1.5 gtIntsFc;
+
+button -l "应用" -c "gtGrowTop;" but1;
+
+formLayout -e
+-af gtIntFa left 3 -af gtIntFa top 5  -af gtIntFa right 3
+-af gtIntFb left 3 -af gtIntFb right 3 -ac gtIntFb top 5 gtIntFa 
+-af gtIntFc left 3 -af gtIntFc right 3 -ac gtIntFc top 5 gtIntFb 
+-af but2 left 3 -ap but2 right 0 50 -ac but2 top 5 gtIntFc
+-ac but3 left 3 but2 -af but3 right 3 -ac but3 top 5 gtIntFc
+
+-af chbF left 144 -af chbF right 3 -ac chbF top 5  but2 
+-af gtIntsFa left 3 -af gtIntsFa right 3 -ac gtIntsFa top 5 chbF  
+-af gtIntsFb left 3 -af gtIntsFb right 3 -ac gtIntsFb top 5 gtIntsFa 
+-af gtIntsFc left 3 -af gtIntsFc right 3 -ac gtIntsFc top 5 gtIntsFb
+-af but1 left 3 -af but1 right 3 -ac but1 top 5 gtIntsFc  gtform;
+setParent..;
+showWindow gtGrowTopWin;
+}
+/////////////////////////////////////////////////////////////////////////////  /////////////
+///////////////////////////////////////
+global proc gtloadNamea(){
+string $sel[]=`ls -sl`;
+textFieldButtonGrp -e -tx $sel[0] gtTextFielda;
+}
+
+global proc gtloadNameb(){
+string $sel[]=`ls -sl`;
+textFieldButtonGrp -e -tx $sel[0] gtTextFieldb;}
+
+global proc gtloadName(){
+string $sel[]=`ls -sl`;
+
+string $num[];
+int $n=`tokenize $sel[0] "_" $num`;
+string $nn=$num[0];
+textFieldButtonGrp -e -tx $nn gtTextField;
+}
+
+/////////////////////////////////////////
+global proc gtGrowScaleSelected(){
+    
+string $sel[]=`ls -sl`;
+string $name=`textFieldButtonGrp -q -tx gtTextField`;
+  $name=($name+"_");
+
+float $sclMin=`floatFieldGrp -q -v1 gtIntFc`;
+float $sclMax=`floatFieldGrp -q -v2 gtIntFc`;
+
+ for($i=0;$i<size($sel);$i++){
+     float $scl=rand($sclMin,$sclMax);
+     select -r ($sel[$i]);
+     scale $scl $scl $scl;
+     }    
+}
+/////////////////////
+global proc gtGrowScaleAll(){
+string $name=`textFieldButtonGrp -q -tx gtTextField`;
+  $name=($name+"_");
+float $sclMin=`floatFieldGrp -q -v1 gtIntFc`;
+float $sclMax=`floatFieldGrp -q -v2 gtIntFc`;
+
+
+ select -r ($name+"motionPOjbGrp"); 
+ string $proG[]=`ls -sl`;
+ string $profile[]=`listRelatives -c -fullPath  $proG[0]`;
+ 
+   select -r ($name+"profileGrp"); 
+ string $objG[]=`ls -sl`;
+ string $objGrp[]=`listRelatives -c -fullPath  $objG[0]`;
+ 
+ 
+ for($i=0;$i<size($profile);$i++){
+     float $scl=rand($sclMin,$sclMax);
+     select -r ($profile[$i]);
+     scale $scl $scl $scl;
+     select -r ($objGrp[$i]);
+     scale $scl $scl $scl;     
+     }    
+}
+
+///////////////////////////////////////////////////
+
+global proc gtGrowTop(){
+
+string $name=`textFieldButtonGrp -q -tx gtTextField`;
+$name=($name+"_");
+
+string $pathObj=`textFieldButtonGrp -q -tx gtTextFielda`;
+string $pathProfile=`textFieldButtonGrp -q -tx gtTextFieldb`;
+
+int $start=`intFieldGrp -q -v1 gtIntFa`;
+int $end=`intFieldGrp -q -v2 gtIntFa`;
+float $sclMin=`floatFieldGrp -q -v1 gtIntFc`;
+float $sclMax=`floatFieldGrp -q -v2 gtIntFc`;
+
+int $startR=`intFieldGrp -q -v1 gtIntFb`;
+int $endR=`intFieldGrp -q -v2 gtIntFb`;
+
+int $pd=`checkBox -q -v chbF`;
+
+string $sel[]=`ls -sl`;
+string $type="";
+int $size=size($sel);
+
+for($i=0;$i<$size;$i++){
+string $shape[]=`listRelatives -s ($sel[$i])`;
+int $ss=size($shape);
+if($ss==1)$type=`nodeType ($shape[0])`;
+if($size==0||$type!="nurbsCurve")error "选择的物体必须全部是曲线";
+}
+group -em -n ($name+"motionPOjbGrp"); 
+group -em -n ($name+"motionCurveGrp"); 
+group -em -n ($name+"extrudeOjbGrp"); 
+group -em -n ($name+"profileGrp"); 
+
+select -r ($name+"motionPOjbGrp"); 
+select -add ($name+"motionCurveGrp"); 
+select -add ($name+"extrudeOjbGrp"); 
+select -add ($name+"profileGrp");
+select -add $pathObj;
+select -add $pathProfile;
+group  -n ($name+"Grp"); 
+
+addAttr -ln "tailLength"  -at double -min 1 -dv 48  -k 1 ($name+"Grp");
+
+addAttr -ln "grow_edit"  -at bool   -dv 0  -k 1 ($name+"Grp");
+addAttr -ln "grow_startCenter"  -at double  -min 0 -max 10000 -dv $start  -k 1 ($name+"Grp");
+addAttr -ln "grow_startRange"  -at double  -min 0 -max 10000 -dv $startR  -k 1 ($name+"Grp");
+
+addAttr -ln "grow_endCenter"  -at double  -min 0 -max 10000 -dv $end  -k 1 ($name+"Grp");
+addAttr -ln "grow_endRange"  -at double  -min 0 -max 20000 -dv $endR  -k 1 ($name+"Grp");
+
+addAttr -ln "scale_frofile"  -at double  -min 0 -max 2000 -dv 1  -k 1 ($name+"Grp");
+addAttr -ln "field_ball"  -at double  -min 0 -max 2000 -dv 1  -k 1 ($name+"Grp");
+
+
+for($i=0;$i<$size;$i++){
+int $ss=rand(($start-$startR),($start+$startR));
+int $ee=rand(($end-$endR),($end+$endR));
+
+select -r ($sel[$i]+".cv[0:10000]") ;
+string $vt[]=`ls -sl`;
+string $num[];
+int $n=`tokenize $vt[0] ":" $num`;
+string $nn=$num[1];
+string $nu[];
+int $n=`tokenize $nn "]" $nu`;
+string $nnn=$nu[0];
+int $sss=$nnn;
+if($sss>3){
+rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s ($sss-2)   -d 3 -tol 0.01 ($sel[$i]);
+
+select -r ($sel[$i]);
+select -add ($name+"motionCurveGrp"); 
+parent;
+
+float $scl=rand($sclMin,$sclMax);
+select -r $pathObj;
+duplicate -rr -n ($name+"po"+$i);
+select -r ($name+"po"+$i);
+makeIdentity -apply true -t 1 -r 0 -s 0 -n 0;
+select -add ($name+"motionPOjbGrp"); 
+parent;
+
+setAttr ($name+"po"+$i+".sx") $scl;
+setAttr ($name+"po"+$i+".sy") $scl;
+setAttr ($name+"po"+$i+".sz") $scl;
+
+select -r ($name+"po"+$i);
+select -add ($sel[$i]);
+string $pathA=`pathAnimation -fractionMode true -follow true -followAxis x -  upAxis y 
+-worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false 
+-inverseFront false -bank false -startTimeU ($ss) -endTimeU ($ee)`;
+select -r $pathA;
+rename ($name+"_motionP"+$i);
+string $anmi[]=`listConnections -s 1 -d 0 ($name+"_motionP"+$i+".uValue")`;
+select -r ($anmi[0]);
+rename ($name+"_motionPath"+$i);
+
+select -r ($pathProfile);
+duplicate -rr -n ($sel[$i]+"profile");
+select -r ($sel[$i]+"profile");
+makeIdentity -apply true -t 1 -r 0 -s 0 -n 0;
+select -add ($name+"profileGrp");
+parent;
+setAttr ($sel[$i]+"profile.sx") $scl;
+setAttr ($sel[$i]+"profile.sy") $scl;
+setAttr ($sel[$i]+"profile.sz") $scl;
+
+string $extrude[]=`extrude -ch true -rn true -po 0 -et 2 -ucp 1 -fpt 1 -upn 1   -rotation 0 
+-scale 1 -rsp 1 ($sel[$i]+"profile") ($sel[$i])`;
+
+select -r $extrude[0];
+rename ($name+"_extrudeSurf"+$i);
+select -r ($name+"_extrudeSurf"+$i);
+select -add ($name+"extrudeOjbGrp"); 
+parent;
+
+select -r $extrude[1];
+rename ($name+"_extrude"+$i);
+string $subCurve[]=`listConnections -s 1 -d 0 ($name+"_extrude"+$i+".path")`;
+select -r ($subCurve[0]);
+rename ($name+"_suvCurve"+$i);
+
+select -r ($name+"_motionP"+$i);
+
+selectKey -r -k -index 0 ($name+"_motionPath"+$i);
+keyframe -animation keys -absolute -valueChange 0.0001 ;
+
+connectAttr -f ($name+"_motionP"+$i+".uValue") ($name+"_suvCurve"+$i  +".maxValue");
+
+string $expgrow="";
+        $expgrow+="float $state=`getAttr ";
+        $expgrow+=($name+"Grp");
+        $expgrow+=".grow_edit`;\n";
+         $expgrow+="if(frame==1&&$state==1){\n";
+        $expgrow+="float $s=`getAttr ";
+        $expgrow+=($name+"Grp");
+        $expgrow+=".grow_startCenter`;\n";
+        $expgrow+="float $sr=`getAttr ";
+        $expgrow+=($name+"Grp");
+        $expgrow+=".grow_startRange`;\n";
+        $expgrow+="float $e=`getAttr ";
+        $expgrow+=($name+"Grp");
+        $expgrow+=".grow_endCenter`;\n";
+        $expgrow+="float $er=`getAttr ";
+        $expgrow+=($name+"Grp");
+        $expgrow+=".grow_endRange`;\n";
+        $expgrow+="int $ss=rand(($s-$sr),($s+$sr));\n";
+        $expgrow+="int $ee=rand(($e-$er),($e+$er));\n";
+        $expgrow+="selectKey -r -k -index 0 ";
+        $expgrow+=($name+"_motionPath"+$i);
+        $expgrow+=";\nkeyframe -animation keys -absolute -timeChange $ss ;\n";
+        $expgrow+="selectKey -r -k -index 1 ";
+        $expgrow+=($name+"_motionPath"+$i);
+        $expgrow+=";\nkeyframe -animation keys -absolute -timeChange $ee ;}";
+               
+expression  -s $expgrow -o "" -ae 1 -uc all  -n ($name+"expgrow"+$i);
+string $expgrow="";
+    $expgrow+="float $delay="+$name+"Grp.tailLength;\n";
+    $expgrow+="float $t=`currentTime -q `;\n";
+    $expgrow+="float $v=`getAttr -t ($t-$delay) "+$name+"_suvCurve"+$i+".maxValue`;\n";
+    $expgrow+=$name+"_suvCurve"+$i+".minValue=$v;\n";
+expression  -s $expgrow -o "" -ae 1 -uc all  -n ($name+"expgrowTail"+$i);
+}
+else{
+delete ($sel[$i]);
+    }
+}
+
+if($pd==1){
+group -em -n ($name+"softBodyCurveGrp"); 
+group -em -n ($name+"softBodyFieldGrp"); 
+group -em -n ($name+"softBodySpringGrp"); 
+group -em -n ($name+"softBodyLocGrp"); 
+select -r ($name+"softBodyCurveGrp");
+select -add ($name+"softBodyFieldGrp"); 
+select -add ($name+"softBodySpringGrp"); 
+select -add ($name+"softBodyLocGrp"); 
+select -add ($name+"Grp"); 
+parent;
+
+float $pdMin=`floatFieldGrp -q -v1 gtIntsFa`;
+float $pdMax=`floatFieldGrp -q -v2 gtIntsFa`;
+float $xwMin=`floatFieldGrp -q -v1 gtIntsFb`;
+float $xwMax=`floatFieldGrp -q -v2 gtIntsFb`;
+float $plMin=`floatFieldGrp -q -v1 gtIntsFc`;
+float $plMax=`floatFieldGrp -q -v2 gtIntsFc`;
+
+addAttr -ln "part_conserve"  -at double  -min 0 -max 1 -dv 0.98  -k 1 ($name+"Grp");
+addAttr -ln "part_goalPP"  -at double  -min 0 -max 1 -dv 0  -k 1 ($name+"Grp");
+
+addAttr -ln "field_magnitudeMin"  -at double  -min 0 -max 100 -dv $pdMin  -k 1 ($name+"Grp");
+addAttr -ln "field_magnitudeMax"  -at double  -min 0 -max 200 -dv $pdMax  -k 1 ($name+"Grp");
+
+addAttr -ln "field_phaseMin"  -at double  -min 0 -max 200 -dv $xwMin  -k 1 ($name+"Grp");
+addAttr -ln "field_phaseMax"  -at double  -min 0 -max 200 -dv $xwMax  -k 1 ($name+"Grp");
+
+addAttr -ln "field_frequenceMin"  -at double  -min 0 -max 10 -dv $plMin  -k 1 ($name+"Grp");
+addAttr -ln "field_frequenceMax"  -at double  -min 0 -max 20 -dv $plMax  -k 1 ($name+"Grp");
+
+setAttr ($name+"softBodyLocGrp.visibility") 0;
+setAttr -lock true ($name+"softBodyLocGrp.v");
+
+int $s=size($sel);
+
+for($i=0;$i<$s;$i++){
+
+select -r ($sel[$i]);
+dynCreateSoft 1 0 1 1 0;
+select -r ($sel[$i]);
+pickWalk -d down;
+pickWalk -d left;
+string $softP[]=`ls -sl`;
+
+spaceLocator -p 0 0 0 -n ($sel[$i]+"loc");
+select -r ($name+"po"+$i);
+select -add ($sel[$i]+"loc");
+pointConstraint;
+
+string $exp="";
+	$exp+="float $goalP=`getAttr ";
+	$exp+=($name+"Grp");
+	$exp+=".part_goalPP`;\n";
+	$exp+="float $p[]=`getAttr ";
+	$exp+=($sel[$i]+"loc");
+	$exp+=".translate`;\n";
+	$exp+="float $dis=mag(worldPosition-<<$p[0],$p[1],$p[2]>>);\n";
+	$exp+="if($dis<1)goalPP=$goalP;\n";
+select -r $softP[0];
+dynExpression -s ($exp) -rad ($softP[0]);
+
+select -r $softP[0];
+turbulence -pos 0 0 0 -m 1 -att 0 -f 1 -phaseX 0 -phaseY 0 -phaseZ 0 -noiseLevel 0 -noiseRatio 0.707  -mxd -1  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 -n ($sel[$i]+"tbl");
+connectDynamic -f ($sel[$i]+"tbl")  ($softP[0]);
+
+string $expF="";
+	$expF+="float $conserve=`getAttr ";
+	$expF+=($name+"Grp");
+	$expF+=".part_conserve`;\n";
+	$expF+="float $fmMin=`getAttr ";
+	$expF+=($name+"Grp");
+	$expF+=".field_magnitudeMin`;\n";
+	$expF+="float $fmMax=`getAttr ";
+	$expF+=($name+"Grp");
+	$expF+=".field_magnitudeMax`;\n";
+
+	$expF+="float $fpMin=`getAttr ";
+	$expF+=($name+"Grp");
+	$expF+=".field_phaseMin`;\n";
+	$expF+="float $fpMax=`getAttr ";
+	$expF+=($name+"Grp");
+	$expF+=".field_phaseMax`;\n";
+
+	$expF+="float $ffMin=`getAttr ";
+	$expF+=($name+"Grp");
+	$expF+=".field_frequenceMin`;\n";
+	$expF+="float $ffMax=`getAttr ";
+	$expF+=($name+"Grp");
+	$expF+=".field_frequenceMax`;\n";
+	$expF+="float $fm=rand($fmMin,$fmMax);\n";
+	$expF+="float $fp=rand($fpMin,$fpMax);\n";
+	$expF+="float $ff=rand($ffMin,$ffMax);\n";
+
+	$expF+=($sel[$i]+"tbl");
+	$expF+=".phaseX=time*$fp;\n";
+			
+	$expF+=($softP[0]);
+	$expF+=".conserve=$conserve;\n";
+	
+	$expF+=($sel[$i]+"tbl");
+	$expF+=".frequency=$ff;\n";
+	
+	$expF+=($sel[$i]+"tbl");
+	$expF+=".magnitude=$fm;\n";
+
+select -r ($sel[$i]+"tbl");
+expression -s ($expF)  -o ($sel[$i]+"tbl") -ae 1 -uc all -n ($sel[$i]+"expF") ;
+select -r $softP[0];
+spring -noDuplicate false -wireframe true -wl 2 -useRestLengthPS true -s 200 -d 0.5 -sfw 1 -efw 1 -n ($sel[$i]+"spring");
+
+select -r $sel[$i];
+select -add ($name+"softBodyCurveGrp");
+parent;
+
+select -r ($sel[$i]+"spring");
+select -add ($name+"softBodySpringGrp"); 
+parent;
+
+select -r ($sel[$i]+"tbl");
+select -add ($name+"softBodyFieldGrp"); 
+parent;
+
+select -r ($sel[$i]+"loc");
+select -add ($name+"softBodyLocGrp"); 
+parent;
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////
+global proc gtMakeParticleCurveWin(){
+if(`window -ex gtMakeParticleCurveWin`==1){ deleteUI -window   gtMakeParticleCurveWin;}
+window -wh 650 600 -title "使用粒子生成曲线" gtMakeParticleCurveWin;
+columnLayout -adj 1 gtMaintColumnLay;
+text -l "" texta;
+text -l "使用粒子生成曲线\n--------------请注意本程序需要将已经有的表达式复制到下面对于文本框中------------" text1;
+separator -st  single sep1;
+text -l "需要将已有的-创建时-表达式复制到下面的文本框中" gttextF1;
+scrollField -h 60 -w 100 -text ""gtsfield1 ;
+
+text -l "需要将已有的-运行时之后-表达式复制到下面的文本框中，运行时之前-表达式不需要考虑：" gttextF2;
+scrollField -h 60 -w 100 -text ""gtsfield2 ;
+
+intFieldGrp -l "开始/结束帧" -nf 2 -v1 1 -v2 120 gtIntrangeFa;
+
+separator -st  single sep2;
+button -l "生成曲线" -c "gtMakeParticleCurve" but1;
+showWindow gtMakeParticleCurveWin;
+
+}
+
+///////////////////////////////
+global proc gtMakeParticleCurve(){
+string $creation=`scrollField -q -tx gtsfield1`;
+string $runtime=`scrollField -q -tx gtsfield2`;
+
+int $start=`intFieldGrp -q -v1  gtIntrangeFa`;
+int $end=`intFieldGrp -q -v2  gtIntrangeFa`;
+
+string $sel[]=`ls -sl`;
+string $creationE=$creation;
+
+$creationE+="\nint $id=particleId;\n";
+$creationE+="vector $pos=position;\n";
+$creationE+="curve -d 3 -p ($pos.x) ($pos.y) ($pos.z) -n (\"";
+$creationE+=($sel[0]);
+$creationE+="_gtCurve\"+$id);\n";
+
+string $runtimeE=$runtime;
+
+$runtimeE+="int $id=particleId;\n";
+$runtimeE+="vector $pos=position;\n";
+$runtimeE+="curve -a  -p ($pos.x) ($pos.y) ($pos.z) (\"";
+$runtimeE+=($sel[0]);
+$runtimeE+="_gtCurve\"+$id);\n";
+dynExpression -s ($creationE) -c ($sel[0]);
+dynExpression -s  ($runtimeE) -rad ($sel[0]);
+
+for($i=$start;$i<($end+1);$i++){
+currentTime -e $i;
+}
+dynExpression -s ($creation) -c ($sel[0]);
+dynExpression -s  ($runtime) -rad ($sel[0]);
+}
+//////////////////////////
+gtGrowTopWin;
+/////////////////////////////////////////////////////////////

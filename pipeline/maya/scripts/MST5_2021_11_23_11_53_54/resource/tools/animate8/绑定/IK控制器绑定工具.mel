@@ -1,0 +1,75 @@
+//IK控制器绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+
+global proc gtIKConCreateWin(){
+if(`window -ex gtIKConCreateWin`) deleteUI  -window gtIKConCreateWin;
+window -wh 400 200 -title "老船角色绑定-☆-IK控制器创建工具！！！！！！" gtIKConCreateWin;
+columnLayout -adj 1   mainColumnL;
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1059\"";
+	floatSliderGrp -l "控制器大小："  -f 1 -v 1 -min 0.01 -max 10  gtfkikConradius;	
+	separator -style double;
+	radioButtonGrp -en 1  -l "创建方式：" -nrb  2 -la2 "父子约束" "父子关系"   -cw3 120 120 120  -select 1 gtikConTypeBox;
+	separator -style double;
+	button  -l "为选择的物体创建Ik控制器" -c "gtikConProc" gtIntsecoundBnBut;
+
+showWindow gtIKConCreateWin;
+
+}
+////////////////
+global proc  gtikConProc(){
+int $ikcon=`radioButtonGrp -q -sl gtikConTypeBox`;    
+float $scale=`floatSliderGrp -q -v gtfkikConradius`;
+string $sel[]=`ls -sl`;
+for($i=0;$i<size($sel);$i++){
+    
+string $tokem[];
+int $tonum=`tokenize ($sel[$i]) "_" $tokem`;
+string $side=$tokem[1];
+    
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($sel[$i]+"Con");
+group -n ($sel[$i]+"ConGrp");
+group -n ($sel[$i]+"ConGrpA");
+scale -r ($scale) ($scale) ($scale);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+  string $shape[]=`listRelatives -s ($sel[$i]+"Con")`;
+    setAttr ($shape[0]+".overrideEnabled") 1;
+  if($side=="l"){
+    setAttr ($shape[0]+".overrideColor") 22;   
+  }else if($side=="r"){
+    setAttr ($shape[0]+".overrideColor") 13;   
+  }else{
+        setAttr ($shape[0]+".overrideColor") 6;     
+  }
+
+select -r ($sel[$i]);
+select -add ($sel[$i]+"ConGrpA");
+delete `pointConstraint`;
+if($ikcon==1){
+select -r ($sel[$i]+"Con");
+select -add ($sel[$i]);
+parentConstraint -mo;
+}
+if($ikcon==2){
+    select -r ($sel[$i]);
+select -add ($sel[$i]+"Con");
+parent;
+}
+select -r ($sel[$i]+"Con");
+}
+}
+///////////////////
+gtIKConCreateWin;

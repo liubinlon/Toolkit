@@ -1,0 +1,138 @@
+//控制器旋转属性整合绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtRotMasterWin(){
+if(`window -ex gtRotMasterWin`) deleteUI -window gtRotMasterWin;
+window -wh 410 300 -title "老船动画吧-☆-旋转整合动画绑定工具" gtRotMasterWin;
+columnLayout -adj 1 gtColL;
+
+text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 45  -c "showHelp -a \"http://www.animate8.com/archives/1495\"";
+formLayout gtform;
+
+///////////////////////////////////////
+text -l "旋   转    轴    向："  gttexta;
+checkBox -l "X" -v 1 conCheckB3;
+checkBox -l "Y" -v 1 conCheckB4;
+checkBox -l "Z" -v 1 conCheckB5;
+help textFieldButtonGrp;
+textFieldButtonGrp  -cw3 80 200 80 -label "物体一：" -text "" -buttonLabel "载入物体" -bc "gtRotconMasterLoadnameA" rotconButA ;
+textFieldButtonGrp  -cw3 80 200 80 -label "物体二：" -text "" -buttonLabel "载入物体" -bc "gtRotconMasterLoadnameB" rotconButB ;
+
+button -l "创建旋转控制整合" -c "gtRotMasterTrsProcA;" conBut2;
+
+formLayout -e
+
+-af gttexta left 10 -af gttexta right 10 -af gttexta top 5 
+
+-af conCheckB3 left 50 -ap conCheckB3 right 0 43 -ac conCheckB3 top 5 gttexta
+-ac conCheckB4 left 4 conCheckB3 -ap conCheckB4 right 0 70 -ac conCheckB4 top 5 gttexta
+-ac conCheckB5 left 4 conCheckB4 -af conCheckB5 right 10 -ac conCheckB5 top 5 gttexta
+
+-af rotconButA left 10 -af rotconButA right 10 -ac rotconButA top 5 conCheckB5
+-af rotconButB left 10 -af rotconButB right 10 -ac rotconButB top 5 rotconButA
+
+-af conBut2 left 10 -af conBut2 right 10 -ac conBut2 top 5 rotconButB
+  gtform;
+
+showWindow gtRotMasterWin;
+}
+/////////////////////////////
+global proc gtRotconMasterLoadnameA(){
+    string $sel[]=`ls -sl`;
+    textFieldButtonGrp -e -tx ($sel[0]) rotconButA;
+}
+////////////////
+global proc gtRotconMasterLoadnameB(){
+    string $sel[]=`ls -sl`;
+    textFieldButtonGrp -e -tx ($sel[0]) rotconButB;
+}
+//////////////////////////
+global proc gtRotMasterTrsProcA (){
+
+int $x=`checkBox -q -v conCheckB3`;
+int $y=`checkBox -q -v conCheckB4`;
+int $z=`checkBox -q -v conCheckB5`;       
+string $conA=`textFieldButtonGrp -q -tx rotconButA`;
+string $conB=`textFieldButtonGrp -q -tx rotconButB`;
+string $selC[]=`ls -sl`;                                          
+int $numC=size($selC);                                           
+string $conAA=$conA;                                        
+string $conBB=$conB; 
+  
+for($ii=0;$ii<$numC;$ii++){  
+                                        
+float $perRot=1.0/($numC+1);                                      
+float $mA=1-$perRot*$ii-$perRot; 
+float $multA= smoothstep(0,1,$mA);                                                    
+float $multB=1-$multA; 
+
+select -r ($selC[$ii]);
+group -n ($selC[$ii]+"Rot");
+spaceLocator -p 0 0 0 -n ($selC[$ii]+"tempLoc");
+select -r ($selC[$ii]);
+select -add ($selC[$ii]+"tempLoc");
+delete`pointConstraint`;
+float $p[]=`xform -q -ws -t -a ($selC[$ii]+"tempLoc")`;  
+delete ($selC[$ii]+"tempLoc");
+move -a ($p[0]) ($p[1]) ($p[2]) ($selC[$ii]+"Rot.scalePivot") ($selC[$ii]+"Rot.rotatePivot");
+
+select -r  $conBB;
+string $attrNam="rotBias"+$ii;
+addAttr -ln $attrNam  -at double  -min 0 -max 1 -dv  $multB;
+shadingNode -asUtility reverse -n ($selC[$ii]+"reversAA");
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"reversAA.inputX"); 
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"reversAA.inputY"); 
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"reversAA.inputZ"); 
+ 
+                      
+shadingNode -asUtility multiplyDivide -n ($selC[$ii]+"multiplyAA"); 
+connectAttr -f ( $conAA+".rotate") ($selC[$ii]+"multiplyAA.input1");   
+connectAttr -f ($selC[$ii]+"reversAA.output") ($selC[$ii]+"multiplyAA.input2");   
+                 
+shadingNode -asUtility multiplyDivide -n ($selC[$ii]+"multiplyBB"); 
+connectAttr -f ( $conBB+".rotate") ($selC[$ii]+"multiplyBB.input1");   
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"multiplyBB.input2X"); 
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"multiplyBB.input2Y"); 
+connectAttr -f ($conBB+"."+$attrNam) ($selC[$ii]+"multiplyBB.input2Z"); 
+if($x==1&&$y==1&&$z==1){
+shadingNode -asUtility plusMinusAverage -n ($selC[$ii]+"plusMinAB"); 
+connectAttr -force ($selC[$ii]+"multiplyAA.output") ($selC[$ii]+"plusMinAB.input3D[0]"); 
+connectAttr -force ($selC[$ii]+"multiplyBB.output") ($selC[$ii]+"plusMinAB.input3D[1]"); 
+connectAttr -f ($selC[$ii]+"plusMinAB.output3D") ($selC[$ii]+"Rot.rotate"); 
+}else{
+    
+if($x==1){      
+shadingNode -asUtility plusMinusAverage -n ($selC[$ii]+"plusMinABX"); 
+connectAttr -force ($selC[$ii]+"multiplyAA.outputX") ($selC[$ii]+"plusMinABX.input1D[0]"); 
+connectAttr -force ($selC[$ii]+"multiplyBB.outputX") ($selC[$ii]+"plusMinABX.input1D[1]"); 
+connectAttr -f ($selC[$ii]+"plusMinABX.output1D") ($selC[$ii]+"Rot.rx"); 
+}
+
+if($y==1){      
+shadingNode -asUtility plusMinusAverage -n ($selC[$ii]+"plusMinABY"); 
+connectAttr -force ($selC[$ii]+"multiplyAA.outputY") ($selC[$ii]+"plusMinABY.input1D[0]"); 
+connectAttr -force ($selC[$ii]+"multiplyBB.outputY") ($selC[$ii]+"plusMinABY.input1D[1]"); 
+connectAttr -f ($selC[$ii]+"plusMinABY.output1D") ($selC[$ii]+"Rot.ry"); 
+}
+if($z==1){      
+shadingNode -asUtility plusMinusAverage -n ($selC[$ii]+"plusMinABZ"); 
+connectAttr -force ($selC[$ii]+"multiplyAA.outputZ") ($selC[$ii]+"plusMinABZ.input1D[0]"); 
+connectAttr -force ($selC[$ii]+"multiplyBB.outputZ") ($selC[$ii]+"plusMinABZ.input1D[1]"); 
+connectAttr -f ($selC[$ii]+"plusMinABZ.output1D") ($selC[$ii]+"Rot.rz"); 
+        }
+    }
+ }
+/////////////////////////
+select ($conB);
+print "------------------完成---------------------";
+}
+/////////////////////////////////
+gtRotMasterWin;

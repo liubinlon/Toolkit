@@ -1,0 +1,96 @@
+//物体发射粒子数量动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+global proc gtObjectEmitWin(){
+if(`window -ex  gtObjectEmitWin`)deleteUI -window  gtObjectEmitWin;
+window -wh 400 300 -t "老船角色绑定-☆-物体粒子发射动画工具！" gtObjectEmitWin;
+columnLayout -adj 1 ;
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1772\"";
+formLayout gtform;
+text -l "使用说明\n只针对有关键帧动画的物体，并且物体必须发射粒子\n程序会在粒子物体上创建物体发射粒子数量属性\n包括：gtRate：控制整体发射数量；gtSpeed：控制发射速度\ngtRandomSpeed：控制随机发送速度；gtNormalSpeed：控制发线发射速度\ngtThreshold：控制该数值一下的运动速度完全不发射粒子" text1;
+intSliderGrp -l "发射数量" -f 1 -v 100  -max 10000 -min 0 intsf;
+button -l "应用" -c "gtObjectEmit" but1;
+formLayout -e
+-af text1 left   5 -af text1 top   10 -af  text1 right  5 
+-af intsf left 5  -ac intsf top 5 text1  -af intsf right 5 
+-af but1 left 5  -ac but1 top 5 intsf  -af but1 right 5
+ gtform;
+showWindow  gtObjectEmitWin;
+}
+
+/////////////////////////////////////////////////////
+
+global proc gtObjectEmit(){
+string $sel[]=`ls -sl`;
+
+for($i=0;$i<size($sel);$i++){
+string $c[]=`listRelatives -c ($sel[$i])`;
+string $emit;
+for($j=0;$j<size($c);$j++){
+string $type=`nodeType $c[$j]`;
+if($type=="pointEmitter")$emit=$c[$j];
+}
+string $part[]=`listConnections -s 0 -d 1 ($emit+".output[0]")`;
+int $state=`objectExists ($part[0]+".gtRate")`;
+if($state==0){
+addAttr -ln "gtRate"  -at long -k 1 -dv 500 $part[0];
+addAttr -ln "gtSpeed"  -at double -k 1  -dv 1 $part[0];
+addAttr -ln "gtRandomSpeed"  -at double -k 1 -dv 1  $part[0];
+addAttr -ln "gtNormalSpeed"  -at double -k 1 -dv 1  $part[0];
+addAttr -ln "gtThreshold"  -at double -k 1 -dv 0  $part[0];
+
+}
+
+string $exp="";
+	$exp+="float $rate=`getAttr ";
+	$exp+=($part[0]);
+	$exp+=".gtRate`;\n";
+	$exp+="float $gts=`getAttr ";
+	$exp+=($part[0]);
+	$exp+=".gtThreshold`;\n";
+	$exp+="float $spd=`getAttr ";
+	$exp+=($part[0]);
+	$exp+=".gtSpeed`;\n";
+	$exp+="float $rSpd=`getAttr ";
+	$exp+=($part[0]);
+	$exp+=".gtRandomSpeed`;\n";
+	$exp+="float $nSpd=`getAttr ";
+	$exp+=($part[0]);
+	$exp+=".gtNormalSpeed`;\n";
+
+	$exp+="int $ct=`currentTime -q `;\n";
+	$exp+="float $p1[]=`getAttr -t ($ct-1) ";
+	$exp+=($sel[$i]);
+	$exp+=".translate`;\n";
+	$exp+="float $p2[]=`getAttr -t $ct ";
+	$exp+=($sel[$i]);
+	$exp+=".translate`;\n";
+	$exp+="float $dis=mag(<<$p1[0],$p1[1],$p1[2]>>-<<$p2[0],$p2[1],$p2[2]>>);\n";
+	$exp+="if($dis>$gts)setAttr ";
+	$exp+=($emit);
+	$exp+=".rate ($rate*$dis);\n";
+	$exp+="else setAttr ";
+	$exp+=($emit);
+	$exp+=".rate 0;\n";
+	$exp+="setAttr ";
+	$exp+=($emit);
+	$exp+=".speed ($spd*$dis);\n";
+	$exp+="setAttr ";
+	$exp+=($emit);
+	$exp+=".speedRandom ($rSpd*$dis);\n";
+	$exp+="setAttr ";
+	$exp+=($emit);
+	$exp+=".normalSpeed ($nSpd*$dis);\n";
+
+expression  -s ($exp)  -ae 1 -uc all  -n ($sel[$i]+"exp"+$i);
+    }
+    select -cl;
+}
+gtObjectEmitWin;
+///////////////////2016-10-30

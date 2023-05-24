@@ -1,0 +1,532 @@
+//-- ASModelCleaner Procedures Starts Here --//
+global proc asModelCleaner ()
+{
+if (`window -ex modelCleaner`)
+	deleteUI modelCleaner;
+
+window -s 1 -title "adv牌模型场景清理工具" modelCleaner;
+columnLayout;
+	separator -st none -h 10;
+	text -l "这个将会清理干净你的纯模型场景\n";
+	if (!`pluginInfo -q -l objExport`)
+		{
+		text -l "objExport 插件必须要先载入！";
+		button -l "载入 objExport 插件" -c "loadPlugin objExport;print (\"// OK, objExport plugin loaded\\n\")";
+		separator -h 10 -st none;
+		}
+	text -l "创建一个最顶层的组，命名为\"geo\"";
+	button -c modelCleanGreateGeo -label "创建geo组";
+	separator -st none -h 10;
+	text -l "现在开始清理！";
+	text -fn "smallBoldLabelFont" -l "(安全起见，请先保存你的场景！)\n";
+	button -w 230 -c modelCleanGo -ann "开始清理" -label "清理！";
+showWindow modelCleaner;
+}
+
+global proc modelCleanGreateGeo ()
+{
+if (!`objExists |geo`)
+	createNode -n geo transform;
+string $tempString[];
+string $topLevXforms[]=`ls -as -l`;
+for($i=0;$i<size($topLevXforms);$i++)
+	{
+	if ($topLevXforms[$i]=="|geo")
+		continue;
+	$tempString=`listRelatives -s $topLevXforms[$i]`;
+	if (`size ($tempString)`==0 || `objectType $tempString[0]`=="mesh")
+		parent $topLevXforms[$i] |geo;
+	}
+select |geo;
+}
+
+global proc modelCleanGo ()
+{
+global string $gMainProgressBar;
+global string $gMainPane;
+string $sceneName=`file -q -sn`;
+string $references[];
+string $allReferences[]=`file -q -r`;
+for ($i=0;$i<size($allReferences);$i++)
+	if (!`file -q -deferReference $allReferences[$i]`)
+		$references[size($references)]=$allReferences[$i];
+
+select -cl;
+
+string $sceneFile=`file -q -sn`;
+string $tmpFile=`asGetTempDirectory`+"AdvancedSkeleton/modelCleaner/tmp.ma";
+if (`asIsMayaLT`)
+	$tmpFile=`asGetTempDirectory`+"AdvancedSkeleton/modelCleaner/tmp.mlt";
+int $eyeCandy=0;
+int $moreThanOneWithSameName;
+string $plugins[]=`pluginInfo -q -ls`;
+string $parent[],$tempString[],$longNames[],$buffer[],$oldShapeName[],$partitionPlugs[],$creaseMembers[],$objFileName[];
+float $temp[];
+float $perspPos[]=`getAttr persp.translate`;
+float $perspRot[]=`getAttr persp.rotate`;
+int $isGroup[];
+int $doubleSided[];
+for ($plug in $plugins)
+	if (!`stringArrayCount "objExport" $plugins`)
+	error "You Must Load the \"objExport\" plugin !";
+
+string $tempDir=`asGetTempDirectory`+"AdvancedSkeleton/modelCleaner/";
+if (!`file -q -ex $tempDir`)
+	sysFile -md $tempDir;
+
+//Pre Flight Check
+if (!`objExists geo`)
+	error "group \"geo\" does not exists !\n";
+string $all[]=`ls -noIntermediate`;
+for ($obj in $all)
+	{
+	if (`gmatch $obj "*|*"`)
+		{
+		$tempString=`listRelatives -ap $obj`;
+		if (size($tempString)==1)
+			{
+			select -add $obj;
+			$moreThanOneWithSameName=1;
+			}
+		}
+	}
+if ($moreThanOneWithSameName)
+	modelCleanMakeUniqueNames;
+if (`objExists "polySurface1"`)
+	{
+	select "polySurface1";
+	error "Illegal objectName \"polySurface1\"";
+	}
+
+//delete imagePlanes
+string $imagePlanes[]=`ls -type imagePlane`;
+if (size($imagePlanes))
+	delete $imagePlanes;
+
+//delete unused refNodes
+deleteUnusedRefNodes;
+
+//unParent all place3dTextures
+string $place3ds[]=`ls -type place3dTexture`;
+for ($i=0;$i<size($place3ds);$i++)
+{
+$tempString=`listRelatives -p $place3ds[$i]`;
+if(size($tempString))
+	parent -w $place3ds[$i];
+}
+
+//remove old files
+string $fileList[]=`getFileList -fs "*.obj" -fld $tempDir`;
+for($i=0;$i<size( $fileList);$i++)
+{
+	if (`file -q -ex ($tempDir+$fileList[$i])`)
+		sysFile -del ($tempDir+$fileList[$i]);
+}
+
+//Remove nameSpaces
+$all=`ls -type transform`;
+for ($i=0;$i<size($all);$i++)
+    if (`gmatch $all[$i] "*:*"`)
+        {
+        tokenize $all[$i] ":" $tempString;
+        rename $all[$i] $tempString[size($tempString)-1];
+        }
+
+//rename Shapes to match name of their Xform
+string $meshes[]=`ls -type mesh`;
+for ($i=0;$i<size($meshes);$i++)
+    if (`objExists $meshes[$i]`)
+    	{
+    	$tempString=`listRelatives -p $meshes[$i]`;
+    	rename $meshes[$i] ($tempString[0]+"TEMPShape");
+    	}
+$meshes=`ls -type mesh`;
+for ($i=0;$i<size($meshes);$i++)
+    if (`objExists $meshes[$i]`)
+    	{
+	    $tempString=`listRelatives -p $meshes[$i]`;
+    	rename $meshes[$i] ($tempString[0]+"Shape");
+    	}
+
+DeleteAllHistory;
+
+//createShaderAssigner
+string $assigned[], $shadingEngines[], $namespaces[];
+string $allTrns[]=`ls -type transform`;
+string $place3dTextures[]=`ls -type place3dTexture`;
+if (`objExists shaderAssign`) 
+	delete shaderAssign;
+createNode -n shaderAssign transform;
+addAttr -ln notes -dt "string" shaderAssign;
+$shadingEngines=`ls -type shadingEngine`;
+string $connections = ("global proc cleanConnectFileNodes(string $namespace1, string $namespace2) {\n");
+for ($i=0;$i<size($shadingEngines);$i++) {
+	if (`gmatch $shadingEngines[$i] "initial*"`)
+		continue;
+	$assigned=`sets -q $shadingEngines[$i]`;
+	for ($z=0;$z<size($assigned);$z++)
+		{
+		//per face assigment
+//		tokenize $assigned[$z] "." $tempString;
+//		$assigned[$z]=$tempString[0];
+		}
+	$assigned=`stringArrayRemoveDuplicates $assigned`;
+	for ($z=0;$z<size($assigned);$z++) 
+		{
+//		$tempString=`listRelatives -p $assigned[$z]`;
+//		$connections+=("catch(`sets -e -fe ($namespace1 + \"" +$shadingEngines[$i]+"\") ($namespace2 + \""+$tempString[0]+"\")`);\n");
+		$connections+=("catch(`sets -e -fe ($namespace1 + \"" +$shadingEngines[$i]+"\") ($namespace2 + \""+$assigned[$z]+"\")`);\n");
+		}
+}
+for ($z=0;$z<size($place3dTextures);$z++) {
+	$tempString=`listConnections -p 1 ($place3dTextures[$z]+".worldInverseMatrix")`;
+	$connections+=("catch(`connectAttr ($namespace2 + \"" +$place3dTextures[$z]+".worldInverseMatrix\") ($namespace1 + \""+$tempString[0]+"\")`);\n");
+}
+$connections += ("}\n");
+setAttr -type "string" shaderAssign.notes $connections;
+
+//exportShaders
+string $hyperShadePanelMelFile="C:/Program Files/Autodesk/Maya2012/scripts/others/hyperShadePanel.mel";
+if (`file -q -ex$hyperShadePanelMelFile `)
+eval ("source \""+$hyperShadePanelMelFile+"\"");
+hyperShadePanelMenuCommand("", "deleteUnusedNodes");
+string $shadingNodes[]=`lsThroughFilter -na DefaultAllShadingNodesFilter`;
+string $objectType;
+select -cl;
+for ($i=0;$i<size($shadingNodes);$i++)
+	{
+	$objectType=`objectType $shadingNodes[$i]`;
+	if ($objectType=="camera" || `gmatch $objectType "*Light"`)
+		continue;
+	select -add -ne $shadingNodes[$i];
+	}
+select -add shaderAssign;
+lockNode -l 0 renderPartition;
+if (`file -q -ex $tmpFile`)
+	sysFile -del $tmpFile;
+if (`asIsMayaLT`)
+	file -op "v=0;" -typ "mayaLT" -es $tmpFile;
+else
+	file -op "v=0;p=17" -typ "mayaAscii" -es $tmpFile;
+
+//delete intermediateObjects meshes
+$tempString=`ls -intermediateObjects -type mesh`;
+if (size($tempString))
+	delete $tempString;
+
+// SelectAllPolygonGeometry;
+select geo;
+select -hi;
+string $selAll[]=`ls -l -sl -type transform`;
+
+// read all attribute + their values, to restore after obj import
+ string $userAttrs[],$addAttrCmds[];
+string $cmd,$sn,$ln,$at,$kk,$dv,$minMax;
+float $range[2];
+string $shapes[];
+string $selAllInclShapes[]=$selAll;
+for ($i=0;$i<size($selAll);$i++)
+	{
+	$tempString=`listRelatives -s $selAll[$i]`;
+	if (`objExists $tempString[0]`)
+		$shapes[`size($shapes)`]=$tempString[0];
+	}
+appendStringArray $selAllInclShapes $shapes `size($shapes)`;
+for ($i=0;$i<size($selAllInclShapes);$i++)
+	{
+ 	$userAttrs=`listAttr -ud -s $selAllInclShapes[$i]`;
+	for ($y=0;$y<size($userAttrs);$y++)
+		{
+		if (`getAttr -type ($selAllInclShapes[$i]+"."+$userAttrs[$y])`=="message")
+			continue;
+		$tempString=`listAttr -sn ($selAllInclShapes[$i]+"."+$userAttrs[$y])`;
+		$sn=$tempString[0];
+		$ln=$userAttrs[$y];
+		$at=`getAttr -typ ($selAllInclShapes[$i]+"."+$userAttrs[$y])`;
+		if (`gmatch $at "*Array"` || `gmatch $at "*dataCompound"`)
+			continue;
+		$dv=`getAttr ($selAllInclShapes[$i]+"."+$userAttrs[$y])`;
+		$kk=`getAttr -k ($selAllInclShapes[$i]+"."+$userAttrs[$y])`;
+		$l=`getAttr -l ($selAllInclShapes[$i]+"."+$userAttrs[$y])`;
+		if ($at=="float")
+			$at="double";
+		$minMax="";
+		if (`attributeQuery -re -n $selAllInclShapes[$i] $ln`)
+			{
+			$range=`attributeQuery -r -n $selAllInclShapes[$i] $ln`;
+			$minMax="-hasMinValue 1 -min "+$range[0]+" -hasMaxValue 1 -max "+$range[1];
+			}
+		if ($at=="string")
+			$addAttrCmds[size($addAttrCmds)]="if (!`attributeExists "+$userAttrs[$y]+" "+$selAllInclShapes[$i]+"`)"
+					+"	addAttr -k "+$kk+" -sn "+$sn+" -ln "+$ln+" -dt \""+$at+"\" "+$minMax+" "+$selAllInclShapes[$i]+";"
+					+"setAttr -l "+$l+" -type \"string\" "+$selAllInclShapes[$i]+"."+$sn+" \""+`encodeString $dv`+"\";";
+		else
+			$addAttrCmds[size($addAttrCmds)]="if (!`attributeExists "+$userAttrs[$y]+" "+$selAllInclShapes[$i]+"`)"
+					+"	addAttr -k "+$kk+" -sn "+$sn+" -ln "+$ln+" -at "+$at+" -dv "+$dv+" "+$minMax+" "+$selAllInclShapes[$i]+";";
+		}
+	}
+
+// read smooth level
+$shapes=`ls -ni -type mesh`;
+for ($y=0;$y<size($shapes);$y++)
+	{
+	if (!`attributeExists "displaySmoothMesh" $shapes[$y]`)
+		continue;
+	if (!`getAttr -l ($shapes[$y]+".displaySmoothMesh")`)
+		continue;
+	$smoothLevel=`getAttr ($shapes[$y]+".smoothLevel")`;
+	$smoothLock=`getAttr -l ($shapes[$y]+".smoothLevel")`;
+	$addAttrCmds[size($addAttrCmds)]="setAttr -l "+$smoothLock+" "+$shapes[$y]+".smoothLevel "+$smoothLevel+";";
+	$dispResolution=`getAttr ($shapes[$y]+".dispResolution")`;
+	$displaySmoothMesh=`getAttr ($shapes[$y]+".displaySmoothMesh")`;
+	$displaySmoothMeshLock=`getAttr -l ($shapes[$y]+".displaySmoothMesh")`;
+	$addAttrCmds[size($addAttrCmds)]="setAttr "+$shapes[$y]+".dispResolution "+$dispResolution+";";
+	$addAttrCmds[size($addAttrCmds)]="setAttr -l "+$displaySmoothMeshLock+" "+$shapes[$y]+".displaySmoothMesh "+$displaySmoothMesh+";";
+	}
+
+// select non-instanced geometry
+select geo;
+select -hi;
+string $sel[]=`ls -sl -type transform`;
+string $selLong[]=`ls -l -sl -type transform`;
+string $selShort[]=$sel;
+string $children[];
+
+evalDeferred ("progressBar -e -ep "+$gMainProgressBar);
+progressBar -e -st "ObjExporting" -bp -ii 1 -min 0 -max (size($sel)) $gMainProgressBar;
+for ($i=0;$i<size($sel);$i++)
+{
+	if (`progressBar -q -ic $gMainProgressBar`)
+	{
+		break;progressBar -e -ep $gMainProgressBar;
+	}
+	progressBar -e -s 1 $gMainProgressBar;
+
+	if (`gmatch $obj "*:*"`)
+		continue;
+
+	if (`gmatch $selShort[$i] "*|*"`)
+		{
+		tokenize $selShort[$i] "|" $tempString;
+		$selShort[$i]=$tempString[size($tempString)-1];
+		}
+	select $sel[$i];
+	$tempString=`listRelatives -s $sel[$i]`;
+	$oldShapeName[$i]=$tempString[0];
+	makeIdentity -a 1 -t 1 -r 1 -s 1 $sel[$i];
+//		polySetToFaceNormal -setUserNormal;
+	DeleteAllHistory;
+	if (size(`ls -type nurbsCurve`))
+		delete `ls -type nurbsCurve`;
+	$tempString=`listRelatives -f -s $sel[$i]`;
+	if (size($tempString)==0)
+		$isGroup[$i]=1;
+	$doubleSided[$i]=1;
+	if (`objExists $tempString[0]`)
+		if (`attributeExists doubleSided $tempString[0]`)
+			$doubleSided[$i]=`getAttr ($tempString[0]+".doubleSided")`;
+	$tempString=`listRelatives -p $sel[$i]`;
+	if ($tempString[0]!="")
+		$parent[$i]=$tempString[0];
+
+	if (`file -q -ex ($tempDir+$sel[$i]+".obj")`)
+		sysFile -del ($tempDir+$sel[$i]+".obj");
+	if (`file -q -ex ($tempDir+$sel[$i]+".obj")`)
+		print ("// Unable to delete "+$tempDir+$sel[$i]+".obj!\n");
+	clear $children;
+	$children=`listRelatives -f -type transform -c $sel[$i]`;
+	if (size($children))
+		$children=`parent -w $children`;
+	select $sel[$i];
+	$objFileName[$i]=`substituteAllString $selLong[$i] "|" "!"`;
+	if (`gmatch $objFileName[$i] "!*"`)
+		$objFileName[$i]=`substring $objFileName[$i] 2 999`;
+	print ("// Exporting: "+$tempDir+$objFileName[$i]+".obj\n");
+//		if ($eyeCandy)
+//			FrameSelected;
+	file -op "groups=0;ptgroups=0;materials=0;smoothing=1;normals=1;" -typ "OBJexport" -pr -es ($tempDir+$objFileName[$i]+".obj");
+	if (size($children))
+		parent $children $sel[$i];
+}
+progressBar -e -ep $gMainProgressBar;
+
+//NewScene;
+// select -all;delete;
+string $filename = `file -q -exn`;
+$mayaFileType = `file -q -type`;
+file -f -new;
+file -type $mayaFileType;
+file -rn $filename;
+setAttr -type float3 persp.translate $perspPos[0] $perspPos[1] $perspPos[2];
+setAttr -type float3 persp.rotate $perspRot[0] $perspRot[1] $perspRot[2];
+if ($eyeCandy)
+	{
+	setNamedPanelLayout "Single Perspective View";
+	string $modelPanel=`paneLayout -q -p1 $gMainPane`;
+	modelEditor -e -da "smoothShaded" $modelPanel;
+	}
+
+//Create groups
+for ($i=0;$i<size($sel);$i++)
+{
+	if ($isGroup[$i])
+		createNode -n $sel[$i] transform;
+}
+for ($i=0;$i<size($sel);$i++)
+{
+	if ($isGroup[$i])
+		{
+		if (`objExists $parent[$i]`)
+			parent $sel[$i] $parent[$i];
+		continue;
+		}
+print ("// importing: "+$tempDir+$objFileName[$i]+".obj\n");
+file -i -type "OBJ" -rpr "DUP" -options "mo=0;lo=1" ($tempDir+$objFileName[$i]+".obj");
+$existing[0]="polySurfaceShape1";
+$tempString=`listRelatives -p $existing[0]`;
+rename $tempString[0] $selShort[$i];
+
+if (`objExists $parent[$i]`)
+	parent ("|"+$selShort[$i]) $parent[$i];
+if (!$doubleSided[$i])
+	setAttr ($sel[$i]+".doubleSided") $doubleSided[$i];
+select $sel[$i];
+if ($eyeCandy)
+	FrameSelected;
+
+// restore original shape name
+if (`objExists $sel[$i]`)
+	{
+	$tempString=`listRelatives -s $sel[$i]`;
+	if (`objExists $tempString[0]`)
+		{
+		setAttr ($tempString[0]+".visibleInReflections") 1;
+		setAttr ($tempString[0]+".visibleInRefractions") 1;
+		if ($tempString[0]!=$oldShapeName[$i])
+			{
+			print ("// Renaming "+$tempString[0]+" to "+$oldShapeName[$i]+"\n");
+			rename $tempString[0] $oldShapeName[$i];
+			}
+		}
+	}
+}
+
+// restore added attributes
+for ($cmd in $addAttrCmds)
+	if (catchQuiet (`eval ($cmd)`)) warning ("Failed: "+$cmd+"\n");
+
+// restore bits in sets
+if (`gmatch $sceneName "*/library/set/*"`)
+	file -import -type "mayaAscii" -ra false -rpr "export" -options "v=0"  -pr -loadReferenceDepth "all" ($tempDir+"setReferences.ma");
+
+//remove files
+$fileList=`getFileList -fs "*.obj" -fld $tempDir`;
+for($i=0;$i<size($fileList);$i++)
+{
+	if (`file -q -ex ($tempDir+$fileList[$i])`)
+		sysFile -del ($tempDir+$fileList[$i]);
+}
+
+//Import & Assign texturess
+file -i $tmpFile;
+eval `getAttr shaderAssign.notes`;
+cleanConnectFileNodes "" "";
+delete shaderAssign;
+
+//set default UI
+select -cl;
+setNamedPanelLayout "Four View";
+FrameAllInAllViews;
+
+if (`window -ex modelCleaner`)
+	deleteUI modelCleaner;
+
+print ("// Cleaning finished.\n");
+}
+
+
+global proc deleteUnusedRefNodes ()
+{
+string $allReferences[]=`file -q -r`;
+
+string $realRefNodes[];
+for ($y=0;$y<size($allReferences);$y++)
+    $realRefNodes[size($realRefNodes)]=`file -q -rfn $allReferences`;
+string $refNodes[]=`ls -type reference`;
+for ($y=0;$y<size($refNodes);$y++)
+    if (!`stringArrayCount $refNodes[$y] $realRefNodes`)
+        {
+        lockNode -l 0 $refNodes[$y];
+        delete $refNodes[$y];
+        }
+}
+
+global proc string asGetTempDirectory ()
+{
+string $tempDirectory=`internalVar -utd`;
+string $folders[];
+
+//resolve userNames that has beeen `truncated` with Tilde symbol
+if (`gmatch $tempDirectory "*~*"`)
+	{
+	tokenize $tempDirectory "/" $folders;
+	$tempDirectory="";
+	for ($i=0;$i<size($folders);$i++)
+		{
+		if (`gmatch $folders[$i] "*~*"`)
+			$folders[$i]=`getenv USERNAME`;
+		$tempDirectory+=$folders[$i];
+		if ($i<(size($folders)-1))
+			$tempDirectory+="/";
+		}
+	}
+return $tempDirectory;
+}
+global proc int asIsMayaLT ()
+{
+int $isMayaLT=0;
+if (!`exists CreateWrap`)
+	$isMayaLT=1;
+return $isMayaLT;
+}
+
+global proc modelCleanMakeUniqueNames ()
+{
+SelectAllGeometry;
+string $alls[]=`ls -sl`;
+string $alls2[],$tempString[];
+string $suffix;
+int $clash;
+for ($i=0;$i<size($alls);$i++)
+    {
+    $break=0;
+    SelectAllGeometry;
+    select -d $alls[$i];
+    $alls2=`ls -sl -sn`;
+    $suffix="";
+    $clash=0;
+    tokenize $alls[$i] "|" $tempString;
+    $newName=$tempString[size($tempString)-1]+$suffix;
+    for ($z=0;$z<size($alls2);$z++)
+        {
+        tokenize $alls2[$z] "|" $tempString;
+        if ($newName==$tempString[size($tempString)-1])
+            {
+            for ($aa=0;$aa<999;$aa++)
+            if (!`objExists ($newName+$aa)`)
+                {
+                print("// rename "+$alls[$i]+" "+$alls[$i]+"1\n");                
+                rename $alls[$i] ($newName+$aa);
+                $break=1;
+                break;         
+                }
+            if ($break)
+                break;
+            }
+        if ($break)
+            break;
+        }
+    }
+}
+//-- ASModelCleaner Procedures Ends Here --//
+asModelCleaner ()

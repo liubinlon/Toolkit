@@ -1,0 +1,145 @@
+//测试渲染彩色黑白切换动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////
+global proc gtautoLights(){
+string $selLights[]=`ls -sl`;
+string $everyLight;
+string $collect[];
+string $allLights[]=eval("listRelatives -p (`ls -lights`)");
+for($everyLight in $allLights){
+int $count=stringArrayCount($everyLight,$selLights);
+if($count>0){
+setAttr ($everyLight+".v") 1;
+}else{
+setAttr ($everyLight+".v") 0;
+int $i;
+$collect[$i]=$everyLight;
+$i=$i+1;
+}
+}
+renderIntoNewWindow render;
+string $finalLight;
+for ($finalLight in $collect){
+setAttr ($finalLight+".v") 1;
+}
+clear ($allLights);
+clear ($collect);
+clear ($selLights);
+}
+
+//////////////////////////////
+global proc gtsmartMaterial(int $switch){
+string $attrs[]={"color","transparency","transparencyR","transparencyG","transparencyB",
+                 "ambientColor","ambientColorR","ambientColorG","ambientColorB",
+                 "incandescence","incandescenceR","incandescenceG","incandescenceB",
+                 "diffuse","normalCamera","translucence"};
+
+string $shaders[]=`ls -materials`;
+string $shader;
+string $attr;
+for($shader in $shaders){
+ for($attr in $attrs){
+ int $attrEx=`attributeQuery -node $shader -exists $attr`;
+if($attrEx==1){
+shadingConnection -e -cs $switch ($shader+"."+$attr);
+        }
+    }
+}
+
+renderIntoNewWindow render;
+
+for($shader in $shaders){
+ for($attr in $attrs){
+ int $attrEx=`attributeQuery -node $shader -exists $attr`;
+if($attrEx==1){
+
+
+shadingConnection -e -cs 1 ($shader+"."+$attr);
+            }
+        }
+    }
+}
+///////////////////////////////
+global proc gtsmartNoMaterial(int $switch){
+
+string $attrs[]={"color","transparency","transparencyR","transparencyG","transparencyB",
+                 "ambientColor","ambientColorR","ambientColorG","ambientColorB",
+                 "incandescence","incandescenceR","incandescenceG","incandescenceB",
+                 "diffuse","normalCamera","translucence"};
+
+string $shaders[]=`ls -materials`;
+string $shader;
+string $attr;
+for($shader in $shaders){
+ for($attr in $attrs){
+ int $attrEx=`attributeQuery -node $shader -exists $attr`;
+if($attrEx==1){
+shadingConnection -e -cs $switch ($shader+"."+$attr);
+        }
+    }
+}
+
+renderWindowRenderRegion renderView;
+
+for($shader in $shaders){
+ for($attr in $attrs){
+ int $attrEx=`attributeQuery -node $shader -exists $attr`;
+if($attrEx==1){
+
+
+shadingConnection -e -cs 1 ($shader+"."+$attr);
+            }
+        }
+    }
+}
+
+///////////////////////////////
+global proc gtSmartMaterialC(){
+
+if(`window -ex gtSmartMwin`==1){deleteUI -window gtSmartMwin;}
+window -t "老船角色绑定-☆-测试渲染彩色黑白切换动画工具!!!" -wh 400 300 gtSmartMwin;
+columnLayout -adj 1;
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1770\"";
+text -l "使用说明：\n点击彩色贴图渲染按钮，渲染当前帧，贴图参与渲染";
+text -l "点击屏蔽（无）贴图渲染按钮，渲染当前帧，贴图不参与渲染";
+
+columnLayout -adj 1  gtmaterialF;;
+separator -style "double" sep1;
+rowColumnLayout -nc 3 -cw 1 200 -cw 2 5 -cw 3 200 ;
+
+button -l "彩色贴图渲染" -bgc  0.3 0.2 0.1 -c "gtsmartMaterial 1" but1;
+text -l "";
+button -l "屏蔽（无）贴图渲染" -bgc 0.5 0.5 0.5  -c "gtsmartMaterial 0" but2;
+setParent..;
+
+separator -style "double" sep3;
+rowColumnLayout -nc 3 -cw 1 200 -cw 2 5 -cw 3 200 ;
+button -l "局部彩色贴图渲染"  -bgc  0.3 0.2 0.1 -c "gtsmartNoMaterial 1;" but3;
+text -l "";
+
+button -l "局部屏蔽（无）贴图渲染" -bgc 0.5 0.5 0.5 -c "gtsmartNoMaterial 0;" but4;
+setParent..;
+
+setParent..;
+text -l "使用说明：\n选择灯光，点击使用选择的灯光渲染按钮，只有选择的灯光参与渲染 " ltext1;
+
+columnLayout -adj 1;
+separator -style "double" lsep3;
+button  -l "使用选择的灯光渲染"  -bgc  0.3 0.2 0.1 -c "gtautoLights" lbut1;
+separator -style "double" lsep1;
+
+setParent..;
+
+separator -style "double" sep4;
+showWindow gtSmartMwin;
+}
+//////////////////
+gtSmartMaterialC;
+/////////////////////2016-10-30

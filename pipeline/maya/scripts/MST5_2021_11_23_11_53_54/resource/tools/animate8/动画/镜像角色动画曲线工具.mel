@@ -1,0 +1,1393 @@
+//变换数据拷贝动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtWingMirrorAnimCurveProcWin(){
+if(`window -ex gtWingMirrorAnimCurveProcWin`) deleteUI -window gtWingMirrorAnimCurveProcWin;
+if(`windowPref -ex gtWingMirrorAnimCurveProcWin`) windowPref -r gtWingMirrorAnimCurveProcWin;
+window -wh 365 450 -t "老船角色绑定-☆-变换数据拷贝动画工具" gtWingMirrorAnimCurveProcWin;
+scrollLayout gtmainAnimL;
+columnLayout -w 360 -adj 1 mainColumnattrma;
+text -l "点击下方按钮↓↓↓↓↓" -w 360;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -w 360  -c "showHelp -a \"http://www.animate8.com/archives/1326\"";
+separator -style single -w 360 ;
+frameLayout -cl 1 -cll 1 -l "关联工具" -lv 1 -w 360 gtframeAnimCurveF;
+
+rowColumnLayout -nc 2 -cw 1 180 -cw 2 180 gtAnimmMirrorRW;
+text -l "连接输出物体";
+text -l "连接输入物体";
+paneLayout;
+textScrollList -numberOfRows 8  -showIndexedItem 4  gtTextScroLA;
+setParent..;
+    
+paneLayout;
+textScrollList -numberOfRows 8  -showIndexedItem 4 -sc "gtAnimCurveConnectionProc;" gtTextScroLB;
+setParent..; 
+setParent..;     
+rowColumnLayout -nc 3 -cw 1 178 -cw 2 4 -cw 3 178;    
+button  -l "载入输出物体" -c "gtLoadConnectConAProc" but1a;
+text -l " ";
+button  -l "载入输入物体" -c "gtLoadConnectConBProc" but1b;
+setParent..;    
+text -l "" -h 36 -w 360 gtAnimCurveTextShowRusults;
+separator -style double -w 360 ;
+
+rowColumnLayout -nc 2 -cw 1 180 -cw 2 180;     
+textFieldGrp -l "选择物体字符：" -text "_l" -cw2 90  70 gtAnimCurveStringA;
+textFieldGrp -l "查找物体字符：" -text "_r" -cw2 90  70  gtAnimCurveStringB;
+setParent..;   
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 120; 
+text -l "--编辑查找字符，选择一侧需要关联的物体--";
+button  -l "自动关联对称物体" -c "gtAnimCurveConnectionProcA;" but1C;
+setParent..;   
+setParent..;    
+
+frameLayout -cl 1 -cll 1 -l "查看关联" -lv 1 -w 360 gtframeAnimCurveFB;
+string $scrollLayout = `scrollLayout -horizontalScrollBarThickness 16 -verticalScrollBarThickness  16  -h 150 `;
+rowColumnLayout -nc 5 -cw 1 110 -cw 2 4 -cw 3 110 -cw 4 4 -cw 5 110;
+button -h 20 -l "更新输出列表" -c "gtAnimCurveSelectProcF" but1Bb;
+text -l "";
+button -h 20  -l "更新输入列表" -c "gtAnimCurveSelectProcG" but1Ba;
+text -l "";
+button -h 20  -l "更新未匹配列表" -c "gtAnimCurveSelectProcH" but1Bc;    
+paneLayout;
+text -l "没有连接记录" -h 100 gtConnectionResultsTextA;   
+setParent..; 
+text -l ""; 
+paneLayout;
+text -l "没有连接记录" -h 100 gtConnectionResultsTextB;
+setParent..; 
+text -l "";
+paneLayout;
+text -l "没有连接记录" -h 100 gtConnectionResultsTextC;
+setParent..; 
+
+button -h 20  -l "选择输出物体" -c "gtAnimCurveSelectProcA" but1BB;
+text -l "";
+button -h 20  -l "选择输入物体" -c "gtAnimCurveSelectProcB" but1BA;
+text -l "";
+button -h 20  -l "选择未匹配物体" -c "gtAnimCurveSelectProcC" but1BC;    
+setParent..;    
+setParent..;      
+setParent..;      
+frameLayout -cl 0 -cll 1 -l "镜像动画POSE" -lv 1 -w 360 gtframeAnimCurveFBa;
+columnLayout -w 360 -adj 1 ;
+radioButtonGrp -en 1  -l "拷贝方式：" -nrb 2 -la2 "当前POSE"  "动画曲线"   -cw3 90 135 135 -select 1 gtAnimCurveTpyeRange;
+rowColumnLayout -nc 5 -cw 1 25 -cw 2 70 -cw 3 90 -cw 4 90  -cw 5 90;
+text -l "";
+text -l "应用选项:";
+checkBox -l "应用位移" -v 1 gtAnimCurveTrsAttr;
+checkBox -l "应用旋转" -v 1 gtAnimCurveRotAttr;
+checkBox -l "应用缩放" gtAnimCurveScaleAttr;
+setParent..;      
+rowColumnLayout -nc 2 -cw 1 180 -cw 2 180;
+	radioButtonGrp -en 1  -l "位移X：" -nrb  2 -la2 "一致"  "反向" -cc "gtAnimCurveDoProcA" -cw3 60 60 60  -select 2 gtAnimCurveTrsX;
+	radioButtonGrp -en 1  -l "旋转X：" -nrb  2 -la2 "一致"  "反向"  -cc "gtAnimCurveDoProcA" -cw3 60 60 60  -select 1 gtAnimCurveRotX;
+	
+	radioButtonGrp -en 1  -l "位移Y：" -nrb  2 -la2 "一致"  "反向" -cc "gtAnimCurveDoProcA"  -cw3 60 60 60   -select 1 gtAnimCurveTrsY;
+	radioButtonGrp -en 1  -l "旋转Y：" -nrb  2 -la2 "一致"  "反向"  -cc "gtAnimCurveDoProcA"  -cw3 60 60 60   -select 1 gtAnimCurveRotY;
+	
+	radioButtonGrp -en 1  -l "位移Z：" -nrb  2 -la2 "一致"  "反向" -cc "gtAnimCurveDoProcA"  -cw3 60 60 60   -select 1 gtAnimCurveTrsZ;
+	radioButtonGrp -en 1  -l "旋转Z：" -nrb  2 -la2 "一致"  "反向"  -cc "gtAnimCurveDoProcA"  -cw3 60 60 60   -select 1 gtAnimCurveRotZ;
+setParent..;  
+separator -style double -w 360 ;       
+rowColumnLayout -nc 2 -cw 1 200 -cw 2 160; 
+text -l "--选择制作好pose的控制器--";
+button  -l "拷贝变换数据" -c "gtAnimCurveDoProcA" butaa; 
+setParent..;  
+   
+rowColumnLayout -nc 5 -cw 1 118 -cw 2 3 -cw 3 118 -cw 4 3 -cw 5 118;
+    button  -l "镜像控制器形态" -c "gtCurveConMirrorShapeA" butaca;
+    text -l "";
+    button  -l "选择输出物体" -c "gtAnimCurveSelectProcD" butaaa;
+    text -l "";
+    button  -l "选择输入物体" -c "gtAnimCurveSelectProcE" butaab;
+    setParent..;         
+    setParent..;      
+    setParent..;   
+separator -style double -w 360 ;
+text -l "没有操作" -h 40 gtAnimCurveResultShowText;  
+separator -style double -w 360 ;
+showWindow gtWingMirrorAnimCurveProcWin;   
+}
+///////////////////
+global proc gtLoadConnectConAProc(){
+    string $sel[]=`ls -type "transform" -sl`;
+    int $size=size($sel);
+    if($size==0)error "没有选择任何物体";
+    textScrollList -e  -ra gtTextScroLA;
+    string $textNamS="textScrollList -e   ";
+    for($i=0;$i<size($sel);$i++){
+        $textNamS+=(" -append "+$sel[$i]);
+    }
+    $textNamS+=" gtTextScroLA;";
+    eval  $textNamS;
+    textScrollList -e  -selectItem ($sel[0])  gtTextScroLA;
+    }
+/////////////////////////////
+global proc gtLoadConnectConBProc(){
+    string $sel[]=`ls -type "transform" -sl`;
+        int $size=size($sel);
+    if($size==0)error "没有选择任何物体";
+   textScrollList -e  -ra gtTextScroLB;
+    string $textNamS="textScrollList -e ";
+    for($i=0;$i<size($sel);$i++){
+        $textNamS+=(" -append "+$sel[$i]);
+    }
+    $textNamS+=" gtTextScroLB;";
+    eval  $textNamS;
+    }
+////////////////////////////
+ global proc gtAnimCurveConnectionProc(){
+     string $outputObj[]=`textScrollList -q -selectItem gtTextScroLA`;
+     string $inputObj[]=`textScrollList -q -selectItem gtTextScroLB`;
+     int $exa=`objExists $outputObj[0]`;
+     int $exb=`objExists $inputObj[0]`;
+     int $ex;
+    if($outputObj[0]==$inputObj[0])error "连接的输出物体和输入物体是同一个物体";
+     if($exa==1&&$exb==1){
+         $ex=`objExists ($outputObj[0]+".gtAnimCuvreMirrorConnetAttr")`;
+         if($ex==0)addAttr -ln "gtAnimCuvreMirrorConnetAttr"  -at long  $outputObj[0]; 
+        
+         $ex=`objExists ($inputObj[0]+".gtAnimCuvreMirrorConnetAttr")`;
+         if($ex==0)addAttr -ln "gtAnimCuvreMirrorConnetAttr"  -at long  $inputObj[0];  
+         string $inputs[]=`listConnections -s 1 -d 0 -p 1 ($outputObj[0]+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=size($inputs);
+         if($ex==1)disconnectAttr ($inputs[0]) ($outputObj[0]+".gtAnimCuvreMirrorConnetAttr");
+         $inputs=`listConnections -s 1 -d 0 -p 1 ($inputObj[0]+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=size($inputs);
+         if($ex==1)disconnectAttr ($inputs[0]) ($inputObj[0]+".gtAnimCuvreMirrorConnetAttr");
+         connectAttr -f ($outputObj[0]+".gtAnimCuvreMirrorConnetAttr") ($inputObj[0]+".gtAnimCuvreMirrorConnetAttr");
+         string $text=("     物体："+$outputObj[0]+"，与物体："+$inputObj[0]+"\n创建动画曲线镜像连接");
+         text -e -l $text   gtAnimCurveTextShowRusults;
+     }  
+}
+///////////////////////
+global proc gtAnimCurveConnectionProcA(){
+string $inputs[];
+     string $selectString=`textFieldGrp -q -tx gtAnimCurveStringA`;
+     string $searchString=`textFieldGrp -q -tx gtAnimCurveStringB`;
+     string $sel[]=`ls -sl`;
+     int $size=size($sel);
+     if($size==0)error "没有选择任何物体";
+     string $notDoObj[];
+     clear $notDoObj;
+     string $textA="";
+     string $textB="";
+     string $textC="";
+
+     for($i=0;$i<size($sel);$i++){
+     string $test =($sel[$i]);
+    string $tgRegular =$selectString;
+    string $tempN = `substitute $tgRegular $test $searchString`;
+    int $pipei=`gmatch $test ("*"+$selectString+"*")`;
+
+     string $searchN=$tempN;
+     string $outputObj=($sel[$i]);
+     string $inputObj=$searchN;
+     int $exa=`objExists $outputObj`;
+     int $exb=`objExists $inputObj`;
+     if($exb==0||$pipei==0){
+          int $notS=size($notDoObj);
+          $notDoObj[$notS]=($sel[$i]);
+          continue;
+     }
+     if($exa==1&&$exb==1){
+         int $ex=`objExists ($outputObj+".gtAnimCuvreMirrorConnetAttr")`;
+         if($ex==0)addAttr -ln "gtAnimCuvreMirrorConnetAttr"  -at long  $outputObj; 
+        
+         $ex=`objExists ($inputObj+".gtAnimCuvreMirrorConnetAttr")`;
+         if($ex==0)addAttr -ln "gtAnimCuvreMirrorConnetAttr"  -at long  $inputObj;  
+         $inputs=`listConnections -s 1 -d 0 -p 1 ($outputObj+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=size($inputs);
+         if($ex==1)disconnectAttr ($inputs[0]) ($outputObj+".gtAnimCuvreMirrorConnetAttr");
+         $inputs=`listConnections -s 1 -d 0 -p 1 ($inputObj+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=size($inputs);
+         if($ex==1)disconnectAttr ($inputs[0]) ($inputObj+".gtAnimCuvreMirrorConnetAttr");
+         connectAttr -f ($outputObj+".gtAnimCuvreMirrorConnetAttr") ($inputObj+".gtAnimCuvreMirrorConnetAttr");
+         string $text=("     \n物体："+$outputObj+"，与物体："+$inputObj+"，创建动画曲线镜像连接");
+         print $text ;
+        $textA+="\n"+$outputObj+" ";
+        $textB+="\n"+$inputObj+" ";
+             }  
+         } 
+     text -e -l $textA gtConnectionResultsTextA;
+     text -e -l $textB gtConnectionResultsTextB;
+
+       int $sizeNot=size($notDoObj);
+       if($sizeNot>0){
+       select -r $notDoObj;
+       print "\n当前选择的物体，没有找到名称匹配的对象";
+       for($i=0;$i<$sizeNot;$i++){
+           $textC+=("\n"+$notDoObj[$i]+" ");
+           }
+      text -e -l $textC gtConnectionResultsTextC;
+       }else{
+      text -e -l "" gtConnectionResultsTextC;    
+       }
+}
+////////////////////////
+ global proc gtAnimCurveSelectProcA(){
+      string $obj=`text -q -l  gtConnectionResultsTextA`;
+      string $gtm[];
+      int $gtmu=`tokenize $obj " " $gtm`;
+      select -cl;
+      for($i=0;$i<size($gtm);$i++){
+          select -add ($gtm[$i]);
+      }
+ }
+////////////////////////
+ global proc gtAnimCurveSelectProcB(){
+      string $obj=`text -q -l  gtConnectionResultsTextB`;
+      string $gtm[];
+      int $gtmu=`tokenize $obj " " $gtm`;
+      select -cl;
+      for($i=0;$i<size($gtm);$i++){
+          select -add ($gtm[$i]);
+      }
+ }
+ ////////////////////////
+ global proc gtAnimCurveSelectProcC(){
+      string $obj=`text -q -l  gtConnectionResultsTextC`;
+      string $gtm[];
+      int $gtmu=`tokenize $obj " " $gtm`;
+      select -cl;
+      for($i=0;$i<size($gtm);$i++){
+          select -add ($gtm[$i]);
+      }
+ }
+///////////////
+ global proc gtAnimCurveSelectProcD(){
+      string $obj[]=`ls -type "transform"`;
+      string $inputs[];
+      clear $inputs;
+            string $outputs[];
+      clear $outputs;
+            string $others[];
+      clear $others;
+            string $aimObj[];
+      clear $aimObj;
+      
+      for($i=0;$i<size($obj);$i++){
+        int $ex=`objExists ($obj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+        if($ex==0){
+            int $size=size($others);
+            $others[$size]=$obj[$i];
+        }else{
+            int $size=size($aimObj);
+            $aimObj[$size]=$obj[$i];  
+            }
+      }      
+      int $aimNum=size($aimObj);
+      
+      for($i=0;$i<$aimNum;$i++){
+          string $in[]=`listConnections -d 0 -s 1($aimObj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+         int $ex=`objExists $in[0]`;
+         if($ex==1){
+             int $inNum=size($inputs);
+             $inputs[$inNum]=$aimObj[$i];
+         }
+         $in=`listConnections -s 0 -d 1 ($aimObj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=`objExists $in[0]`;
+         if($ex==1){
+             int $outNum=size($outputs);
+             $outputs[$outNum]=$aimObj[$i];
+         }
+      }
+     int $size=size($outputs);
+     if($size>0)select -r $outputs;     
+ }
+/////////////////////////
+///////////////
+ global proc gtAnimCurveSelectProcE(){
+      string $obj[]=`ls -type "transform"`;
+      string $inputs[];
+      clear $inputs;
+            string $outputs[];
+      clear $outputs;
+            string $others[];
+      clear $others;
+            string $aimObj[];
+      clear $aimObj;
+      
+      for($i=0;$i<size($obj);$i++){
+        int $ex=`objExists ($obj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+        if($ex==0){
+            int $size=size($others);
+            $others[$size]=$obj[$i];
+        }else{
+            int $size=size($aimObj);
+            $aimObj[$size]=$obj[$i];  
+            }
+      }      
+      int $aimNum=size($aimObj);
+      
+      for($i=0;$i<$aimNum;$i++){
+          string $in[]=`listConnections -d 0 -s 1($aimObj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+         int $ex=`objExists $in[0]`;
+         if($ex==1){
+             int $inNum=size($inputs);
+             $inputs[$inNum]=$aimObj[$i];
+         }
+         $in=`listConnections -s 0 -d 1 ($aimObj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=`objExists $in[0]`;
+         if($ex==1){
+             int $outNum=size($outputs);
+             $outputs[$outNum]=$aimObj[$i];
+         }
+      }
+     int $size=size($inputs);
+     if($size>0)select -r $inputs;     
+ }
+/////////////////////////
+ global proc gtAnimCurveSelectProcF(){
+      string $obj[]=`ls -type "transform"`;
+      string $inputs[];
+      clear $inputs;
+            string $outputs[];
+      clear $outputs;
+            string $others[];
+      clear $others;
+            string $aimObj[];
+      clear $aimObj;
+      
+      for($i=0;$i<size($obj);$i++){
+        int $ex=`objExists ($obj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+        if($ex==0){
+            int $size=size($others);
+            $others[$size]=$obj[$i];
+        }else{
+            int $size=size($aimObj);
+            $aimObj[$size]=$obj[$i];  
+            }
+      }      
+      int $aimNum=size($aimObj);
+      
+      for($i=0;$i<$aimNum;$i++){
+          string $in[]=`listConnections -d 0 -s 1($aimObj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+         int $ex=`objExists $in[0]`;
+         if($ex==1){
+             int $inNum=size($inputs);
+             $inputs[$inNum]=$aimObj[$i];
+         }
+         $in=`listConnections -s 0 -d 1 ($aimObj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=`objExists $in[0]`;
+         if($ex==1){
+             int $outNum=size($outputs);
+             $outputs[$outNum]=$aimObj[$i];
+         }
+      }
+     int $size=size($outputs);
+     if($size>0){
+         string $textA="";
+         for($i=0;$i<$size;$i++){
+           $textA+=(" \n"+ $outputs[$i]); 
+        }
+     text -e -l $textA gtConnectionResultsTextA;
+     }
+ }
+ /////////////////////////
+ global proc gtAnimCurveSelectProcG(){
+      string $obj[]=`ls -type "transform"`;
+      string $inputs[];
+string $in[];
+int $ex;
+      clear $inputs;
+            string $outputs[];
+      clear $outputs;
+            string $others[];
+      clear $others;
+            string $aimObj[];
+      clear $aimObj;
+      
+      for($i=0;$i<size($obj);$i++){
+        int $ex=`objExists ($obj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+        if($ex==0){
+            int $size=size($others);
+            $others[$size]=$obj[$i];
+        }else{
+            int $size=size($aimObj);
+            $aimObj[$size]=$obj[$i];  
+            }
+      }      
+      int $aimNum=size($aimObj);
+      
+      for($i=0;$i<$aimNum;$i++){
+         $in=`listConnections -d 0 -s 1($aimObj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=`objExists $in[0]`;
+         if($ex==1){
+             int $inNum=size($inputs);
+             $inputs[$inNum]=$aimObj[$i];
+         }
+         $in=`listConnections -s 0 -d 1 ($aimObj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=`objExists $in[0]`;
+         if($ex==1){
+             int $outNum=size($outputs);
+             $outputs[$outNum]=$aimObj[$i];
+         }
+      }
+     int $size=size($inputs);
+     if($size>0){
+         string $textA="";
+         for($i=0;$i<$size;$i++){
+           $textA+=(" \n"+ $inputs[$i]); 
+        }
+     text -e -l $textA gtConnectionResultsTextB;
+     }
+ }
+ /////////////////////////
+global proc gtAnimCurveSelectProcH(){
+string $obj[]=`ls -type "transform" -sl`;
+string $inputs[];
+string $in[];
+int $ex;
+int $size;
+      clear $inputs;
+            string $outputs[];
+      clear $outputs;
+            string $others[];
+      clear $others;
+            string $aimObj[];
+      clear $aimObj;
+      
+      for($i=0;$i<size($obj);$i++){
+        $ex=`objExists ($obj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+        if($ex==0){
+            $size=size($others);
+            $others[$size]=$obj[$i];
+        }else{
+            $size=size($aimObj);
+            $aimObj[$size]=$obj[$i];  
+            }
+      }      
+      int $aimNum=size($aimObj);
+      
+      for($i=0;$i<$aimNum;$i++){
+         $in=`listConnections -d 0 -s 1($aimObj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=`objExists $in[0]`;
+         if($ex==1){
+             int $inNum=size($inputs);
+             $inputs[$inNum]=$aimObj[$i];
+         }
+         $in=`listConnections -s 0 -d 1 ($aimObj[$i]+".gtAnimCuvreMirrorConnetAttr")`;
+         $ex=`objExists $in[0]`;
+         if($ex==1){
+             int $outNum=size($outputs);
+             $outputs[$outNum]=$aimObj[$i];
+         }
+      }
+     $size=size($others);
+     if($size>0){
+         string $textA="";
+         for($i=0;$i<$size;$i++){
+           $textA+=(" \n"+ $others[$i]); 
+        }
+     text -e -l $textA gtConnectionResultsTextC;
+     }
+ }
+ /////////////////////////
+global proc gtAnimCurveDoProcA(){
+int $ex; 
+string $inputsTemp[];
+string $tempInputs[];
+string $type;
+int $TpyeRange=`radioButtonGrp -q -sl gtAnimCurveTpyeRange`;
+int $TpyeTrsX=`radioButtonGrp -q -sl gtAnimCurveTrsX`;
+int $TpyeTrsY=`radioButtonGrp -q -sl gtAnimCurveTrsY`;
+int $TpyeTrsZ=`radioButtonGrp -q -sl gtAnimCurveTrsZ`;
+int $TpyeRotX=`radioButtonGrp -q -sl gtAnimCurveRotX`;
+int $TpyeRotY=`radioButtonGrp -q -sl gtAnimCurveRotY`;
+int $TpyeRotZ=`radioButtonGrp -q -sl gtAnimCurveRotZ`;
+int $scl=`checkBox -q -v gtAnimCurveScaleAttr`;
+int $trs=`checkBox -q -v gtAnimCurveTrsAttr`;
+int $rot=`checkBox -q -v gtAnimCurveRotAttr`;
+
+string $sel[]=`ls -type "transform" -sl`;
+    for($i=0;$i<size($sel);$i++){
+      string $attr[]={".tx",".ty",".tz",".rx",".ry",".rz"};
+       
+      for($j=0;$j<6;$j++){
+        string $inputsCurve[]=`listConnections -s 1 -d 0 ($sel[$i]+$attr[$j])`;
+        $ex=`objExists $inputsCurve[0]`;
+        if($ex==1){
+         string $inputsT[]=`listConnections ($inputsCurve[0]+".input")`;
+        $ex=`objExists $inputsT[0]`; 
+        if($ex==1&&$TpyeRange==2){
+         text -e -l "当前选择的物体，不能执行拷贝动画曲线操作\n有些物体的动画曲线被其他物体驱动或者控制"  gtAnimCurveResultShowText;
+         error "当前选择的物体中，有些物体的动画曲线被其他物体驱动或者控制，不能执行拷贝动画曲线操作";
+        }
+        if($ex==0&&$TpyeRange==3){
+        text -e -l "当前选择的物体，不能执行拷贝驱动关键帧操作\n有些物体的驱动动画曲线没有驱动输入连接"  gtAnimCurveResultShowText;
+        error "当前选择的物体，不能执行拷贝驱动关键帧操作，有些物体的驱动动画曲线没有驱动输入连接"; 
+                }                
+            }
+        }   
+    }
+    
+if($TpyeRange==3){
+    for($i=0;$i<size($sel);$i++){
+        string $currentObj=$sel[$i];
+        int $ex=`objExists ($currentObj+".gtAnimCuvreMirrorConnetAttr")`;
+        if($ex==0)continue;
+        
+        string $tempS[]=`listConnections -s 1 -d 1 ($currentObj+".gtAnimCuvreMirrorConnetAttr")`;
+        string $otherSideObj=$tempS[0];
+        
+        if($trs==1){
+          string $attr[]={".tx",".ty",".tz"};
+      for($j=0;$j<3;$j++){
+          
+        int $lock=`getAttr -l ($currentObj+$attr[$j])`;
+        if($lock==1)continue;
+        
+        string $inputsCurve[]=`listConnections ($currentObj+$attr[$j])`;
+        int $ex=`objExists $inputsCurve[0]`;
+        
+        if($ex==0)continue;
+        string $type=`nodeType $inputsCurve[0]`;
+        if($type=="blendWeighted"){
+            select -r $inputsCurve[0];
+            duplicate -rr -un;
+            
+            string $dupInputs[]=`ls -sl`;
+            select -r $dupInputs[0];
+            
+            string $tempInputs[]=`listConnections ($dupInputs[0]+".input")`;
+            string $tempN[];
+            clear $tempN;
+            for($jj=0;$jj<size($tempInputs);$jj++){
+            string $tempInA[]=`listConnections -s 1 -d 0 -p 1 ($tempInputs[$jj]+".input")`;
+            string $tempIn[]=`listConnections ($tempInputs[$jj]+".input")`;
+
+            int $ex=`objExists $tempIn[0]`;
+                if($ex==1){
+                  disconnectAttr ($tempInA[0]) ($tempInputs[$jj]+".input");
+  
+                    int $sizeTemp=size($tempN);
+                     $tempN[$sizeTemp]=$tempIn[0];
+                }
+            }
+           select -r $tempN;
+            for($aa=0;$aa<size($tempN);$aa++){
+                int $ex=`objExists ($tempN[$aa]+".gtAnimCuvreMirrorConnetAttr")`;
+                if($ex==1){
+                string $tempA[]=`listConnections -s 1 -d 1 ($tempN[$aa]+".gtAnimCuvreMirrorConnetAttr")`;
+                int $eex=`objExists $tempA[0]`;
+                if($eex==1)delete $tempA[0];
+                }
+            }
+            delete;
+             string $inputsTemp[]=`listConnections ($otherSideObj+$attr[$j])`;
+        int $ex=`objExists $inputsTemp[0]`;
+        if($ex==1)delete $inputsTemp[0]; 
+          
+        connectAttr -f ($dupInputs[0]+".output") ($otherSideObj+$attr[$j]);
+
+            string $blwInputs[]=`listConnections ($dupInputs[0]+".input")`;
+            string $oldInputs[]=`listConnections ($inputsCurve[0]+".input")`;
+            
+            for($jj=0;$jj<size($blwInputs);$jj++){
+                
+                string $animCurveOld=$oldInputs[$jj];
+                string $conA[]=`listConnections -s 1 -d 0 ($animCurveOld+".input")`;
+                int $ex=`objExists ($conA[0]+".gtAnimCuvreMirrorConnetAttr")`;
+                if($ex==0)continue;
+                
+                string $conB[]=`listConnections -s 1 -d 1 ($conA[0]+".gtAnimCuvreMirrorConnetAttr")`;
+                string $conAttr[]=`listConnections -s 1 -d 0 -p 1 ($animCurveOld+".input")`;
+                string $driveAttr=`substitute $conA[0] $conAttr[0]  ""`;
+                connectAttr -f  ($conB[0]+$driveAttr) ($blwInputs[$jj]+".input");
+            }
+            
+        }else{
+     
+        select -r $inputsCurve[0];
+        int $state=`copyKey` ;
+        
+        if($state==1){
+        string $inputsTemp[]=`listConnections ($otherSideObj+$attr[$j])`;
+        int $ex=`objExists $inputsTemp[0]`;
+        string $inputCon[];
+        if($ex==1){
+        $inputCon=`listConnections -s 1 -d 1 -p 1 ($inputsTemp[0]+".input")`;
+
+         delete $inputsTemp[0];   
+        }
+        
+        select -r $otherSideObj;
+        pasteKey;
+          $inputsTemp=`listConnections ($otherSideObj+$attr[$j])`;
+          string $conA[]=`listConnections ($inputsCurve[0]+".input")`;
+          $ex=`objExists $conA[0]`;
+          if($ex==0)continue;
+          string $conB[]=`listConnections -s 1 -d 1 ($conA[0]+".gtAnimCuvreMirrorConnetAttr")`;
+          string $conAttr[]=`listConnections -s 1 -d 0 -p 1 ($inputsCurve[0]+".input")`;
+          string $driveAttr=`substitute $conA[0] $conAttr[0]  ""`;
+          string $conBB=($conB[0]+$driveAttr);
+        connectAttr -force $conBB ($inputsTemp[0]+".input");
+                }
+            }
+        }
+     }
+     
+    if($rot==1){  
+       string $attr[]={".rx",".ry",".rz"};
+       
+      for($j=0;$j<3;$j++){
+        int $lock=`getAttr -l ($currentObj+$attr[$j])`;
+        if($lock==1)continue;
+        string $inputsCurve[]=`listConnections ($currentObj+$attr[$j])`;
+        int $ex=`objExists $inputsCurve[0]`;
+        if($ex==0)continue;
+        string $type=`nodeType $inputsCurve[0]`;
+       
+        if($type=="unitConversion"){//判断C
+            select -r $inputsCurve[0];
+            duplicate -rr -un;
+            string $dupInputs[]=`ls -sl`;
+            select -r $dupInputs[0];
+            
+          string $tempInputs[]=`listConnections ($dupInputs[0]+".input")`;
+                  int $ex=`objExists $tempInputs[0]`;
+        if($ex==0)continue;
+        string $type=`nodeType $tempInputs[0]`;
+         
+          if($type!="blendWeighted")continue;
+
+          $tempInputs=`listConnections ($tempInputs[0]+".input")`;
+ 
+            string $tempN[];
+            clear $tempN;
+            for($jj=0;$jj<size($tempInputs);$jj++){
+            string $tempInAA[]=`listConnections -s 1 -d 0 ($tempInputs[$jj]+".input")`;
+            string $tempInA[]=`listConnections -s 1 -d 0 -p 1 ($tempInAA[0]+".input")`;
+            
+            string $tempIn[]=`listConnections ($tempInAA[0]+".input")`;
+            int $ex=`objExists $tempIn[0]`;
+                if($ex==1){
+                  disconnectAttr ($tempInA[0]) ($tempInAA[0]+".input");
+  
+                    int $sizeTemp=size($tempN);
+                     $tempN[$sizeTemp]=$tempIn[0];
+                }
+            }
+            
+           select -r $tempN;
+            for($aa=0;$aa<size($tempN);$aa++){
+                int $ex=`objExists ($tempN[$aa]+".gtAnimCuvreMirrorConnetAttr")`;
+                if($ex==1){
+                string $tempA[]=`listConnections -s 1 -d 1 ($tempN[$aa]+".gtAnimCuvreMirrorConnetAttr")`;
+                int $eex=`objExists $tempA[0]`;
+                if($eex==1)delete $tempA[0];
+                }
+            }
+            delete;          
+            
+             string $inputsTemp[]=`listConnections ($otherSideObj+$attr[$j])`;
+        $ex=`objExists $inputsTemp[0]`;
+        if($ex==1)delete $inputsTemp[0];   
+        connectAttr -f ($dupInputs[0]+".output") ($otherSideObj+$attr[$j]);
+
+            string $blwInputsT[]=`listConnections ($dupInputs[0]+".input")`;
+            $type=`nodeType $blwInputsT[0]`;
+            
+        if($type=="blendWeighted"){//判断A
+            
+            string $blwInputs[]=`listConnections ($blwInputsT[0]+".input")`;
+            string $tempOld[]=`listConnections ($inputsCurve[0]+".input")`;
+            string $oldInputs[]=`listConnections ($tempOld[0]+".input")`;
+
+            for($jj=0;$jj<size($blwInputs);$jj++){//循环A
+                
+                string $animCurveOld=$oldInputs[$jj];
+                string $animCurveA[]=`listConnections -s 1 -d 0 ($animCurveOld+".input")`;
+
+                string $conA[]=`listConnections -s 1 -d 0 ($animCurveA[0]+".input")`;
+
+                int $ex=`objExists ($conA[0]+".gtAnimCuvreMirrorConnetAttr")`;
+                if($ex==0)continue;
+                
+                string $animCurveB[]=`listConnections -s 1 -d 0 ($blwInputs[$jj]+".input")`;
+
+                string $conB[]=`listConnections -s 1 -d 1 ($conA[0]+".gtAnimCuvreMirrorConnetAttr")`;
+                string $conAttr[]=`listConnections -s 1 -d 0 -p 1 ($animCurveA[0]+".input")`;
+                string $driveAttr=`substitute $conA[0] $conAttr[0]  ""`;
+                connectAttr -f  ($conB[0]+$driveAttr) ($animCurveB[0]+".input");
+                    }//循环A
+                }//判断A
+              
+            }//判断B
+ 
+        if($type!="unitConversion"||$type!="blendWeighted") {     
+        select -r $inputsCurve[0];
+        int $state=`copyKey` ;
+        
+        if($state==1){
+        string $inputsTemp[]=`listConnections ($otherSideObj+$attr[$j])`;
+        $ex=`objExists $inputsTemp[0]`;
+        string $inputCon[];
+        if($ex==1){
+        $inputCon=`listConnections -s 1 -d 1 -p 1 ($inputsTemp[0]+".input")`;
+
+         delete $inputsTemp[0];   
+        }//判断
+
+        select -r $otherSideObj;
+        pasteKey;
+        $inputsTemp=`listConnections ($otherSideObj+$attr[$j])`;
+          string $conA[]=`listConnections ($inputsCurve[0]+".input")`;
+          $ex=`objExists $conA[0]`;
+          if($ex==0)continue;
+          string $conB[]=`listConnections -s 1 -d 1 ($conA[0]+".gtAnimCuvreMirrorConnetAttr")`;
+          string $conAttr[]=`listConnections -s 1 -d 0 -p 1 ($inputsCurve[0]+".input")`;
+          string $driveAttr=`substitute $conA[0] $conAttr[0]  ""`;
+          string $conBB=($conB[0]+$driveAttr);
+        connectAttr -force $conBB ($inputsTemp[0]+".input");
+          }//判断
+       }//否则
+    }
+}
+
+ if($scl==1){
+   string $attr[]={".sx",".sy",".sz"};
+       for($j=0;$j<3;$j++){
+        int $lock=`getAttr -l ($currentObj+$attr[$j])`;
+        if($lock==1)continue;
+           
+        string $inputsCurve[]=`listConnections ($currentObj+$attr[$j])`;
+        int $ex=`objExists $inputsCurve[0]`;
+        
+        if($ex==0)continue;
+        string $type=`nodeType $inputsCurve[0]`;
+        if($type=="blendWeighted"){
+            select -r $inputsCurve[0];
+            duplicate -rr -un;
+            
+            string $dupInputs[]=`ls -sl`;
+            select -r $dupInputs[0];
+            
+            string $tempInputs[]=`listConnections ($dupInputs[0]+".input")`;
+            string $tempN[];
+            clear $tempN;
+            for($jj=0;$jj<size($tempInputs);$jj++){
+            string $tempInA[]=`listConnections -s 1 -d 0 -p 1 ($tempInputs[$jj]+".input")`;
+            string $tempIn[]=`listConnections ($tempInputs[$jj]+".input")`;
+
+            int $ex=`objExists $tempIn[0]`;
+                if($ex==1){
+                  disconnectAttr ($tempInA[0]) ($tempInputs[$jj]+".input");
+  
+                    int $sizeTemp=size($tempN);
+                     $tempN[$sizeTemp]=$tempIn[0];
+                }
+            }
+            
+              select -r $tempN;
+            for($aa=0;$aa<size($tempN);$aa++){
+                int $ex=`objExists ($tempN[$aa]+".gtAnimCuvreMirrorConnetAttr")`;
+                if($ex==1){
+                string $tempA[]=`listConnections -s 1 -d 1 ($tempN[$aa]+".gtAnimCuvreMirrorConnetAttr")`;
+                int $eex=`objExists $tempA[0]`;
+                if($eex==1)delete $tempA[0];
+                }
+            }
+            delete;
+            
+             string $inputsTemp[]=`listConnections ($otherSideObj+$attr[$j])`;
+        int $ex=`objExists $inputsTemp[0]`;
+        if($ex==1)delete $inputsTemp[0]; 
+          
+        connectAttr -f ($dupInputs[0]+".output") ($otherSideObj+$attr[$j]);
+
+            string $blwInputs[]=`listConnections ($dupInputs[0]+".input")`;
+            string $oldInputs[]=`listConnections ($inputsCurve[0]+".input")`;
+            
+            for($jj=0;$jj<size($blwInputs);$jj++){
+                
+                string $animCurveOld=$oldInputs[$jj];
+                string $conA[]=`listConnections -s 1 -d 0 ($animCurveOld+".input")`;
+                int $ex=`objExists ($conA[0]+".gtAnimCuvreMirrorConnetAttr")`;
+                if($ex==0)continue;
+                
+                string $conB[]=`listConnections -s 1 -d 1 ($conA[0]+".gtAnimCuvreMirrorConnetAttr")`;
+                string $conAttr[]=`listConnections -s 1 -d 0 -p 1 ($animCurveOld+".input")`;
+                string $driveAttr=`substitute $conA[0] $conAttr[0]  ""`;
+                connectAttr -f  ($conB[0]+$driveAttr) ($blwInputs[$jj]+".input");
+            }
+            
+        }else{
+     
+        select -r $inputsCurve[0];
+        int $state=`copyKey` ;
+        
+        if($state==1){
+        string $inputsTemp[]=`listConnections ($otherSideObj+$attr[$j])`;
+        int $ex=`objExists $inputsTemp[0]`;
+        string $inputCon[];
+        if($ex==1){
+        $inputCon=`listConnections -s 1 -d 1 -p 1 ($inputsTemp[0]+".input")`;
+
+         delete $inputsTemp[0];   
+        }
+        
+        select -r $otherSideObj;
+        pasteKey;
+          $inputsTemp=`listConnections ($otherSideObj+$attr[$j])`;
+          string $conA[]=`listConnections ($inputsCurve[0]+".input")`;
+          $ex=`objExists $conA[0]`;
+          if($ex==0)continue;
+          string $conB[]=`listConnections -s 1 -d 1 ($conA[0]+".gtAnimCuvreMirrorConnetAttr")`;
+          string $conAttr[]=`listConnections -s 1 -d 0 -p 1 ($inputsCurve[0]+".input")`;
+          string $driveAttr=`substitute $conA[0] $conAttr[0]  ""`;
+          string $conBB=($conB[0]+$driveAttr);
+        connectAttr -force $conBB ($inputsTemp[0]+".input");
+            }
+        } 
+        }
+    }    
+  
+  if($trs==1){      
+   if($TpyeTrsX==2){    
+        string $att=".tx";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+        string $inputsCurve[]=`listConnections ($otherSideObj+$att)`;
+        int $ex=`objExists $inputsCurve[0]`;
+        if($ex==1){
+        
+         string $type=`nodeType $inputsCurve[0]`;
+        if($type=="blendWeighted"){
+            string $blwInputs[]=`listConnections ($inputsCurve[0]+".input")`;
+            
+            for($jj=0;$jj<size($blwInputs);$jj++){
+            select -r $blwInputs[$jj];
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+
+                }
+            }else{
+        
+        select -r $inputsCurve[0];
+    
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+                  }
+               }
+            }
+        }
+  if($TpyeTrsY==2){    
+        string $att=".ty";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+           string $inputsCurve[]=`listConnections ($otherSideObj+$att)`;
+           int $ex=`objExists $inputsCurve[0]`;
+        if($ex==1){
+                         
+         string $type=`nodeType $inputsCurve[0]`;
+        if($type=="blendWeighted"){
+            string $blwInputs[]=`listConnections ($inputsCurve[0]+".input")`;
+            
+            for($jj=0;$jj<size($blwInputs);$jj++){
+            select -r $blwInputs[$jj];
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+                }
+            }else{
+        
+        select -r $inputsCurve[0];
+    
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+                  }
+            }  
+         }    
+      }
+  if($TpyeTrsZ==2){    
+        string $att=".tz";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+           string $inputsCurve[]=`listConnections ($otherSideObj+$att)`;
+            int $ex=`objExists $inputsCurve[0]`;
+        if($ex==1){
+                   
+         string $type=`nodeType $inputsCurve[0]`;
+        if($type=="blendWeighted"){
+            string $blwInputs[]=`listConnections ($inputsCurve[0]+".input")`;
+            
+            for($jj=0;$jj<size($blwInputs);$jj++){
+            select -r $blwInputs[$jj];
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+       
+                }
+            }else{
+        select -r $inputsCurve[0];
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+                   }
+               }
+            }   
+        } 
+    }
+    
+  if($rot==1){      
+  if($TpyeRotX==2){    
+        string $att=".rx";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+          string $inputsCurve[]=`listConnections ($otherSideObj+$att)`;
+           int $ex=`objExists $inputsCurve[0]`;
+        if($ex==1){
+                   
+           string $type=`nodeType $inputsCurve[0]`;
+        if($type=="unitConversion"){
+            string $blwInputsT[]=`listConnections ($inputsCurve[0]+".input")`;
+           string $type=`nodeType $blwInputsT[0]`;
+        if($type=="blendWeighted"){  
+           string $blwInputs[]=`listConnections ($blwInputsT[0]+".input")`;
+
+            for($jj=0;$jj<size($blwInputs);$jj++){
+            string $curve[]=`listConnections -s 1 -d 0 ($blwInputs[$jj]+".input")`;
+            select -r $curve[0];
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+                        }
+                    }
+            }else{   
+            }
+        select -r $inputsCurve[0];
+        
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;   
+               }
+        }  
+    }    
+  if($TpyeRotY==2){    
+        string $att=".ry";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+           string $inputsCurve[]=`listConnections ($otherSideObj+$att)`;
+           int $ex=`objExists $inputsCurve[0]`;
+        if($ex==1){
+                   
+           string $type=`nodeType $inputsCurve[0]`;
+        if($type=="unitConversion"){
+            string $blwInputsT[]=`listConnections ($inputsCurve[0]+".input")`;
+           string $type=`nodeType $blwInputsT[0]`;
+        if($type=="blendWeighted"){  
+           string $blwInputs[]=`listConnections ($blwInputsT[0]+".input")`;
+
+            for($jj=0;$jj<size($blwInputs);$jj++){
+            string $curve[]=`listConnections -s 1 -d 0 ($blwInputs[$jj]+".input")`;
+            select -r $curve[0];
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+                        }
+                    }
+            }else{  
+            }
+        select -r $inputsCurve[0];
+        
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+              }
+        } 
+     }    
+  if($TpyeRotZ==2){    
+        string $att=".rz";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+            string $inputsCurve[]=`listConnections ($otherSideObj+$att)`;
+           int $ex=`objExists $inputsCurve[0]`;
+        if($ex==1){
+                   
+           string $type=`nodeType $inputsCurve[0]`;
+        if($type=="unitConversion"){
+            string $blwInputsT[]=`listConnections  -s 1 -d 0 ($inputsCurve[0]+".input")`;
+           string $type=`nodeType $blwInputsT[0]`;
+        if($type=="blendWeighted"){  
+           string $blwInputs[]=`listConnections  -s 1 -d 0 ($blwInputsT[0]+".input")`;
+
+            for($jj=0;$jj<size($blwInputs);$jj++){
+            string $curve[]=`listConnections -s 1 -d 0 ($blwInputs[$jj]+".input")`;
+            select -r $curve[0];
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+                        }
+                    }
+            }else{   
+        }
+        select -r $inputsCurve[0];
+        
+       scaleKey -scaleSpecifiedKeys 1 -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 ;
+                }
+            }
+         }   
+     }   
+  }
+} 
+  
+if($TpyeRange==2){
+    for($i=0;$i<size($sel);$i++){
+        string $currentObj=$sel[$i];
+        int $ex=`objExists ($currentObj+".gtAnimCuvreMirrorConnetAttr")`;
+        if($ex==0)continue;        
+        string $tempS[]=`listConnections -s 1 -d 1 ($currentObj+".gtAnimCuvreMirrorConnetAttr")`;
+        string $otherSideObj=$tempS[0];
+     
+   if($trs==1){   
+        string $attr[]={".tx",".ty",".tz"};
+      for($j=0;$j<3;$j++){
+          int $lock=`getAttr -l ($currentObj+$attr[$j])`;
+        if($lock==1)continue;
+           
+        string $inputsCurve[]=`listConnections  -s 1 -d 0 ($currentObj+$attr[$j])`;
+       
+        int $ex=`objExists $inputsCurve[0]`;
+        if($ex==0)continue;
+        select -r $inputsCurve[0];
+        int $state=`copyKey` ;
+        if($state==1){
+        string $inputsTemp[]=`listConnections -s 1 -d 0 ($otherSideObj+$attr[$j])`;
+        int $ex=`objExists $inputsTemp[0]`;
+        if($ex==1)delete $inputsTemp[0];
+        select -r $otherSideObj;
+        pasteKey;
+            }
+        }
+    }  
+    
+    if($rot==1){
+        string $attr[]={".rx",".ry",".rz"};
+      for($j=0;$j<3;$j++){
+          int $lock=`getAttr -l ($currentObj+$attr[$j])`;
+        if($lock==1)continue;          
+        string $inputsCurve[]=`listConnections -s 1 -d 0 ($currentObj+$attr[$j])`;
+        int $ex=`objExists $inputsCurve[0]`;
+        if($ex==0)continue;
+        select -r $inputsCurve[0];
+        int $state=`copyKey` ;
+        if($state==1){
+        string $inputsTemp[]=`listConnections -s 1 -d 0 ($otherSideObj+$attr[$j])`;
+        int $ex=`objExists $inputsTemp[0]`;
+        if($ex==1)delete $inputsTemp[0];
+        select -r $otherSideObj;
+        pasteKey;
+            }
+        }
+    }
+                
+        if($scl==1){
+          string $attr[]={".sx",".sy",".sz"};
+      for($j=0;$j<3;$j++){
+          int $lock=`getAttr -l ($currentObj+$attr[$j])`;
+        if($lock==1)continue;
+           
+        string $inputsCurve[]=`listConnections -s 1 -d 0 ($currentObj+$attr[$j])`;
+        int $ex=`objExists $inputsCurve[0]`;
+        if($ex==0)continue;
+        select -r $inputsCurve[0];
+        int $state=`copyKey` ;
+        if($state==1){
+        string $inputsTemp[]=`listConnections -s 1 -d 0 ($otherSideObj+$attr[$j])`;
+        int $ex=`objExists $inputsTemp[0]`;
+        if($ex==1)delete $inputsTemp[0];
+        select -r $otherSideObj;
+        pasteKey;
+                }
+            }     
+        }
+    if($trs==1){    
+    if($TpyeTrsX==2){    
+        string $att=".tx";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+           
+        string $inputsCurve[]=`listConnections -s 1 -d 0 ($otherSideObj+$att)`;
+           int $ex=`objExists $inputsCurve[0]`;
+           if($ex==1){
+
+        select -r $inputsCurve[0];
+        scaleKey -scaleSpecifiedKeys 1 -time ":" -float ":" -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 -hierarchy none -controlPoints 0 -shape 1 ($inputsCurve[0]);
+                }
+            }
+        }
+  if($TpyeTrsY==2){    
+        string $att=".ty";
+            int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+           string $inputsCurve[]=`listConnections -s 1 -d 0 ($otherSideObj+$att)`;
+           int $ex=`objExists $inputsCurve[0]`;
+           if($ex==1){
+        select -r $inputsCurve[0];
+        scaleKey -scaleSpecifiedKeys 1 -time ":" -float ":" -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 -hierarchy none -controlPoints 0 -shape 1 ($inputsCurve[0]);
+                     }
+              }
+        }        
+  if($TpyeTrsZ==2){    
+        string $att=".tz";
+            int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+           string $inputsCurve[]=`listConnections -s 1 -d 0 ($otherSideObj+$att)`;
+           int $ex=`objExists $inputsCurve[0]`;
+           if($ex==1){
+        select -r $inputsCurve[0];
+        scaleKey -scaleSpecifiedKeys 1 -time ":" -float ":" -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 -hierarchy none -controlPoints 0 -shape 1 ($inputsCurve[0]);
+                       }
+                }
+            } 
+        }
+        
+  if($rot==1){      
+  if($TpyeRotX==2){    
+        string $att=".rx";
+            int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+          string $inputsCurve[]=`listConnections -s 1 -d 0 ($otherSideObj+$att)`;
+          int $ex=`objExists $inputsCurve[0]`;
+           if($ex==1){
+        select -r $inputsCurve[0];
+        scaleKey -scaleSpecifiedKeys 1 -time ":" -float ":" -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 -hierarchy none -controlPoints 0 -shape 1 ($inputsCurve[0]);
+                      }
+               }
+        }  
+  if($TpyeRotY==2){    
+        string $att=".ry";
+            int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+           string $inputsCurve[]=`listConnections -s 1 -d 0 ($otherSideObj+$att)`;
+           int $ex=`objExists $inputsCurve[0]`;
+           if($ex==1){
+        select -r $inputsCurve[0];
+        scaleKey -scaleSpecifiedKeys 1 -time ":" -float ":" -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 -hierarchy none -controlPoints 0 -shape 1 ($inputsCurve[0]);
+                     }
+               }
+        }  
+  if($TpyeRotZ==2){    
+        string $att=".rz";
+            int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+            string $inputsCurve[]=`listConnections -s 1 -d 0 ($otherSideObj+$att)`;
+            int $ex=`objExists $inputsCurve[0]`;
+           if($ex==1){
+        select -r $inputsCurve[0];
+        scaleKey -scaleSpecifiedKeys 1 -time ":" -float ":" -timeScale 1 -timePivot 0 -floatScale 1 -floatPivot 0 -valueScale -1 -valuePivot 0 -hierarchy none -controlPoints 0 -shape 1 ($inputsCurve[0]);       
+                         }
+                    }
+                }  
+            }        
+        } 
+    }
+    
+    if($TpyeRange==1){
+        for($i=0;$i<size($sel);$i++){
+        string $currentObj=$sel[$i];
+        int $ex=`objExists ($currentObj+".gtAnimCuvreMirrorConnetAttr")`;
+        if($ex==0)continue;
+        
+        string $tempS[]=`listConnections -s 1 -d 1 ($currentObj+".gtAnimCuvreMirrorConnetAttr")`;
+        string $otherSideObj=$tempS[0];
+        if($trs==1){
+         string $attr[]={".tx",".ty",".tz"};
+      for($j=0;$j<3;$j++){
+          int $lock=`getAttr -l ($currentObj+$attr[$j])`;
+        if($lock==1)continue;
+        float $attrValue=`getAttr ($currentObj+$attr[$j])`;
+        setAttr ($otherSideObj+$attr[$j]) $attrValue;
+            }
+         }
+         
+         if($rot==1){   
+         string $attr[]={".rx",".ry",".rz"};
+      for($j=0;$j<3;$j++){
+          int $lock=`getAttr -l ($currentObj+$attr[$j])`;
+        if($lock==1)continue;
+        float $attrValue=`getAttr ($currentObj+$attr[$j])`;
+        setAttr ($otherSideObj+$attr[$j]) $attrValue;
+            }
+         }   
+         if($scl==1){
+          string $attr[]={".sx",".sy",".sz"};
+      for($j=0;$j<3;$j++){
+          int $lock=`getAttr -l ($currentObj+$attr[$j])`;
+        if($lock==1)continue;
+        float $attrValue=`getAttr ($currentObj+$attr[$j])`;
+        setAttr ($otherSideObj+$attr[$j]) $attrValue;
+            }
+        }   
+        if($trs==1){ 
+          if($TpyeTrsX==2){    
+        string $att=".tx";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+        float $attrValue=`getAttr ($otherSideObj+$att)`;
+        setAttr ($otherSideObj+$att) ($attrValue*-1);
+              }
+        }
+  if($TpyeTrsY==2){    
+        string $att=".ty";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+        float $attrValue=`getAttr ($otherSideObj+$att)`;
+        setAttr ($otherSideObj+$att) ($attrValue*-1);
+            }
+        }        
+  if($TpyeTrsZ==2){    
+        string $att=".tz";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+                 float $attrValue=`getAttr ($otherSideObj+$att)`;
+        setAttr ($otherSideObj+$att) ($attrValue*-1);
+                }
+            } 
+        }
+      if($rot==1){  
+  if($TpyeRotX==2){    
+        string $att=".rx";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+                 float $attrValue=`getAttr ($otherSideObj+$att)`;
+        setAttr ($otherSideObj+$att) ($attrValue*-1);
+            }
+        }  
+  if($TpyeRotY==2){    
+        string $att=".ry";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+                 float $attrValue=`getAttr ($otherSideObj+$att)`;
+        setAttr ($otherSideObj+$att) ($attrValue*-1);
+            }
+        }  
+  if($TpyeRotZ==2){    
+        string $att=".rz";
+        int $lock=`getAttr -l ($otherSideObj+$att)`;
+        if($lock==0){
+                float $attrValue=`getAttr ($otherSideObj+$att)`;
+        setAttr ($otherSideObj+$att) ($attrValue*-1); 
+                    }  
+                } 
+            }          
+        }  
+    }
+    select -r $sel;
+}
+/////////////////////
+global proc gtCurveConMirrorShapeA(){
+string $sel[]=`ls -sl`;
+string $shape[];
+string $oldshape[];
+int $match;
+for($i=0;$i<size($sel);$i++){    
+     string $currentObj=$sel[$i];
+        int $ex=`objExists ($currentObj+".gtAnimCuvreMirrorConnetAttr")`;
+        if($ex==0)continue;
+        
+        string $tempS[]=`listConnections -s 1 -d 1 ($currentObj+".gtAnimCuvreMirrorConnetAttr")`;
+        string $aimobj=$tempS[0];
+string $ttm="";
+$match=`gmatch $currentObj "*_l*"`;
+if($match==1)$ttm="l";
+$match=`gmatch $currentObj "*_r*"`;
+if($match==1)$ttm="r";
+
+    select -r ($aimobj);
+      duplicate -rr;
+      rename ($sel[$i]+"temp");
+     for($ii=0;$ii<12;$ii++){
+   string $childs[]=`listRelatives -c -fullPath ($sel[$i]+"temp")`; 
+   int $size=size($childs);
+   if($size>1){
+       select -r ($sel[$i]+"temp");
+       pickWalk -d down;
+       pickWalk -d left;
+       string $s[]=`ls -sl`;
+       string $transform=`objectType ($s[0])`;
+       if($transform!="nurbsCurve"){ delete ;}
+       }         
+ }
+     for($ii=0;$ii<12;$ii++){
+   string $childs[]=`listRelatives -c ($sel[$i]+"temp")`; 
+   int $size=size($childs);
+   if($size>1){
+       select -r ($sel[$i]+"temp");
+       pickWalk -d down;
+       string $s[]=`ls -sl`;
+       string $transform=`objectType ($s[0])`;
+       if($transform!="nurbsCurve"){ delete ;}
+       } 
+ }
+    string $childs[]=`listRelatives -c -fullPath ($sel[$i]+"temp")`; 
+    select -r ($childs[0]);
+    rename ($sel[$i]+"tempShape");
+    
+setAttr -lock 0 ($sel[$i]+"temp.tx");
+setAttr -lock 0 ($sel[$i]+"temp.ty");
+setAttr -lock 0 ($sel[$i]+"temp.tz");
+setAttr -lock 0 ($sel[$i]+"temp.rx");
+setAttr -lock 0 ($sel[$i]+"temp.ry");
+setAttr -lock 0 ($sel[$i]+"temp.rz");  
+setAttr -lock 0 ($sel[$i]+"temp.sx");
+setAttr -lock 0 ($sel[$i]+"temp.sy");
+setAttr -lock 0 ($sel[$i]+"temp.sz");     
+ select -r     ($sel[$i]+"temp");
+ string $tempshap[]=`listRelatives -s ($sel[$i]+"temp")`;
+for($ii=0;$ii<size($tempshap);$ii++){
+select -r ($tempshap[$ii]);
+ rename ($sel[$i]+"tempShape"+$ii);
+ }
+  select -r     ($sel[$i]+"temp");
+      parent -world;
+      select -cl;
+      group -empty -n ($sel[$i]+"tempGrp");
+      xform -os -piv 0 0 0;
+      select -r ($sel[$i]+"tempGrp");
+      select -add ($sel[$i]+"temp");
+      delete`pointConstraint`;
+         
+      select -r ($sel[$i]+"temp");
+        setAttr ($sel[$i]+"temp.scaleX") -1;
+         setAttr ($sel[$i]+"temp.scaleY") -1;
+        setAttr ($sel[$i]+"temp.scaleZ") -1;
+       select -r ($sel[$i]);
+      select -add ($sel[$i]+"temp");
+      delete `parentConstraint`;
+        select -r ($sel[$i]+"temp");
+      makeIdentity -apply true -t 0 -r 0 -s 1 -n 0;
+      
+         string $shape[]=`listRelatives -s ($sel[$i]+"temp")`;
+         string $oldshape[]=`listRelatives -s ($sel[$i])`;
+for($ii=0;$ii<size($shape);$ii++){
+string $inputv[]=`listConnections -s 1 -d 0 -p 1  -scn 1 ($oldshape[$ii]+".v")`;
+string $inputlodv[]=`listConnections -s 1 -d 0 -p 1  -scn 1 ($oldshape[$ii]+".lodVisibility")`;
+    if(size($inputv)>0){
+     connectAttr -f ($inputv[0])  ($shape[$ii]+".v");
+ }
+  if(size($inputlodv)>0){
+     connectAttr -f ($inputlodv[0])  ($shape[$ii]+".lodVisibility");
+   }
+}   
+$oldshape=`listRelatives -s ($sel[$i])`;
+select -r ($oldshape);
+string $shapename[]=`ls -sl`;
+delete;  
+
+for($ii=0;$ii<size($shape);$ii++){
+      select -r ($shape[$ii]);
+      select -add ($sel[$i]);
+      parent -r -s;
+  }    
+     select -r ($sel[$i]+"tempGrp");
+     select -add ($sel[$i]+"temp");
+     delete;
+     
+$shape=`listRelatives -s ($sel[$i])`;
+for($ii=0;$ii<size($shape);$ii++){
+select -r $shape[$ii];
+rename ($shapename[$ii]);
+ setAttr ($shapename[$ii]+".overrideEnabled") 1;
+ if($ttm=="l"){
+setAttr ($shapename[$ii]+".overrideColor") 22;
+}else if($ttm=="r"){
+setAttr ($shapename[$ii]+".overrideColor") 13;
+             }
+         }
+    }
+}
+gtWingMirrorAnimCurveProcWin;
+/////////////////////////////2018-8-19-1393

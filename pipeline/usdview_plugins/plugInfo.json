@@ -1,0 +1,16 @@
+{
+    "Plugins": [
+        {
+            "Type": "pythoh",
+            "Name": "tutorialPlugin",
+            "Info": {
+                "Types": {
+                    "tutorial_plugin.TutorialPluginContainer": {
+                        "bases": ["pxr.Usdviewq.plugin.PluginContainer"],
+                        "displayName": "Usdview Tutorial Plugin"
+                    }
+                }
+            }
+        }
+    ]
+}

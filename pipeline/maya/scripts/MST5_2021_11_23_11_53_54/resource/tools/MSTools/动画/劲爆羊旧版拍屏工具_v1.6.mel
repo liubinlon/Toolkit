@@ -1,0 +1,1197 @@
+//CrazySheep_Pre_viz_Tool（外部版）
+
+//v1.60 for maya(2013-2014)
+
+//====================================================================================================
+//====================================================================================================
+
+//by 劲爆羊 
+
+//email: 179454962@qq.com
+
+//-------------------------------------------------------------------------------------------------
+
+//////////////////////
+global proc newPAHPREF(){
+string $path_pref=(`internalVar -userPrefDir`+"thePROCNAME.txt");
+if(`filetest -f $path_pref`==0)
+{
+
+$pfileId=`fopen $path_pref "w"`;
+fwrite $pfileId "CG项目";
+fclose $pfileId;
+}
+string $path_pref=(`internalVar -userPrefDir`+"theCOMPANYNAME.txt");
+if(`filetest -f $path_pref`==0)
+{
+
+$pfileId=`fopen $path_pref "w"`;
+fwrite $pfileId "公司名称";
+fclose $pfileId;
+}
+string $path_pref=(`internalVar -userPrefDir`+"theAUNAME.txt");
+if(`filetest -f $path_pref`==0)
+{
+
+$pfileId=`fopen $path_pref "w"`;
+fwrite $pfileId "小泽玛樱井莉亚";
+fclose $pfileId;
+}
+}
+newPAHPREF();
+global proc set_proj_name(){ 
+string $path_pref=(`internalVar -userPrefDir`+"thePROCNAME.txt");
+string $thepname=`textField -q -tx  proj_name`;
+
+
+$pfileId=`fopen $path_pref "w"`;
+fwrite $pfileId $thepname;
+fclose $pfileId;
+string $path_pref=(`internalVar -userPrefDir`+"theCOMPANYNAME.txt");
+string $thepname=`textField -q -tx  company_name`;
+
+
+$pfileId=`fopen $path_pref "w"`;
+fwrite $pfileId $thepname;
+fclose $pfileId;
+string $path_pref=(`internalVar -userPrefDir`+"theAUNAME.txt");
+string $thepname=`textField -q -tx  au_name`;
+
+
+$pfileId=`fopen $path_pref "w"`;
+fwrite $pfileId $thepname;
+fclose $pfileId;
+
+
+}
+
+
+
+global proc get_the_proj_name(){ 
+string $path_pref=(`internalVar -userPrefDir`+"thePROCNAME.txt");
+
+if(`filetest -f $path_pref`==1)
+{
+string $getPname;
+$pfileId=`fopen $path_pref "r"`;
+
+$getPname=`fread $pfileId $getPname`;
+fclose $pfileId;
+textField -e -tx $getPname  proj_name;
+}
+string $path_pref=(`internalVar -userPrefDir`+"theCOMPANYNAME.txt");
+
+if(`filetest -f $path_pref`==1)
+{
+string $getPname;
+$pfileId=`fopen $path_pref "r"`;
+
+$getPname=`fread $pfileId $getPname`;
+fclose $pfileId;
+textField -e -tx $getPname  company_name;
+}
+
+string $path_pref=(`internalVar -userPrefDir`+"theAUNAME.txt");
+
+if(`filetest -f $path_pref`==1)
+{
+string $getPname;
+$pfileId=`fopen $path_pref "r"`;
+
+$getPname=`fread $pfileId $getPname`;
+fclose $pfileId;
+textField -e -tx $getPname  au_name;
+}
+
+}
+
+
+
+
+global proc switch_HUD(){
+    
+if(`headsUpDisplay -q -ex HUDprevis_NPVT1`==0)
+
+{set_HUD_ST();set_HUD();}
+else
+
+{goDefHUD();}
+
+
+
+    }
+global proc string get_proj_name(){
+return (`textField -q -tx proj_name`);
+}
+global proc set_HUD_ST()
+{
+global int $all_onoff;
+global int $sdv;
+
+
+global int $odv;
+
+
+
+global int $pcv;
+
+
+
+
+global int $plcv;
+
+
+
+global int $sudv;
+
+
+global int $adv;
+
+
+global int $hdv;
+
+
+
+global int $frv;
+
+
+global int $cfv;
+
+//if($cfv==1)
+//{ToggleCurrentFrame;}
+
+global int $stv;
+
+
+
+global int $ccv;
+
+
+
+global int $cnv;
+
+
+global int $flv;
+
+
+
+
+global int $vav;
+
+
+global int $oav;
+
+
+
+global int $vcv;
+
+global int $tmv;
+
+
+global int $sG;
+
+
+if($all_onoff==0)
+{
+$sdv=`optionVar -q selectDetailsVisibility` ;
+$odv=`optionVar -q objectDetailsVisibility` ;
+$pcv=`optionVar -q particleCountVisibility` ;
+$plcv=`optionVar -q polyCountVisibility` ;
+$sudv=`optionVar -q subdDetailsVisibility` ;
+$adv=`optionVar -q animationDetailsVisibility` ;
+$hdv=`optionVar -q hikDetailsVisibility` ;
+$frv=`optionVar -q frameRateVisibility` ;
+$cfv=`optionVar -q currentFrameVisibility` ;
+$stv=`optionVar -q sceneTimecodeVisibility` ;
+$ccv=`optionVar -q  currentContainerVisibility` ;
+$cnv=`optionVar -q  cameraNamesVisibility` ;
+$flv=`optionVar -q  focalLengthVisibility` ;
+$vav=`optionVar -q  viewAxisVisibility` ;
+$tmv=`optionVar -q toolMessageVisible` ;
+$vcv=`viewManip -q -v` ;
+$oav=`toggleAxis -q -o` ;
+$sG=`optionVar -q showGrid` ;
+$all_onoff=1;
+
+}
+
+if($sdv==1)
+{ToggleSelectDetails;}
+
+if($odv==1)
+{ToggleObjectDetails;}
+
+
+if($pcv==1)
+{ToggleParticleCount;}
+
+
+if($plcv==1)
+{TogglePolyCount;}
+
+
+if($sudv==1)
+{ToggleSubdDetails;}
+
+
+if($adv==1)
+{ToggleAnimationDetails;}
+
+
+if($hdv==1)
+{ToggleHikDetails;}
+
+
+if($frv==1)
+{ToggleFrameRate;}
+
+
+if($cfv==1)
+{ToggleCurrentFrame;}
+
+
+if($stv==1)
+{ToggleSceneTimecode;}
+
+
+if($ccv==1)
+{ToggleCurrentContainerHud;}
+
+
+if($cnv==1)
+{ToggleCameraNames;}
+
+
+
+if($flv==1)
+{ToggleFocalLength;}
+
+
+if($vav==1)
+{ToggleViewAxis;}
+
+
+if($oav==1)
+{ToggleOriginAxis;}
+
+
+if($vcv==1)
+{ToggleViewCube;}
+
+
+if($tmv==1)
+{ToggleToolMessage;}
+
+
+
+
+if(`displayColor  -q -d headsUpDisplayLabels`!=17)
+{displayColor -dormant headsUpDisplayLabels 17;}
+if(`displayColor  -q -d headsUpDisplayValues`!=16)
+{displayColor -dormant headsUpDisplayValues 16;  }
+
+  }
+
+global proc change_hud()
+{
+
+if (`headsUpDisplay -q -ex HUDprevis_NPVT2`){
+headsUpDisplay  -e -command    "FrameCountHUD()" HUDprevis_NPVT3;}
+
+               
+               }
+global proc change_hud_proj()
+{
+
+if (`headsUpDisplay -q -ex HUDprevis_NPVT7`){
+string $temp_proj_name=`get_proj_name`;
+headsUpDisplay  -e -label     $temp_proj_name  HUDprevis_NPVT7;}
+
+               
+               }
+               
+ global proc change_hud_company()
+{
+
+if (`headsUpDisplay -q -ex HUDprevis_NPVT6`){
+string $temp_company_name=`textField -q -tx company_name`;
+headsUpDisplay  -e -label     $temp_company_name HUDprevis_NPVT6;}
+
+               
+               }              
+               
+ global proc change_hud_au()
+{
+
+if (`headsUpDisplay -q -ex HUDprevis_NPVT5`){
+string $temp_au_name=`textField -q -tx au_name`;
+headsUpDisplay  -e -label     $temp_au_name HUDprevis_NPVT5;}
+
+               
+               }                
+
+global proc goDefHUD()
+{
+global int $sdv;
+global int $odv;
+global int $pcv;
+global int $plcv;
+global int $sudv;
+global int $adv;
+global int $hdv;
+global int $frv;
+global int $cfv;
+global int $stv;
+global int $ccv;
+global int $cnv;
+global int $flv;
+global int $vav;
+global int $tmv;
+global int $vcv;
+global int $oav;
+global int $sG;
+
+if($sdv==1)
+{ToggleSelectDetails;}
+
+if($odv==1)
+{ToggleObjectDetails;}
+
+
+if($pcv==1)
+{ToggleParticleCount;}
+
+
+if($plcv==1)
+{TogglePolyCount;}
+
+
+if($sudv==1)
+{ToggleSubdDetails;}
+
+
+if($adv==1)
+{ToggleAnimationDetails;}
+
+
+if($hdv==1)
+{ToggleHikDetails;}
+
+
+if($frv==1)
+{ToggleFrameRate;}
+
+
+if($cfv==0)
+{ToggleCurrentFrame;}
+
+
+if($stv==1)
+{ToggleSceneTimecode;}
+
+
+if($ccv==1)
+{ToggleCurrentContainerHud;}
+
+
+if($cnv==0)
+{ToggleCameraNames;}
+
+
+
+if($flv==0)
+{ToggleFocalLength;}
+
+
+if($vav==1)
+{ToggleViewAxis;}
+
+
+if($oav==1)
+{ToggleOriginAxis;}
+
+
+if($vcv==1)
+{ToggleViewCube;}
+
+
+if($tmv==1)
+{ToggleToolMessage;}
+
+
+
+for ($i=0;$i<7;$i++) 
+{
+    if(`headsUpDisplay -q -ex ("HUDprevis_NPVT"+($i+1))`)
+    {headsUpDisplay -rem ("HUDprevis_NPVT"+($i+1));}
+    
+}
+
+
+}
+
+
+global proc string camNameHUD ()
+{
+   global string $layout_currentview; 
+   global string $layout_currentCam;
+
+    return $layout_currentCam;
+}
+
+global proc string fileNameHUD()
+{
+    string $fileNameOrig = `file -query -sn -shn`;
+    string $tempSel[] = `stringToStringArray $fileNameOrig "."`;
+    string $fileName = $tempSel[0];
+    return $fileName;
+}
+global proc string GETTIMEHUD()
+
+{
+  string $GETTIME=(`date -date`+"  "+`date -time` );
+    
+    return $GETTIME;
+    }
+    
+global proc string GETTIMEHUD2()
+
+{
+  string $GETTIME=(`date -date` );
+    
+    return $GETTIME;
+    }    
+    
+
+
+global proc  string FrameCountHUD()
+{
+    string $startFrame2 = `playbackOptions -q -min`;
+    string $endFrame2 = `playbackOptions -q -max`;
+    string $frameCount2 = ($startFrame2  +" to "+ $endFrame2); 
+    return $frameCount2;
+}
+global proc string GetIPHUD()
+{
+python ("import socket");
+python ("myname = socket.getfqdn(socket.gethostname())");
+python ("myaddr = socket.gethostbyname(myname)");
+string $myDDR=python ("myaddr");
+return $myDDR;
+   
+    
+}
+
+
+global proc float currentFrameHUD()
+{
+    float $currentFrame = `currentTime -q`;
+    return $currentFrame;
+}
+
+global proc float camFcoalLength()
+{
+    string $currentview = "modelPanel4";
+    string $currentCam = `modelEditor -q -cam $currentview`;
+    string $camShapeName[] = `listRelatives -s $currentCam`;
+    float $camLength = `getAttr ($camShapeName[0] + ".focalLength")`;
+    return $camLength;
+}
+
+global proc float frameRateHUD()
+{
+    string $thetime=`optionVar -q  workingUnitTime`;
+    float $fps_r;
+    if($thetime=="film"){$fps_r=24;}
+    if($thetime=="game"){$fps_r=15;}
+    if($thetime=="pal"){$fps_r=25;}
+    if($thetime=="ntsc"){$fps_r=30;}
+    if($thetime=="show"){$fps_r=48;}
+    if($thetime=="palf"){$fps_r=50;}
+    return $fps_r;
+}
+
+global proc set_HUD(){
+global string $popint;
+if (`modelEditor -q -ex $popint`){
+modelEditor -e -hud 1 `modelPanel -q -me $popint`;
+for ($i=0;$i<7;$i++) 
+{
+    if(`headsUpDisplay -q -ex ("HUDprevis_NPVT"+($i+1))`)
+    {headsUpDisplay -rem ("HUDprevis_NPVT"+($i+1));}
+    
+}
+
+savePrefsChanges;
+
+ int $nfb_0 = `headsUpDisplay -nfb 0`;
+ 
+headsUpDisplay  -section         0
+               -block            ($nfb_0)
+               
+               -blockSize        "large"
+               -label            " "
+               -labelFontSize    "large"
+               -command          " "
+               -event            "SceneSaved"
+              
+               HUDprevis_NPVT6;
+ string $temp_company_name=`textField -q -tx company_name`;
+headsUpDisplay -e  -label $temp_company_name HUDprevis_NPVT6; 
+ int $nfb_4 = `headsUpDisplay -nfb 4`;
+headsUpDisplay  -section         4
+               -block            ($nfb_4+1)
+               
+               -blockSize        "small"
+               -label            "Shot:"
+               -labelFontSize    "small"
+               -command          "getTheSceneName()"
+               -event            "SceneSaved"
+              
+               HUDprevis_NPVT1;
+         
+               
+
+
+               
+         
+
+int $nfb_5 = `headsUpDisplay -nfb 5`;               
+headsUpDisplay  -section         5
+               -block            $nfb_5
+               -blockSize        "small"
+               -label            "FPS:"
+               -labelFontSize    "small"
+               -command          "frameRateHUD()"
+               -event            "timeChanged"
+               
+               HUDprevis_NPVT2;
+               
+               
+int $nfb_4 = `headsUpDisplay -nfb 4`;                
+headsUpDisplay  -section         4
+               -block            ($nfb_4+2)
+               -blockSize        "small"
+               -label            "Range Of Frame:"
+               -labelFontSize    "small"
+               -command          "FrameCountHUD()"
+               -event            "playbackRangeSliderChanged"
+              
+               HUDprevis_NPVT3; 
+               
+int $nfb_5 = `headsUpDisplay -nfb 5`;                
+headsUpDisplay  -section         5
+               -block            $nfb_5
+               -blockSize        "small"
+               -label            "Date:"
+               -labelFontSize    "small"
+               -command          "GETTIMEHUD2()"
+               -event            "playbackRangeChanged"
+         
+               HUDprevis_NPVT4;                                
+int $nfb_5 = `headsUpDisplay -nfb 5`;  
+headsUpDisplay  -section         5
+               -block            $nfb_5
+               -blockSize        "large"
+               -label            " "
+               -labelFontSize    "large"
+               -command          " "
+               -event            "playbackRangeChanged"
+
+               HUDprevis_NPVT5;
+string $temp_proj_name=`textField -q -tx au_name`;
+headsUpDisplay -e  -label $temp_proj_name HUDprevis_NPVT5; 
+int $nfb_0 = `headsUpDisplay -nfb 0`;  
+string $temp_proj_name=`get_proj_name`;
+headsUpDisplay  -section         0
+               -block            ($nfb_0)
+               -blockSize        "small"
+               -label            " "
+               -labelFontSize    "large"
+               -command          " "
+               -event            "playbackRangeChanged"
+            
+               HUDprevis_NPVT7;     
+
+headsUpDisplay -e   -label     $temp_proj_name  HUDprevis_NPVT7;  
+if(`optionVar -q currentFrameVisibility`==0)
+
+{
+ToggleCurrentFrame;
+             }     
+ if(`optionVar -q cameraNamesVisibility`==0)
+{ToggleCameraNames;}  
+ if(`optionVar -q focalLengthVisibility`==0)
+{ToggleFocalLength;}         
+}
+
+}
+
+
+
+global proc setLayout_tx()
+{
+        string $getFileName[] = `fileDialog2 -fileMode 3 -caption "设置目录" `;
+
+
+if (`size($getFileName)` > 0)
+{
+     textField  -e -tx ($getFileName[0]) text_outpath_name;
+}
+}
+
+
+global proc string getTheSceneName(){
+ string $allname_scene=`file  -q -sn`; 
+ string $allname_scene_base; 
+ if($allname_scene!=""){
+ $allname_scene_base= `basenameEx($allname_scene)`;}
+ else{$allname_scene_base="untitled";}
+ return $allname_scene_base;
+
+} 
+
+
+global proc win_output2(){
+string $defaultLocation_temp= `workspace -q -rd `;
+if (`window -q -ex outPut_win`){deleteUI outPut_win;}
+window  -h 300 -w 400 -sizeable 0 -t "输出路径"  outPut_win;
+rowColumnLayout;
+text -l " ";
+rowColumnLayout -h 50 -nc 4 -cw 1 80 -cw 2 300 -cw 3 20;
+text -l "输出路径";
+textField  -tx "d:/Preview" text_outpath_name;
+
+
+text -l "";
+button -l "浏览..." -c  "setLayout_tx()" ;
+ setParent ..;  
+ rowColumnLayout -h 50 -nc 4 -cw 1 80   ;
+ text -l "文件名";
+ textField  -tx (`getTheSceneName`)  -w 150 text_outfile_name;
+ text  -l "  输出格式 ：";
+ optionMenuGrp   theFMT;
+menuItem -label "图片序列";
+
+menuItem -label "无损MOV";
+
+
+ optionMenuGrp  -cc "setCOMoff()" -e -v "无损MOV" theFMT;
+  text -l " ";
+   text -l "**请确保本机安装了Quicktime**";
+    text  -l "  压缩方式 ：" text_com;
+  optionMenuGrp   theCOM;
+menuItem -label "DVCPRO-PAL";
+menuItem -label "DV-PAL";
+menuItem -label "H.261";
+menuItem -label "H.263";
+menuItem -label "H.264";
+menuItem -label "PNG";
+menuItem -label "动画";
+menuItem -label "Video";
+menuItem -label "TIFF";
+menuItem -label "NONE";
+ optionMenuGrp  -e -v "动画" theCOM;
+ setParent ..;   
+rowColumnLayout -nc 3 -cw 1 160 -cw 2 100;
+text -l "";
+button -h 40 -l  "开始输出!" -c "startPlay()";
+text -l "";
+ setParent ..;
+ text -l " ";  
+ setParent ..;  
+
+showWindow outPut_win;
+
+}
+global proc setCOMoff(){
+     if(`optionMenuGrp  -q -v  theFMT`=="无损MOV")
+    
+    {optionMenuGrp  -e -vis 1  theCOM;text -e -vis 1  text_com;}
+    if(`optionMenuGrp  -q -v  theFMT`!="无损MOV")
+    
+    {optionMenuGrp  -e -vis 0  theCOM;text -e -vis 0  text_com;}
+    }
+
+global proc startPlay(){
+    int $startFrame3 = `playbackOptions -q -min`;
+    int $endFrame3 = `playbackOptions -q -max`;
+    string $outP=`textField  -q -tx   text_outpath_name`;
+    string $outN=`textField  -q -tx   text_outfile_name`;
+    string $outP_N=`toNativePath($outP+"/"+$outN+"/")`;
+    int $theRESolution_W =`intField -q  -v the_W`;
+    int $theRESolution_H =`intField -q  -v the_H`;
+    string $final_com=`optionMenuGrp -q -v  theCOM`;
+    global string $popint;
+    if(`getPanel -wf` !=$popint){print "请用鼠标左键点击一下需要拍屏输出的视图窗口!\n";}
+   
+    if(`getPanel -wf`==$popint)
+    {
+if (`headsUpDisplay -q -ex HUDprevis_NPVT4`){
+headsUpDisplay     -e   -command   "GETTIMEHUD()"  HUDprevis_NPVT4;        
+  
+  }
+  
+  
+        
+ if (`optionMenuGrp  -q -v theFMT`=="图片序列"){    
+    
+        
+    
+
+    playblast  -qlt 100 -p 100 -viewer 1 -fo -f ($outP+"/"+$outN+"/"+$outN)  -c "png" -wh $theRESolution_W $theRESolution_H -fmt "iff" -os  -fp 5;
+     string $final_path= `toNativePath($outP+"/")`;
+    print ("输出路径为 ：  "+$final_path+"\n");}
+    
+   
+   
+   if (`optionMenuGrp  -q -v theFMT`=="无损MOV")
+   
+   {string $if_over;
+        if (`filetest -f ($outP+"/"+"/"+$outN+".mov")`)
+        {
+       $if_over= `confirmDialog -title "检测到重名文件" -message "确定要覆盖吗？"
+	-button "覆盖" -button "取消" -defaultButton "覆盖"
+	-cancelButton "取消" -dismissString "取消"`;
+	
+	
+	if ($if_over=="覆盖")
+	{
+        
+        string $getCOM=(`optionMenuGrp  -q -v  theCOM`);
+       playblast  -qlt 100 -p 100 -viewer 1 -fo -f ($outP+"/"+"/"+$outN) -st $startFrame3  -et ($endFrame3+1)  -c $final_com -wh $theRESolution_W $theRESolution_H -fmt "qt" -os  ;
+        string $final_path= `toNativePath($outP+"/")`;
+    print ("输出路径为 ：  "+$final_path+"\n");
+    }
+       
+       }
+
+        if (`filetest -f ($outP+"/"+"/"+$outN+".mov")`==0){
+        string $getCOM=(`optionMenuGrp  -q -v  theCOM`);
+       playblast  -qlt 100 -p 100 -viewer 1 -fo -f ($outP+"/"+"/"+$outN)  -st $startFrame3  -et ($endFrame3+1) -c $final_com -wh $theRESolution_W $theRESolution_H -fmt "qt" -os  ;
+        string $final_path= `toNativePath($outP+"/")`;
+    print ("输出路径为 ：  "+$final_path+"\n");}
+       
+}
+
+
+
+
+
+   
+  if (`headsUpDisplay -q -ex HUDprevis_NPVT4`){
+   headsUpDisplay     -e   -command   "GETTIMEHUD2()"  HUDprevis_NPVT4;  }
+    deleteUI outPut_win;
+  //  system ("start explorer \""+$outP_N+"\"");
+  }
+}
+
+
+
+
+
+
+
+global proc string getSFofRL(string $name_renderlayer)
+{
+    string $thetime=`optionVar -q  workingUnitTime`;
+    float $fps_r;
+    if($thetime=="film"){$fps_r=24;}
+    if($thetime=="game"){$fps_r=15;}
+    if($thetime=="pal"){$fps_r=25;}
+    if($thetime=="ntsc"){$fps_r=30;}
+    if($thetime=="show"){$fps_r=48;}
+    if($thetime=="palf"){$fps_r=50;}
+
+    float $thesf;
+    if(stringArrayCount("defaultRenderGlobals.startFrame", `editRenderLayerAdjustment -q -layer $name_renderlayer`)==0)
+    {if(`editRenderLayerGlobals -q -currentRenderLayer`==$name_renderlayer){$thesf=`getAttr defaultRenderGlobals.startFrame`;}
+    if(`editRenderLayerGlobals -q -currentRenderLayer`!=$name_renderlayer)
+            {string $all_c[]=`listConnections -c 1 "defaultRenderLayer"`; 
+            for ($one_c in $all_c)
+                        {
+                         string $temp_c[]=`listConnections -p 1 $one_c`;
+                         string $temp_c2=`substring $one_c 1 (size($one_c) - 4)`;
+                         float $temp_if;
+                          if($temp_c[0]=="defaultRenderGlobals.startFrame")
+                             { 
+                               $temp_if=1;
+                               float $a1=`getAttr ($temp_c2+"value")`;
+                               float $a2= $a1*$fps_r;
+                               float $a3=`trunc ($a2)`;
+                               
+                             
+                               if(`abs($a2)`-`abs($a3)`>0.5)
+                               {$thesf=`trunc $a2`+`sign($a1)`;}
+                               if(`abs($a2)`-`abs($a3)`<0.5)
+                               {
+                                $thesf=`trunc $a2`;}
+                              
+                             }
+                          if($temp_if==0){$thesf=`getAttr "defaultRenderGlobals.startFrame"`;}
+                        } 
+            }
+  
+     }
+
+     else
+    {if(`editRenderLayerGlobals -q -currentRenderLayer`==$name_renderlayer){$thesf=`getAttr defaultRenderGlobals.startFrame`;}
+    if(`editRenderLayerGlobals -q -currentRenderLayer`!=$name_renderlayer)
+            {string $all_c[]=`listConnections -c 1 $name_renderlayer`; 
+            for ($one_c in $all_c)
+                        {
+                         string $temp_c[]=`listConnections -p 1 $one_c`;
+                         string $temp_c2=`substring $one_c 1 (size($one_c) - 4)`;
+                           if($temp_c[0]=="defaultRenderGlobals.startFrame")
+                             { 
+                               float $a1=`getAttr ($temp_c2+"value")`;
+                               float $a2= $a1*$fps_r;
+                               float $a3=`trunc ($a2)`;
+                               
+                             
+                               if(`abs($a2)`-`abs($a3)`>0.5)
+                               {
+                                   $thesf=`trunc $a2`+sign($a1);}
+                               if(`abs($a2)`-`abs($a3)`<0.5)
+                               {
+                                $thesf=`trunc $a2`;}
+                              
+                             }
+                        
+                             
+                        }
+            }
+   
+     }
+     
+     
+     
+     
+     
+    return $thesf;
+}
+
+
+
+
+global proc string getEFofRL(string $name_renderlayer)
+{
+    string $thetime=`optionVar -q  workingUnitTime`;
+    float $fps_r;
+    if($thetime=="film"){$fps_r=24;}
+    if($thetime=="game"){$fps_r=15;}
+    if($thetime=="pal"){$fps_r=25;}
+    if($thetime=="ntsc"){$fps_r=30;}
+    if($thetime=="show"){$fps_r=48;}
+    if($thetime=="palf"){$fps_r=50;}
+
+    float $thesf;
+    if(stringArrayCount("defaultRenderGlobals.endFrame", `editRenderLayerAdjustment -q -layer $name_renderlayer`)==0)
+    {if(`editRenderLayerGlobals -q -currentRenderLayer`==$name_renderlayer){$thesf=`getAttr defaultRenderGlobals.endFrame`;}
+    if(`editRenderLayerGlobals -q -currentRenderLayer`!=$name_renderlayer)
+            {string $all_c[]=`listConnections -c 1 "defaultRenderLayer"`; 
+            for ($one_c in $all_c)
+                        {
+                         string $temp_c[]=`listConnections -p 1 $one_c`;
+                         string $temp_c2=`substring $one_c 1 (size($one_c) - 4)`;
+                         float $temp_if;
+                          if($temp_c[0]=="defaultRenderGlobals.endFrame")
+                             { 
+                               $temp_if=1;
+                               float $a1=`getAttr ($temp_c2+"value")`;
+                               float $a2= $a1*$fps_r;
+                               float $a3=`trunc ($a2)`;
+                               
+                             
+                               if(`abs($a2)`-`abs($a3)`>0.5)
+                               {$thesf=`trunc $a2`+`sign($a1)`;}
+                               if(`abs($a2)`-`abs($a3)`<0.5)
+                               {
+                                $thesf=`trunc $a2`;}
+                              
+                             }
+                          if($temp_if==0){$thesf=`getAttr "defaultRenderGlobals.endFrame"`;}
+                        } 
+            }
+  
+     }
+
+     else
+    {if(`editRenderLayerGlobals -q -currentRenderLayer`==$name_renderlayer){$thesf=`getAttr defaultRenderGlobals.endFrame`;}
+    if(`editRenderLayerGlobals -q -currentRenderLayer`!=$name_renderlayer)
+            {string $all_c[]=`listConnections -c 1 $name_renderlayer`; 
+            for ($one_c in $all_c)
+                        {
+                         string $temp_c[]=`listConnections -p 1 $one_c`;
+                         string $temp_c2=`substring $one_c 1 (size($one_c) - 4)`;
+                           if($temp_c[0]=="defaultRenderGlobals.endFrame")
+                             { 
+                               float $a1=`getAttr ($temp_c2+"value")`;
+                               float $a2= $a1*$fps_r;
+                               float $a3=`trunc ($a2)`;
+                               
+                             
+                               if(`abs($a2)`-`abs($a3)`>0.5)
+                               {
+                                   $thesf=`trunc $a2`+sign($a1);}
+                               if(`abs($a2)`-`abs($a3)`<0.5)
+                               {
+                                $thesf=`trunc $a2`;}
+                              
+                             }
+                        
+                             
+                        }
+            }
+   
+     }
+     
+     
+     
+     
+     
+    return $thesf;
+}
+
+global proc set_out_q(){
+global string $popint;
+
+
+
+if(`optionMenuGrp -q -v theQua`=="高质量"){
+setRendererInModelPanel "ogsRenderer"  $popint;
+
+setAttr "hardwareRenderingGlobals.multiSampleEnable" 1;
+setAttr "hardwareRenderingGlobals.multiSampleCount" 16;
+
+//setAttr "hardwareRenderingGlobals.motionBlurEnable" 1;
+//setAttr "hardwareRenderingGlobals.motionBlurSampleCount" 32;
+
+
+setAttr "hardwareRenderingGlobals.ssaoEnable" 1;
+setAttr "hardwareRenderingGlobals.ssaoSamples" 32;
+
+
+
+}
+
+
+if(`optionMenuGrp -q -v theQua`=="低质量"){
+setRendererInModelPanel base_OpenGL_Renderer $popint;
+}
+
+
+
+
+
+if(`optionMenuGrp -q -v theQua`=="中质量"){
+setRendererInModelPanel hwRender_OpenGL_Renderer $popint;
+}
+
+}
+
+global string $layout_currentview; 
+$layout_currentview= "modelPanel4";
+
+if($layout_currentview=="modelPanel4"){
+global string $layout_currentCam;
+$layout_currentCam = `modelEditor -q -cam $layout_currentview`;
+
+
+int $theRESolution_W=`getAttr "defaultResolution.w"`;
+int $theRESolution_H=`getAttr "defaultResolution.h"`;
+string $getAllCam[]=`listCameras`;
+if (`window -q -ex layout_win`){deleteUI layout_win;}
+window   -sizeable 0 -t "CrazySheep Pre-viz Tool v1.60（外部版）"  layout_win;
+
+rowColumnLayout  -nc 2 ;
+paneLayout   -w ($theRESolution_W*0.75) -h ($theRESolution_H*0.75+40) panL;
+global string $popint;
+if(`modelPanel -q -ex $popint`){deleteUI $popint;}
+
+$popint = `modelPanel -mbv 1 -cam $layout_currentCam`;
+
+
+//paneLayout -e -sp $popint 1 -ps 1 60 100 panL;
+ setParent ..;  
+  setParent ..;  
+columnLayout; 
+
+rowColumnLayout   -nc 2;
+
+text -h 30 -fn "boldLabelFont" -l "输出质量：";
+optionMenuGrp -cc "set_out_q()" theQua;
+menuItem -label "低质量";
+menuItem -label "中质量";
+menuItem -label "高质量";
+text -h 30 -fn "boldLabelFont" -l "摄像机：";
+optionMenuGrp -cc "changeCam()" usingCam;
+ for ($TheCam in $getAllCam)
+{ menuItem -label $TheCam ;}
+optionMenuGrp -e -v $layout_currentCam usingCam;
+text -h 30  -fn "boldLabelFont" -l "预设 ：";
+optionMenuGrp -cc "R_pRESet_B;"  RES_pRESet ;
+menuItem -label "HD 1080P";
+menuItem -label "HD 720P";
+menuItem -label "640*480";
+menuItem -label "1k square";
+menuItem -label "2k square";
+menuItem -label "3k square";
+menuItem -label "4k square";
+menuItem -label "Custom";
+
+text  -fn "boldLabelFont" -l "Width ：" -w 25;
+intField   -v $theRESolution_W -ann "设置输出宽度" -w 40 -cc "R_pesSet_A()" the_W;
+
+text    -fn "boldLabelFont" -l "Height ：" -w 25;
+intField  -v $theRESolution_H  -ann "设置输出高度" -w 40 -cc "R_pesSet_A()" the_H;
+
+text  -h 30  -fn "boldLabelFont" -l "显示比例：";
+optionMenuGrp -cc "R_pesSet_A();" thesize;
+menuItem -label "50%";
+menuItem -label "75%";
+menuItem -label "100%";
+
+
+optionMenuGrp -e -v "75%"  thesize;
+ setParent ..;
+
+ rowColumnLayout -nc 2 -cw 1 60; 
+  text  -fn "boldLabelFont"   -l "公司名 ：" ;
+   textField  -w 90 -cc "set_proj_name();change_hud_company();" company_name;
+  text  -fn "boldLabelFont"   -l "项目名 ：" ;
+   textField  -w 90 -cc "set_proj_name();change_hud_proj();" proj_name;
+ text  -fn "boldLabelFont"   -l "制作人 ：" ;
+   textField  -w 90 -cc "set_proj_name();change_hud_au();" au_name;
+   setParent ..;
+   columnLayout -w 145;
+   scrollLayout -bgc 0.671 0.671 0.671  -h 7 -w 140;
+setParent ..;
+
+ rowColumnLayout -nc 2;
+ button  -l " 切换HUD " -c "switch_HUD()" -h 25;
+ 
+ button -l " 开始！！ "  -h 30 -w 80 -c "win_output2()";
+ setParent ..;  
+ setParent ..;  
+
+showWindow layout_win;
+}else{print "请先左键单击视窗。\n";}
+global proc changeCam()
+{
+   
+   global string $popint;
+    modelPanel -e -cam `optionMenuGrp -q -v  usingCam`  $popint;
+}
+
+//注：分辨率预设
+global proc R_pesSet_A(){
+string $getTheW=`intField -q -v the_W`;
+string $getTheH=`intField -q -v the_H`;
+int $getTheW_i=$getTheW;
+int $getTheH_i=$getTheH;
+string $the_perc=`optionMenuGrp -q -v thesize`;
+    if ($the_perc=="50%"){
+    paneLayout  -e -w `trunc($getTheW_i*0.5)` -h `trunc($getTheH_i*0.5+40)` panL;}
+    if ($the_perc=="75%"){
+    paneLayout  -e -w `trunc($getTheW_i*0.75)` -h `trunc($getTheH_i*0.75+40)` panL;}
+    if ($the_perc=="100%"){
+    paneLayout  -e -w ($getTheW_i) -h ($getTheH_i+40) panL;}
+setAttr "defaultResolution.w" $getTheW_i;
+setAttr "defaultResolution.h" $getTheH_i;
+string $RES_arr=$getTheW+$getTheH;
+if($RES_arr=="19201080"){optionMenuGrp -e -v "HD 1080P" RES_pRESet;}
+if($RES_arr=="1280720"){optionMenuGrp -e -v "HD 720P" RES_pRESet;}
+if($RES_arr=="640480"){optionMenuGrp -e -v "640*480" RES_pRESet;}
+if($RES_arr=="10241024"){optionMenuGrp -e -v "1k square" RES_pRESet;}
+if($RES_arr=="20482048"){optionMenuGrp -e -v "2k square" RES_pRESet;}
+if($RES_arr=="30723072"){optionMenuGrp -e -v "3k square" RES_pRESet;}
+if($RES_arr=="40964096"){optionMenuGrp -e -v "4k square" RES_pRESet;}
+if($RES_arr!="19201080"&&$RES_arr!="1280720"&&$RES_arr!="640480"&&$RES_arr!="10241024"&&$RES_arr!="20482048"&&$RES_arr!="30723072"&&$RES_arr!="40964096"){optionMenuGrp -e -v "Custom" RES_pRESet;}
+}
+//注：分辨率预设B
+global proc R_pRESet_B(){
+string $get_pRESet_r=`optionMenuGrp -q -v RES_pRESet`;
+
+
+
+if($get_pRESet_r=="HD 1080P"){intField -e -v 1920 the_W;intField -e -v 1080 the_H;}
+if($get_pRESet_r=="HD 720P"){intField -e -v 1280 the_W;intField -e -v 720 the_H;}
+if($get_pRESet_r=="640*480"){intField -e -v 640 the_W;intField -e -v 480 the_H;}
+if($get_pRESet_r=="1k square"){intField -e -v 1024 the_W;intField -e -v 1024 the_H;}
+if($get_pRESet_r=="2k square"){intField -e -v 2048 the_W;intField -e -v 2048 the_H;}
+if($get_pRESet_r=="3k square"){intField -e -v 3072 the_W;intField -e -v 3072 the_H;}
+if($get_pRESet_r=="4k square"){intField -e -v 4096 the_W;intField -e -v 4096 the_H;}
+
+
+int $getTheW_i=`intField -q -v the_W`;
+int $getTheH_i=`intField -q -v the_H`;
+string $the_perc=`optionMenuGrp -q -v thesize`;
+    if ($the_perc=="50%"){
+    paneLayout  -e -w ($getTheW_i*0.5) -h ($getTheH_i*0.5+40) panL;}
+    if ($the_perc=="75%"){
+    paneLayout  -e -w ($getTheW_i*0.75) -h ($getTheH_i*0.75+40) panL;}
+    if ($the_perc=="100%"){
+    paneLayout  -e -w ($getTheW_i) -h ($getTheH_i+40) panL;}
+setAttr "defaultResolution.w" $getTheW_i;
+setAttr "defaultResolution.h" $getTheH_i;
+}
+
+global proc edi_panel()
+{
+global string $popint;
+
+  modelEditor -e
+   
+  -wos 0 
+  -lql 0 
+  -nc 0
+  -ns 1
+  -lt 0
+  -sds 0
+  -pm 1
+  -ca 0
+  -cv 0
+  -gr 0
+  -hu 0
+  -j 0
+  -ikh 0
+  -df 0
+  -dy 0
+  -fl 0
+  -hs 1
+  -fo 1
+  -ncl 0
+  -npa 1
+  -dc 0
+  -m 0
+  -dim 0
+  -lc 0
+  -nr 0
+  -str 0
+  -swf 1
+  -dtx 1
+  -sel 0
+  -ha 0
+  -pv 0
+  -sdw 1
+  -tx 1
+  -hud 1
+  -th 1
+  -dl "all"
+  -da "smoothShaded"
+     `modelPanel -q -me $popint`;
+     global string $layout_currentCam;
+  camera -e -displayFilmGate off -displayResolution off -overscan 1.0 $layout_currentCam;
+  }
+if(`headsUpDisplay -q -ex HUDprevis_NPVT1`==0)  
+{switch_HUD();}
+edi_panel();
+R_pesSet_A();
+get_the_proj_name();
+string $temp_proj_name=`get_proj_name`;
+string $temp_company_name=`textField  -q -tx company_name`;
+string $temp_au_name=`textField  -q -tx au_name`;
+headsUpDisplay -e   -label     $temp_proj_name  HUDprevis_NPVT7;  
+headsUpDisplay -e   -label     $temp_au_name  HUDprevis_NPVT5;  
+headsUpDisplay -e   -label     $temp_company_name  HUDprevis_NPVT6;  

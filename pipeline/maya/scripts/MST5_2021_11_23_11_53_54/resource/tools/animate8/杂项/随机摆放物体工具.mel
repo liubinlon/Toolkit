@@ -1,0 +1,189 @@
+//批量随机摆放物体动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtRandWin(){
+if(`window -ex gtRandWin`) deleteUI -window gtRandWin;
+window -wh 400 500 -title "老船角色绑定-☆-批量随机摆放物体动画工具!" gtRandWin;
+columnLayout -adj 1 gtColL;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1650\"";
+formLayout gtformLRand;
+text -l "位移:" text1;
+checkBox -l "X" -v 0  CB1;
+checkBox -l "Y" -v 0  CB2;
+checkBox -l "Z" -v 0  CB3;
+floatSliderGrp -l "最小值:"  -v 0 -f 1 -fmn -10000 -fmx 10000 -min -100 -max 100 floatF1;
+floatSliderGrp -l "最大值:"  -v 0 -f 1 -fmn -10000 -fmx 10000 -min -100 -max 100 floatF2;
+button -l "应用" -c "gtRand" but1;
+formLayout -e 
+-af text1 left 30 -af text1 top 10 -ap text1 right 0 30 
+-ac CB1 left 4 text1 -af CB1 top 10 -ap CB1 right 0 50 
+-ac CB2 left 4 CB1 -af CB2 top 10 -ap CB2 right 0 70
+-ac CB3 left 4 CB2 -af CB3 top 10 -af CB3 right 30 
+
+-af floatF1 left 10 -ac floatF1 top 5 CB1 -af floatF1 right 10
+
+-af floatF2 left 10 -ac floatF2 top 5 floatF1 -af floatF2 right 10
+-af but1 left 10 -af but1 right 10 -ac but1 top 5 floatF2 
+gtformLRand;
+/////////
+setParent..;
+separator -style "double";
+formLayout gtformLRandR;
+
+text -l "旋转:" text1;
+checkBox -l "X" -v 0  RCB1;
+checkBox -l "Y" -v 0  RCB2;
+checkBox -l "Z" -v 0  RCB3;
+floatSliderGrp -l "最小值:"  -v 0 -f 1 -fmn -10000 -fmx 10000 -min -100 -max 100 RfloatF1;
+floatSliderGrp -l "最大值:"  -v 0 -f 1 -fmn -10000 -fmx 10000 -min -100 -max 100 RfloatF2;
+button -l "应用" -c "gtRandR" but1;
+formLayout -e 
+
+
+-af text1 left 30 -af text1 top 10 -ap text1 right 0 30 
+-ac RCB1 left 4 text1 -af RCB1 top 10 -ap RCB1 right 0 50 
+-ac RCB2 left 4 RCB1 -af RCB2 top 10 -ap RCB2 right 0 70
+-ac RCB3 left 4 RCB2 -af RCB3 top 10 -af RCB3 right 30 
+
+-af RfloatF1 left 10 -ac RfloatF1 top 5 RCB1 -af RfloatF1 right 10
+
+-af RfloatF2 left 10 -ac RfloatF2 top 5 RfloatF1 -af RfloatF2 right 10
+-af but1 left 10 -af but1 right 10 -ac but1 top 5 RfloatF2 
+gtformLRandR;
+/////////
+setParent..;
+string $onc="checkBox -e -en 0 SCB1;checkBox -e -en 0 SCB2;checkBox -e -en 0 SCB3;";
+string $ofc="checkBox -e -en 1 SCB1;checkBox -e -en 1 SCB2;checkBox -e -en 1 SCB3;";
+
+separator -style "double";
+formLayout gtformLRandS;
+text -l "缩放:" textA;
+checkBox -l "等比" -ofc $ofc -onc $onc SCB;
+text -l "" text1;
+checkBox -l "X" -v 0  SCB1;
+checkBox -l "Y" -v 0  SCB2;
+checkBox -l "Z" -v 0  SCB3;
+floatSliderGrp -l "最小值:"  -v 0 -f 1 -fmn -10000 -fmx 10000 -min -100 -max 100 SfloatF1;
+floatSliderGrp -l "最大值:"  -v 0 -f 1 -fmn -10000 -fmx 10000 -min -100 -max 100 SfloatF2;
+button -l "应用" -c "gtRandS" but1;
+formLayout -e 
+
+-af textA left 30 -af textA top 10 -ap textA right 0 30
+-ac SCB left 4 textA -af SCB top 10 -ap SCB right 0 50 
+
+-af text1 left 30 -ac text1 top 5 textA -ap text1 right 0 30 
+-ac SCB1 left 4 text1 -ac SCB1 top 5 textA -ap SCB1 right 0 50 
+-ac SCB2 left 4 SCB1 -ac SCB2 top 5 textA -ap SCB2 right 0 70
+-ac SCB3 left 4 SCB2 -ac SCB3 top 5 textA -af SCB3 right 30 
+
+-af SfloatF1 left 10 -ac SfloatF1 top 5 SCB1 -af SfloatF1 right 10
+
+-af SfloatF2 left 10 -ac SfloatF2 top 5 SfloatF1 -af SfloatF2 right 10
+-af but1 left 10 -af but1 right 10 -ac but1 top 5 SfloatF2 
+gtformLRandS;
+setParent..;
+showWindow gtRandWin;
+}
+//////////////////
+global proc gtRand(){
+string $sel[]=`ls -sl`;
+float $min=`floatSliderGrp -q -v  floatF1`;
+float $max=`floatSliderGrp -q -v  floatF2`;
+
+int $tx=`checkBox -q -v CB1`;
+int $ty=`checkBox -q -v CB2`;
+int $tz=`checkBox -q -v CB3`;
+
+if($tx==1){
+for($i=0;$i<size($sel);$i++){
+float $v=rand($min,$max);
+setAttr ($sel[$i]+".tx") $v;}
+}
+if($ty==1){
+for($i=0;$i<size($sel);$i++){
+float $v=rand($min,$max);
+setAttr ($sel[$i]+".ty") $v;}
+}
+if($tz==1){
+for($i=0;$i<size($sel);$i++){
+float $v=rand($min,$max);
+setAttr ($sel[$i]+".tz") $v;}
+    }
+}
+//////////////////
+global proc gtRandR(){
+string $sel[]=`ls -sl`;
+float $min=`floatSliderGrp -q -v  RfloatF1`;
+
+float $max=`floatSliderGrp -q -v RfloatF2`;
+
+int $rx=`checkBox -q -v RCB1`;
+int $ry=`checkBox -q -v RCB2`;
+int $rz=`checkBox -q -v RCB3`;
+
+
+if($rx==1){
+for($i=0;$i<size($sel);$i++){
+float $v=rand($min,$max);
+setAttr ($sel[$i]+".rx") $v;}
+}
+if($ry==1){
+for($i=0;$i<size($sel);$i++){
+float $v=rand($min,$max);
+setAttr ($sel[$i]+".ry") $v;}
+}
+if($rz==1){
+for($i=0;$i<size($sel);$i++){
+float $v=rand($min,$max);
+setAttr ($sel[$i]+".rz") $v;}
+    }
+}
+//////////////
+global proc gtRandS(){
+string $sel[]=`ls -sl`;
+float $min=`floatSliderGrp -q -v  SfloatF1`;
+
+float $max=`floatSliderGrp -q -v SfloatF2`;
+int $stateS=`checkBox -q -v SCB`;
+if($stateS!=1){
+int $sx=`checkBox -q -v SCB1`;
+int $sy=`checkBox -q -v SCB2`;
+int $sz=`checkBox -q -v SCB3`;
+
+
+if($sx==1){
+for($i=0;$i<size($sel);$i++){
+float $v=rand($min,$max);
+setAttr ($sel[$i]+".sx") $v;}
+}
+if($sy==1){
+for($i=0;$i<size($sel);$i++){
+float $v=rand($min,$max);
+setAttr ($sel[$i]+".sy") $v;}
+}
+if($sz==1){
+for($i=0;$i<size($sel);$i++){
+float $v=rand($min,$max);
+setAttr ($sel[$i]+".sz") $v;}
+    }
+}
+
+if($stateS==1){
+for($i=0;$i<size($sel);$i++){
+float $v=rand($min,$max);
+setAttr ($sel[$i]+".sx") $v;
+setAttr ($sel[$i]+".sy") $v;
+setAttr ($sel[$i]+".sz") $v;
+        }
+    }
+}
+
+/////////////////
+gtRandWin;

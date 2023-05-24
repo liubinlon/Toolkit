@@ -1,0 +1,138 @@
+//位移延迟表达式动画窗口
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtTrsDelayExpressionWin(){
+if(`window -ex gtTrsDelayExpressionWin`) deleteUI -window gtTrsDelayExpressionWin;
+window -wh 400 300 -title "老船动画吧-位移延迟表达式动画窗口" gtTrsDelayExpressionWin;
+columnLayout -adj 1 gtColL;
+
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 30  -c "showHelp -a \"http://www.animate8.com/archives/1359\"";
+
+formLayout gtform;
+string $onc="intSliderGrp -e -en 1 gtfloatF3";
+string $ofc="intSliderGrp -e -en 0 gtfloatF3";
+text -l "轴向："  gttexta;
+checkBox -l "X" -v 0 checkB3;
+checkBox -l "Y" -v 0 checkB4;
+checkBox -l "Z" -v 0 checkB5;
+
+floatSliderGrp -l "最小随机值"  -v 1 -min 0.1 -max 10 -fmn 0.01 -fmx 10000 -f 1 floatF1;
+floatSliderGrp -l "最大随机值"  -v 1 -min 0.1 -max 10 -fmn 0.01 -fmx 10000 -f 1 floatF2;
+
+button -l "创建位移延迟表达式" -c "gtTrsWave" but1;
+frameLayout -l "使用说明" -cll 1 -cl 1 gtFrameLayout;
+
+///////////////////////////////////////
+string $shuoming="";
+    $shuoming+="延迟表达式：X/Y/Z复选框\n确定需要制作延迟表达式动画的属性；\n需要按顺序选择制作位移延迟表达式的物体\n";
+   
+text -l ($shuoming) text1;
+//help frameLayout;
+formLayout -e
+-af gttexta left 5 -af gttexta right 5 -af gttexta top 10 
+
+-af checkB3 left 50 -ap checkB3 right 0 43 -ac checkB3 top 5 gttexta
+-ac checkB4 left 4 checkB3 -ap checkB4 right 0 70 -ac checkB4 top 5 gttexta
+-ac checkB5 left 4 checkB4 -af checkB5 right 10 -ac checkB5 top 5 gttexta
+
+-af floatF1 left 10 -af floatF1 right 10 -ac floatF1 top 5 checkB3
+-af floatF2 left 10 -af floatF2 right 10 -ac floatF2 top  5 floatF1
+
+-af but1 left 10 -af but1 right 10 -ac but1 top  5 floatF2
+
+-af gtFrameLayout left 10 -af gtFrameLayout right 10 -ac gtFrameLayout top 4 but1 
+  gtform;
+
+showWindow gtTrsDelayExpressionWin;
+}
+//////////////
+global proc gtTrsWave(){
+
+float $min=`floatSliderGrp -q -v floatF1`;
+float $max=`floatSliderGrp -q -v floatF2`;
+int $x=`checkBox -q -v checkB3`;
+int $y=`checkBox -q -v checkB4`;
+int $z=`checkBox -q -v checkB5`;
+
+/////////////////////////////////////
+string $sel[]=`ls -sl`;
+
+//////////////////////////////    
+int $state=`objExists ($sel[0]+".trsDelay")`;
+if($state!=1)addAttr -ln "trsDelay" -k 1 -at double  $sel[0];
+
+int $state=`objExists ($sel[0]+".trsDelay_bias")`;
+if($state!=1)addAttr -ln "trsDelay_bias" -at double -dv -0.005 -min -0.05 -max 0.05 $sel[0];
+
+int $state=`objExists ($sel[0]+".extraTrs")`;
+if($state!=1)addAttr -ln "extraTrs" -k 1 -at double -dv 0 $sel[0];
+
+int $state=`objExists ($sel[0]+".delayExpressionTrsOn")`;
+if($state!=1)addAttr -ln "delayExpressionTrsOn" -k 1 -at bool -dv 1 $sel[0];
+
+shadingNode -asUtility condition -n ($sel[0]+"conditionexpTrs");
+connectAttr -f  ($sel[0]+".delayExpressionTrsOn") ($sel[0]+"conditionexpTrs.firstTerm");
+setAttr ($sel[0]+"conditionexpTrs.secondTerm") 1;
+
+for($i=1;$i<size($sel);$i++){
+float $noise=rand($min,$max);
+select -r ($sel[$i]);
+group -n ($sel[$i]+"TrsGrp");
+float $pivot[]=`xform -q -ws -t ($sel[$i])`;
+move -a ($pivot[0]) ($pivot[1]) ($pivot[2]) ($sel[$i]+"TrsGrp.scalePivot") ($sel[$i]+"TrsGrp.rotatePivot") ;
+
+string $exp="int $time=`currentTime  -q`;\nfloat $delay=`getAttr ";
+	$exp+=($sel[0]);
+	$exp+=".trsDelay`;\nfloat $delay_b=`getAttr ";
+	$exp+=($sel[0]);
+	$exp+=".trsDelay_bias`;\nfloat $extrarot=`getAttr ";
+	$exp+=($sel[0]);
+	$exp+=".extraTrs`;\nfloat $t[]=`getAttr -t ($time-$delay*(";
+	$exp+=($i);
+	$exp+="+";
+	$exp+=($i);
+	$exp+="*";
+	$exp+=($i);
+	$exp+="*$delay_b";
+	$exp+=")) ";
+	$exp+=($sel[0]);
+	$exp+=".translate`;\n";
+		
+if($x==1){
+	$exp+=($sel[$i]);
+	$exp+="TrsGrp.tx=$t[0]*(1+$extrarot*";
+	$exp+=($i);
+	$exp+=")*";
+	$exp+=($noise);
+	$exp+=";\n";
+	}
+if($y==1){
+	$exp+=($sel[$i]);
+	$exp+="TrsGrp.ty=$t[1]*(1+$extrarot*";
+	$exp+=($i);
+	$exp+=")*";
+	$exp+=($noise);
+	$exp+=";\n";
+	}
+if($z==1){
+	$exp+=($sel[$i]);
+	$exp+="TrsGrp.tz=$t[2]*(1+$extrarot*";
+	$exp+=($i);
+	$exp+=")*";
+	$exp+=($noise);
+	$exp+=";\n";
+	}
+expression -s $exp -ae 1 -uc all -n ($sel[0]+"_exp_trs"+$i);
+connectAttr -f ($sel[0]+"conditionexpTrs.outColorR") ($sel[0]+"_exp_trs"+$i+".nodeState");
+            }  
+}
+//////////////////////////////
+gtTrsDelayExpressionWin;

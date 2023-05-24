@@ -1,0 +1,302 @@
+//老船ADV手掌IK控制器轴向编辑绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+///////////////////////////////////////
+global proc gtAdvHandOrientProcWin(){
+if(`window -ex gtAdvHandOrientProcWin`) deleteUI -window gtAdvHandOrientProcWin;
+window -wh 400 250 -t "老船角色绑定-☆-老船ADV手掌IK控制器轴向编辑绑定工具!!!"  gtAdvHandOrientProcWin;
+scrollLayout gtmainBSL;
+
+columnLayout -adj 1 -w 380 gtBSColumlayout;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1389\"";
+separator -style single;
+text -l "如果IK手柄不是IK控制器的子物体，需要手动载入IK手柄\n--------每次只能编辑一个IK控制器---------" -h 35 ;
+separator -style single;
+string $onM="checkBox -e -v 1 -en 1  gtIKhandleMirror;";
+string $ofM="checkBox -e -v 0 -en 0 gtIKhandleMirror;";
+radioButtonGrp -en 1  -l "编辑方式" -nrb  2 -la2 "局部坐标" "世界坐标" -on1 ($onM) -of1 ($ofM) -cw3 120 120 120  -select 1 gtIkHandleType;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+textFieldGrp  -cw2 100 130 -l "IK手柄" -tx "" -ed 0 gtIKhandleText;
+button -l "载入IK手柄" -c "gtIkHandleLoadProc" ;
+setParent..;
+
+rowColumnLayout -nc 4 -cw 1 40 -cw 2  100 -cw 3 100 -cw 4 140;
+text -l "";
+checkBox -l "位移反向对称" -v 0  gtIKhandleMirror;
+checkBox -l "adv专用" -v 0  gtIKhandleAdv;
+button -l "编辑选择IK控制器轴向" -c "gtAdvHandOrientProc" ;
+setParent..;
+separator -style single;
+
+showWindow  gtAdvHandOrientProcWin;
+}
+
+/////////////////
+global proc gtIkHandleLoadProc(){
+    string $sel[]=`ls -sl`;
+    textFieldGrp  -e -tx  $sel[0] gtIKhandleText;
+}
+////////////////////
+
+global proc gtAdvHandOrientProc(){
+int $style=`radioButtonGrp -q  -select  gtIkHandleType`;
+string $ik=`textFieldGrp  -q -tx gtIKhandleText`;
+int $mirror=`checkBox -q -v gtIKhandleMirror`;
+int $advA=`checkBox -q -v gtIKhandleAdv`;
+
+string $sel[]=`ls -sl`;
+int $num;
+if($ik==""){
+    $num=size($sel);
+}else{
+    $num=1;
+}
+
+for($i=0;$i<$num;$i++){
+    string $con=$sel[$i];
+    string $childs[]=`listRelatives -c -type "transform" ($con)`;
+    int $ex=`objExists ($con+"childsGrp")`;
+    if($ex==0){
+    select -r $childs;
+    group -n ($con+"childsGrp");
+    parent -world;
+    select -r $childs;
+    }else{
+    select -r ($con+"childsGrp");
+    parent -world;
+    string $childs[]=`listRelatives -c -type "transform" ($con+"childsGrp")`;
+    select -r $childs;
+    }
+    string $childs[]=`ls -sl`;
+    
+    if($ik==""){
+    string $ikHandle="";
+    for($j=0;$j<size($childs);$j++){
+        string $type=`nodeType ($childs[$j])`;
+        if($type=="ikHandle")$ikHandle=($childs[$j]);
+    }
+    if($ikHandle!=""){
+        select -r $ikHandle;
+    }
+    }else{
+     select -r $ik;
+    }
+    string $ikH[]=`ls -sl`;
+    int $size=size($ikH);
+    if($size==0)error "没有找到IK手柄";
+    
+    if($advA==1){
+        string $outputs[]=`listConnections -s 0 -d 1 ($con+".rotate")`;  
+        string $inputB[]=`listConnections -s 1 -d 0 ($outputs[0]+".target[0].targetTranslate")`;  
+        string $switchA[]=`listConnections -s 1 -d 0 -p 1 ($outputs[0]+"."+$inputB[0]+"W0")`; 
+        string $switchB[]=`listConnections -s 1 -d 0 -p 1 ($outputs[0]+"."+$con+"W1")`;
+        string $consObj[]=`listConnections -s 0 -d 1 ($outputs[0]+".constraintRotateX")`;
+ 
+        select -r ($con);
+            addAttr -ln ("inputB")  -dt "string" ;
+            setAttr -type "string" ($con+".inputB") ($inputB[0]);
+            addAttr -ln ("switchA")  -dt "string" ;
+            setAttr -type "string" ($con+".switchA") ($switchA[0]);            
+            addAttr -ln ("switchB")  -dt "string" ;
+            setAttr -type "string" ($con+".switchB") ($switchB[0]);
+            
+            addAttr -ln ("consObj")  -dt "string" ;
+            setAttr -type "string" ($con+".consObj") ($consObj[0]);
+                        
+            select -r ($outputs[0]);
+            delete;                             
+    }
+    else
+    {
+    string $outputs[]=`listConnections -s 0 -d 1 ($con+".rotate")`;
+    
+    int $ex=size($outputs);
+    if($ex>0){
+        for($j=0;$j<size($outputs);$j++){
+            string $consType=`nodeType ($outputs[$j])`;
+
+            string $consObj[]=`listConnections -s 0 -d 1 ($outputs[$j]+".constraintRotateX")`;
+            if($consType=="parentConstraint"){
+            select -r ($con);
+            addAttr -ln ("gtIkHandleParentConstraint"+$j)  -dt "string" ;
+            
+            setAttr -type "string" ($con+".gtIkHandleParentConstraint"+$j) ($consObj[0]);
+            select -r ($outputs[$j]);
+            delete;
+            }
+            if($consType=="orientConstraint"){
+            select -r ($con);
+            addAttr -ln ("gtIkHandleOreintConstraint"+$j)  -dt "string" ;
+            
+            setAttr -type "string" ($con+".gtIkHandleOreintConstraint"+$j) ($consObj[0]);
+            select -r ($outputs[$j]);
+            delete;    
+                }
+            }
+        }
+    } 
+       
+    string $endEffector[]=`listConnections -s 1 -d 0 ($ikH[0]+".endEffector")`;
+    string $endBone[]=`listConnections -s 1 -d 0 ($endEffector[0]+".tx")`;
+    
+    int $ex=`objExists ($con+"rotOffsetGrp")`;
+    if($ex==0){
+    select -r ($con);
+    group -n ($con+"rotOffsetGrp");
+    }
+    
+    spaceLocator -p 0 0 0 -n ($con+"gtTempHandRotLoc");
+
+    select -r $endBone[0];
+    select -add ($con+"gtTempHandRotLoc");    
+    if($style==1)
+    delete`parentConstraint`;
+    else
+    delete`pointConstraint`;
+    
+    select -r ($con+"gtTempHandRotLoc"); 
+    select -add ($con+"rotOffsetGrp");
+    delete `orientConstraint`;
+    delete  ($con+"gtTempHandRotLoc");
+    if($mirror==1){
+        setAttr ($con+"rotOffsetGrp.scaleZ") -1;
+        setAttr ($con+"rotOffsetGrp.scaleX") -1;
+        setAttr ($con+"rotOffsetGrp.scaleY") -1; 
+    }else{
+        setAttr ($con+"rotOffsetGrp.scaleZ") 1;
+        setAttr ($con+"rotOffsetGrp.scaleX") 1;
+        setAttr ($con+"rotOffsetGrp.scaleY") 1;         
+    }
+    
+    select -r  ($con+"childsGrp");
+    select -add ($con); 
+    parent;
+    
+    string $attr[]=`listAttr -ud $con`;
+    for($j=0;$j<size($attr);$j++){
+        int $macth=`gmatch ($attr[$j]) "gtIkHandleParentConstraint*" `;
+        if($macth==1){
+            string $conObj=`getAttr ($con+"."+$attr[$j])`;
+            select -r ($con);
+            select -add $conObj;
+            parentConstraint -mo;
+            deleteAttr ($con+"."+$attr[$j]);
+        }
+    }
+    
+    for($j=0;$j<size($attr);$j++){
+        int $macth=`gmatch ($attr[$j]) "gtIkHandleOreintConstraint*" `;
+        if($macth==1){
+            string $conObj=`getAttr ($con+"."+$attr[$j])`;
+            select -r ($con);
+            select -add $conObj;
+            orientConstraint -mo;
+            deleteAttr ($con+"."+$attr[$j]);
+            }
+        } 
+    if($advA==1){
+               
+        string $conObj=`getAttr ($con+".consObj")`;
+        string $inputBb=`getAttr ($con+".inputB")`;
+        string $switchAa=`getAttr ($con+".switchA")`;
+        string $switchBb=`getAttr ($con+".switchB")`;
+      int $ex=`objExists ($inputBb+"A")`;
+      if($ex==0){
+          select -cl;
+          group -empty -n ($inputBb+"A");
+          select -r ($inputBb);
+          select -add ($inputBb+"A");
+          delete`parentConstraint`;
+          string $parent[]=`listRelatives -p ($inputBb)`;
+                   
+          select -r ($inputBb+"A");
+          select -add $parent[0];
+          parent;
+          select -r ($inputBb);
+          select -add ($inputBb+"A");
+          parent;          
+      }
+     int $ex=`objExists ($conObj+"A")`;
+      if($ex==0){
+          select -cl;
+          group -empty -n ($conObj+"A");
+          select -r ($conObj);
+          select -add ($conObj+"A");
+          delete`parentConstraint`;
+          string $parent[]=`listRelatives -p ($conObj)`;
+                   
+          select -r ($conObj+"A");
+          select -add $parent[0];
+          parent;
+          select -r ($conObj);
+          select -add ($conObj+"A");
+          parent;          
+      }
+      
+        if($mirror==1){                 
+
+          setAttr ($conObj+"A.scaleY") -1;   
+          setAttr ($conObj+"A.scaleX") -1;   
+          setAttr ($conObj+"A.scaleZ") -1;   
+      
+          setAttr ($inputBb+"A.scaleZ") -1;
+          setAttr ($inputBb+"A.scaleX") -1;
+          setAttr ($inputBb+"A.scaleY") -1; 
+          select -r $con;
+          select -add  ($inputBb+"A");  
+          delete`orientConstraint`;
+               
+    }else{
+          setAttr ($inputBb+"A.scaleZ") 1;
+          setAttr ($inputBb+"A.scaleX") 1;
+          setAttr ($inputBb+"A.scaleY") 1;
+          setAttr ($inputBb+"A.rx") 0;
+          setAttr ($inputBb+"A.ry") 0;
+          setAttr ($inputBb+"A.rz") 0; 
+          setAttr ($conObj+"A.scaleY") 1;   
+          setAttr ($conObj+"A.scaleX") 1;   
+          setAttr ($conObj+"A.scaleZ") 1;     
+    }                  
+        select -r $inputBb;
+        select -add $con;
+        select -add $conObj;
+        string $parentCons[]=`parentConstraint -mo`;
+        connectAttr -f ($switchAa) ($parentCons[0]+"."+$inputBb+"W0");
+        connectAttr -f ($switchBb) ($parentCons[0]+"."+$con+"W1");
+        
+        deleteAttr ($con+".consObj");
+        deleteAttr ($con+".inputB");
+        deleteAttr ($con+".switchA");
+        deleteAttr ($con+".switchB"); 
+        
+        int $ex=`objExists ($conObj+"B")`;
+        if($ex==0){
+        select -r $conObj;
+        pickWalk -d down;
+        group -n  ($conObj+"B");
+        }
+         
+        if($mirror==1){  
+        setAttr ($conObj+"B.scaleY") -1;
+        setAttr ($conObj+"B.scaleZ") -1;            
+        }else{
+        setAttr ($conObj+"B.scaleY") 1;
+        setAttr ($conObj+"B.scaleZ") 1;        
+        }
+                                        
+        }          
+    }   
+    select -r ($sel);
+}
+///////////
+gtAdvHandOrientProcWin;
+////////////////////////////2016-9-19

@@ -1,0 +1,71 @@
+//MAYA簇权重绘制工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+///////////////////////////////////////
+global proc gtClusterWeightPaintWin(){
+
+if(`window -ex gtClusterWeightPaintWin`) deleteUI -window gtClusterWeightPaintWin;
+window -wh 420 200 -t "老船角色绑定-☆-MAYA簇权重绘制工具" gtClusterWeightPaintWin;
+scrollLayout gtmainBSL;
+
+columnLayout -adj 1 -w 380 gtBSColumlayout;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1095\"";
+separator -style single  sep1;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+textFieldGrp  -cw2 100 130 -l "变形模型" -tx "请载入变形模型" -ed 0 gtTextBSLCluster3;
+button -l "载入变形模型" -c "gtBSLoadClusterMesh" gtButBSC3;
+
+setParent..;
+separator -style single  sep3;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "选择变形簇";
+
+button -l "绘制簇变形权重" -c "gtClusterWeightPaintProc;" but3ab;
+
+setParent..;
+separator -style single  sep2;
+
+showWindow  gtClusterWeightPaintWin;
+}
+///////////////////////
+global proc gtBSLoadClusterMesh(){
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+if($size>1) error "只能选择一个模型";
+textFieldGrp -e -tx ($sel[0]) gtTextBSLCluster3;
+}
+////////////////////
+global proc gtClusterWeightPaintProc (){
+    string $sel[]=`ls -sl`;
+    string $mesh=`textFieldGrp -q -text  gtTextBSLCluster3`;
+    
+    string $clusA[]=`listConnections -s 0 -d 1 ($sel[0]+".worldMatrix[0]")`;   
+    select -cl;
+    string  $clusterSets[]=`listConnections ($clusA[0]+".message")`;
+
+    string $currentMembers[]=`sets -q ($clusterSets[0])`;
+
+		select ($mesh+".vtx[0:999999]");
+		select -d $currentMembers;
+		string $vex[]=`ls -sl`;
+		if(size($vex)>0){
+		sets -add ($clusterSets[0]) `ls -sl`;
+		percent -v 0 $clusA[0] `ls -sl`;
+		}
+    artAttrToolScript 4 "cluster";
+eval ("artSetToolAndSelectAttr( \"artAttrCtx\", \"cluster."+$clusA[0]+".weights\")");
+select $mesh;
+evalEcho ("artSetToolAndSelectAttr( \"artAttrCtx\", \"cluster."+$clusA[0]+".weights\")");
+}
+///////////////////////////////////////////
+gtClusterWeightPaintWin;

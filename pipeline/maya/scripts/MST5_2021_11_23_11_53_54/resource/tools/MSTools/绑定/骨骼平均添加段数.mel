@@ -1,0 +1,69 @@
+global proc CVjnt(){
+if (`window -q -ex cvjntwin`) deleteUI cvjntwin ;
+window -t "CVjnt" -wh 250 320 cvjntwin ;
+columnLayout -columnAttach "both" 20 -rowSpacing 10 -columnWidth 250 -adj 1 column01 ;
+		popupMenu -parent column01 -b 3 -mm true;
+			menuItem -rp "N" -l "更改骨骼轴向" -c "OrientJointOptions;";
+			menuItem -rp "E" -l "冻结骨骼" -c "makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -jointOrient;";
+separator -height 10 -style "double";
+text -l "建立一条曲线，选中它。" ;
+text -l "设置完以下数值，点击创建即可！" ;
+separator -height 10 -style "double";
+textFieldGrp -label "前缀" -text "" -cat 1 "left" 40 t1;
+textFieldGrp -label "个数" -text  "" -cat 1 "left" 40 t2;
+separator -height 10 -style "double";
+button -l "创建" -c "cvjntc" ;
+floatSliderGrp -label "Joint Size -->  " -cat 1 "left" 10 -cat 2 "right" 50 -cat 3 "right" 50 -field true
+    		-minValue 0.05 -maxValue 10.00
+    		-fieldMinValue -1000.0 -fieldMaxValue 1000.0 
+		-dc "jointDisplayScale #1"
+		-cc "jointDisplayScale #1"
+    		-value 1.00;
+separator -height 10 -style "double";
+showWindow cvjntwin;
+window -e -wh 460 320 cvjntwin ;
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+global proc cvjntc (){
+string $Pname = `textFieldGrp -q -text t1` ;
+int $cv = `textFieldGrp -q -text t2` ;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+DeleteHistory;
+string $curve[] = `ls -sl` ;
+select -cl ;
+select $curve[0];
+rebuildCurve -ch 1 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s $cv -d 1 -tol 0.01 $curve[0];
+select -r $curve[0];
+selectCurveCV("all");
+string $allcv[] = `ls -sl -fl` ;
+print $allcv[0] ;
+select -cl ;
+int $i = 1 ;
+for($a in $allcv){
+	string $name = $Pname +"_"+$i;
+	float $t[]= `xform -q -t $a` ;
+	select -d ;
+	joint -p $t[0] $t[1] $t[2] -n $name ;
+	$i++;
+	
+}
+select -cl;
+int $n = size($allcv) ;
+for ($b in $allcv){
+	if($n>1){
+		string $name = $Pname +"_"+$n;
+		select -r $name ;
+		$n--;
+		string $namea = $Pname +"_"+$n;
+		select -tgl $namea ;
+		parent ;
+	}
+}
+pickWalk -d up ;
+
+}
+CVjnt;
+
+
+
+

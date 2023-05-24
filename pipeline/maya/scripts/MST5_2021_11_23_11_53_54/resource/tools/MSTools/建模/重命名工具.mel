@@ -1,0 +1,708 @@
+/* This file downloaded from Highend3d.com
+''  
+''  Highend3d.com File Information:
+''  
+''    Script Name: reNameIt
+''    Author:  
+''    Last Updated: Apr 18, 2007
+''    Update/Change this file at:
+''    http://Highend3d.com/maya/downloads/mel_scripts/utility_external/misc/3656.html
+''  
+''  Please do not alter any information above this line
+''  it is generated dynamically by Highend3d.com and will
+''  be changed automatically on any updates.
+*/
+/****************************************************************************
+Name: reName It
+Version: 2.1.0
+Purpose: Renames selected Nodes in order of selection. The names are based off
+of (prefix + variable + suffix) The variable can be [a-z], [A-Z], [0-9], [none].
+In number mode RMC will bring up a menu to add padding to the names. The start
+value of the variable can be changed. Having a name in the Root will name that
+seperatly from the ret of the selection. The name can ethier replace the
+existing name add as a prefix or suffix to the existing name.
+Question, comments, bugs and other strange things E-mail me
+Created by: Brian Escribano
+Contact: brian@meljunky.com
+Visit: meljunky.com
+Version 2.1.0 April 18,2007:
+        Fix an issue with padding large selections, and added a new drop down
+        to the padding feature called "Auto Padding". Takes in account of the 
+        selection and chooses the correct setting.
+Version 2.0.2 Janurary 30, 2007:
+	Fixed an issue with running on a Mac.
+Version 2.0.1 Janurary 30, 2007:
+	Fixed an error with running the changing the attribute name
+Version 2.0 Janurary 28, 2007: Added feature to rename attributes while the
+        order is kept. Also, able to reorder the attributes.
+Version 1.5 December 5, 2006: Now supports [a-z,A-Z] and [aa-zz, AA-ZZ]
+        caculated based off selection. Less then 27 format is [a-z,A-Z], 
+        27-676 nodes will use [aa-zz, AA-ZZ]. Does not support 677+ nodes
+Version 1.3 May 4, 2005 Search and Relace(Directly from Maya) added with new 
+	feature Swap. Which renames the second selection with the text 
+	replaced from the "search for" to the "replace with"
+Version 1.2 April 5, 2005
+*****************************************************************************/
+/*****************************************************************
+Proc: rNalpha
+Return Type: return string[]
+Input:
+	string int $alpha
+Purpose: Returns: [a-z] when $alhpa = 1, else return [A-Z]
+*****************************************************************/
+proc string[] rNalpha(int $alpha){
+string $incaz[];
+if ($alpha == 1)
+$incaz ={"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"};
+else
+$incaz ={"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+return $incaz;
+}
+
+if (`window -exists reNameIt`)deleteUI reNameIt;
+window -t "reName It 2.1.0" -menuBar true reNameIt;
+menu -label "编辑";
+	menuItem -l "Reset" -c "rNclear";
+menu -label "帮助";
+	menuItem -l "About" -c "renameItHelp";
+
+
+columnLayout;
+rowColumnLayout -nr 4 -rh 1 25 -rh 2 25 -rh 3 30 -rh 4 20;
+	radioButtonGrp -nrb 3 -l "类型:" -l1 "替换" -l2 "前缀" -l3 "后缀"
+	-cl4 "left" "left" "left" "left" -cw4 70 70 70 70 -sl 1 rNby;
+	radioButtonGrp -nrb 4 -l "变量:" -l1 "[a-z]" -l2 "[A-Z]" -l3 "[0-9]" -l4 "无"
+	-cl5 "left" "left" "left" "left" "left" -cw5 70 70 70 70 70 -sl 1 -cc1 "rNaz 1" -cc2 "rNaz 2" -cc3 "rNaz 3" -cc "rNaz 4" rNvalue;
+        //Made absolete
+	//rowColumnLayout -nc 2 -cw 1 40 -cw 2 300 ;
+	//	text -l "  Root:";
+	//	textField rNroot;
+	//setParent..;
+
+	rowColumnLayout -nc 4 -cw 2 40 target;
+  		textField rNtext;
+		optionMenuGrp rNtype;
+                        string $incaz[] = `rNalpha 1`;
+			for($add in $incaz){
+				menuItem -l $add $add; }
+		textField -ec "rNameIt" rNsuffix;
+		button -l "重命名" -c "rNameIt" rNtype;
+	setParent..;
+
+        separator;
+
+setParent..;
+
+     	radioButtonGrp -nrb 4 -l "搜索替换:" -l1 "交换" -l2 "层级" -l3 "选择" -l4 "所有"
+	-cl5 "left" "left" "left" "left" "left" -cw5 60 60 60 60 60 -sl 1 searchReplace ;
+
+	rowColumnLayout -nc 5 -cw 1 55 -cw 2 60 -cw 3 65 -cw 4 60 -cw 5 100;
+		text -l "搜索:";
+		textField beSearchFor;
+		text -l "替换成:";
+		textField beReplaceWith;
+		button -l "替换" -c "beSearchReplaceNames";
+	setParent..;
+
+frameLayout -l "重命名和重排序属性" -cl 1 -cll 0 -w 350 -cc "window -e -wh 350 190 reNameIt" -ec "window -e -wh 350 315 reNameIt";
+        rowColumnLayout -nc 2 -cw 1 175 -cw 2 160;
+
+                	columnLayout -rowSpacing 9;
+                        	rowColumnLayout -nc 2 -cw 1 70;
+                                	button -l "加载节点:" -c "rNSetupAttr";
+                                	textField -ed 0 beAttrNodeTF;
+                         	setParent..;
+                         
+                         	rowColumnLayout -nc 2 -cw 1 70;
+                               	 	text -l "  Long Name:";
+                                	textField -ec "beRnRenameAttr" beRnLongNameTF;
+                         	setParent..;
+
+                        	rowColumnLayout -nc 2 -cw 1 10 -cw 2 150;
+                                	text -l " ";
+                                	checkBox -l "列出 Non-keyable 属性" -cc "rNSetupAttr" -v 0 brRnListNonKeyableCB;
+                        	setParent..;
+                        
+                        	button -l "重命名属性" -w 170 -c "beRnRenameAttr";
+                	setParent..;
+
+		columnLayout;
+                        textScrollList -w 180 -h 108 -sc "beRnLoadNames" beRnAttrListTSL;
+                        rowColumnLayout -nc 2 -cw 1 80 -cw 2 80;
+                                button -l "上" -c ("beRnReorderTextScrollListUpDown (\"up\"); beRnLoadNames");
+                                button -l "下" -c ("beRnReorderTextScrollListUpDown (\"down\"); beRnLoadNames");
+                         setParent..;
+                setParent..;
+        
+	setParent..;
+
+setParent..;
+
+window -e -wh 360 360 reNameIt;
+showWindow;
+
+/*****************************************************************
+Proc: beRnReorderAttr
+Return Type: none
+Input:  string $node            Name of node that will have its attributes effected
+        string $oldName         old attribute name will be replaced by newName
+        string $newName         Attribute new name
+        string $textScrollList  Name of the textScrollList
+Purpose: Reorders the attributes based off the order they appear in the 
+         textScrollList. Searches for oldName and replacess it with 
+         newName, if old/new are both "", then uses list order
+*****************************************************************/
+proc beRnReorderAttr (string $node, string $oldName, string $newName, string $textScrollList){
+	string $tempName;
+	string $attr[] = `textScrollList -q -ai $textScrollList`;
+	for ($i=0; $i<size($attr); $i++){
+		$tempName = `renameAttr ($node + "." + $attr[$i]) ("tempNamer_" + $i)`;
+		if ($attr[$i] == $oldName)
+			renameAttr ($node + "." + $tempName) $newName;
+		else
+			renameAttr ($node + "." + $tempName) $attr[$i];			
+	}
+	//Use Maya re-select method of refreshing channel box, during renaming... repeating step
+	select -r $node;
+}
+
+/*****************************************************************
+Proc: beRnReorderTSL
+Return Type: none
+Input:  string $type            Direction to reorder list, "up" or "down"
+        string $textScrollList  Name of effected textScrollList
+Purpose: Reorders the selected item of a textsScrollList by moving up or down.
+*****************************************************************/
+proc beRnReorderTSL (string $type, string $textScrollList){
+
+        int $currentPos[] = `textScrollList -q -sii $textScrollList`;
+        string $currentItem[] = `textScrollList -q -si $textScrollList`;
+        string $allItems[] = `textScrollList -q -ai $textScrollList`;
+        //Down
+        if ($type == "down"){
+                int $newPos = $currentPos[0] + 2;
+                if ($currentPos[0] != `size($allItems)`){
+        	       textScrollList -e -ap $newPos $currentItem[0] $textScrollList;
+        	       textScrollList -e -rii $currentPos[0] $textScrollList;
+        	       textScrollList -e -si $currentItem[0] $textScrollList;
+                }
+        }
+
+        //Up
+        if ($type == "up"){
+                int $newPos = $currentPos[0] - 1;
+                if ($newPos != 0){
+                	textScrollList -e -ap $newPos $currentItem[0] $textScrollList;
+                	textScrollList -e -rii ($currentPos[0]+1) $textScrollList;
+                	textScrollList -e -si $currentItem[0] $textScrollList;
+                }
+        }
+
+}
+/*****************************************************************
+Proc: beRnReorderTextScrollListUpDown
+Return Type: none
+Input:  string $type Called from the button "up" or "dpwn" command
+Purpose: Makes sure that there are attributes and 1 is selected if
+        there is the reorders the textScrollList and the Attributes
+*****************************************************************/
+global proc beRnReorderTextScrollListUpDown(string $type){
+        string $node = `textField -q -tx beAttrNodeTF`;
+        string $allAttr[] = `textScrollList -q -ai beRnAttrListTSL`;
+        if (`size($allAttr)` > 0){
+                beRnReorderTSL ($type, "beRnAttrListTSL");
+                beRnReorderAttr ($node, "", "", "beRnAttrListTSL");
+        }
+}
+
+/*****************************************************************
+Proc: beRnRenameAttr
+Return Type: none
+Input:  None
+Purpose: Queries the new long name and the old name if they don't 
+        match the renames the attribute.
+*****************************************************************/
+global proc beRnRenameAttr (){
+        string $node = `textField -q -tx beAttrNodeTF`;
+        string $selAttr[] = `textScrollList -q -si beRnAttrListTSL`;
+        string $allAttr[] = `textScrollList -q -ai beRnAttrListTSL`;
+        if (`size($allAttr)` == 0) return;
+        
+        $oldLongName = `addAttr -q -ln ($node + "." + $selAttr[0])`;
+        $newLongName = `textField -q -tx beRnLongNameTF`;
+        //Checks to see if name already exists
+        int $validString = isValidString($newLongName, "([a-zA-Z]+)([a-zA-Z0-9_])*");
+        if ($validString == 0){
+               warning "New Long Name is not a valid string.\n";
+                return;
+        }
+        for ($check in $allAttr){
+                if ($check == $newLongName){
+                        warning ("Attribute aready exists on " + $node + ".\n");
+                        return;
+                }
+        }
+        if ($oldLongName != $newLongName){
+                beRnReorderAttr ($node, $oldLongName, $newLongName, "beRnAttrListTSL");
+                rNSetupAttr;
+        }
+        if (`size($allAttr)` > 0){
+                textScrollList -e -si $newLongName beRnAttrListTSL;
+        }
+}
+/*****************************************************************
+Proc: beRnLoadNames
+Return Type: none
+Input:  None
+Purpose: Populates the long name and selects the first attribute
+*****************************************************************/
+global proc beRnLoadNames(){
+string $node = `textField -q -tx beAttrNodeTF`;
+string $selAttr[] = `textScrollList -q -si beRnAttrListTSL`;
+if ($selAttr[0] != ""){
+        string $longName = `addAttr -q -ln ($node + "." + $selAttr[0])`;
+        textField -e -tx $longName beRnLongNameTF;
+}
+}
+/*****************************************************************
+Proc: rNSetupAttr
+Return Type: none
+Input:  None
+Purpose: Ran with "Load Node" and a change command on the Checkbox for
+        listing keyable and non-keyable atributes. This proc populates
+        all fields to be used by the reorder and renaming
+*****************************************************************/
+global proc rNSetupAttr(){
+        string $attr[];
+        string $sel[] = `ls -sl`;
+        if (`size($sel)` == 0) return;
+        int $exists = 0;
+        string $oldAttr[] = `textScrollList -q -si beRnAttrListTSL`;
+        textScrollList -e -ra beRnAttrListTSL;
+        textField -e -tx $sel[0] beAttrNodeTF;
+        int  $listNonKeyable = `checkBox -q -v brRnListNonKeyableCB`;
+        if ($listNonKeyable == 0)
+                $attr = `listAttr -ud -k $sel[0]`;
+        else
+                $attr = `listAttr -ud $sel[0]`;
+        //Loat TextscrollList
+        for ($do in $attr){
+        textScrollList -e -a $do beRnAttrListTSL;
+        }
+        if (`size($attr)` != 0){
+                textScrollList -e -si $attr[0] beRnAttrListTSL;
+                beRnLoadNames;
+        }else{
+                textField -e -tx "" beRnLongNameTF;
+        }
+}
+/*****************************************************************
+Proc: rNaz
+Return Type: none
+Input:  int $sel        1 [a,z] 2 [A,Z] 3 Nunber with padding and 4 none
+Purpose: Recreates the rowColumnLayout based off the opetion renaming
+*****************************************************************/
+global proc rNaz(int $sel){
+string $incaz[];
+$incaz = `rNalpha 1`;
+string $text = `textField -q -tx rNtext`;
+string $suffix = `textField -q -tx rNsuffix`;
+string $del[] = `rowColumnLayout -q -ca target`;
+for ($delt in $del){
+deleteUI $delt;}
+
+rowColumnLayout -p target;
+	textField -tx $text rNtext;
+setParent..;
+
+rowColumnLayout -p target;
+
+if ($sel == 3){
+	intField -v 1 -ann "(RMC) to add padding" rNvalue;
+		popupMenu;
+			radioMenuItemCollection;
+ 				menuItem -label "No Padding"	-radioButton on	 rNmi0;
+ 				menuItem -label "Pad: 1"	-radioButton off rNmi1;
+ 				menuItem -label "Pad: 2"	-radioButton off rNmi2;
+ 				menuItem -label "Pad: 3"	-radioButton off rNmi3;
+ 				menuItem -label "Pad: 4"	-radioButton off rNmi4;
+ 				menuItem -label "Pad: 5"	-radioButton off rNmi5;
+ 				menuItem -label "Auto Padding"	-radioButton off rNmi6;
+
+}if($sel == 1 || $sel == 2){
+	optionMenuGrp rNtype;
+		if ($sel == 1)
+			$incaz = `rNalpha 1`;
+  		else
+                	$incaz = `rNalpha 2`;
+		for($add in $incaz){
+			menuItem -l $add $add; }
+}
+if($sel == 4)
+text -l " ";
+
+setParent..;
+
+rowColumnLayout -p target;
+	textField -tx $suffix rNsuffix;
+setParent..;
+
+rowColumnLayout -p target;
+	button -l "重命名" -c "rNameIt" rNtype;
+setParent..;
+}
+
+/*****************************************************************
+Proc: rNameIt
+Return Type: none
+Input:  Node
+Pirpose: This quries the selection and all feilds form renaming
+*****************************************************************/
+global proc rNameIt (){
+string $sel[] = `ls -sl`;
+string $alpha, $case;
+int $j;
+int $r =0;
+int $i =0;
+int $start;
+int $miVal;
+string $inc[];
+int $less;
+string $addPad = "";
+int $val = `radioButtonGrp -q -sl rNvalue`;
+int $rNby = `radioButtonGrp -q -sl rNby`;
+if ($val == 1){
+        $inc = `rNalpha 1`;
+        $case = "lower";
+}else{
+        $case = "upper";
+        $inc = `rNalpha 2`;
+}
+string $text = `textField -q -tx rNtext`;
+string $suffix = `textField -q -tx rNsuffix`;
+//string $root =  `textField -q -tx rNroot`;
+if($val == 3){ //numbers
+	$start = `intField -q -v rNvalue`;
+	//padding
+	for ($i=0; $i< 7; $i++){ //6 for only 0-5
+        int $miValSrch = `menuItem -q -rb ("rNmi" + $i)`;
+        	if ($miValSrch == 1){
+        	$miVal = $i;
+        	break;
+        	}
+	}//end for
+
+        //Check to see if auto padding is enabled, radio selection 6
+        int $sizeSel = `size($sel)` + $start;
+        if ($miVal == 6){
+                if ($sizeSel >= 100000) $miVal = 0;
+                else if ($sizeSel >= 10000) $miVal = 4;
+                else if ($sizeSel >= 1000) $miVal = 3;
+                else if ($sizeSel >= 100) $miVal = 2;
+                else if ($sizeSel >= 10) $miVal = 1;
+                else $miVal = 0;
+        }
+
+}//end if
+
+if($val == 1 || $val == 2)
+$start = `optionMenuGrp -q -sl rNtype`;
+
+$i=0;//includes index 0
+$r=0;
+
+int $pad = $miVal;
+for ( ; $i<size($sel); $i++){
+	$j = $start + $i - $r -1;
+        $pad = $miVal;
+	if ($val == 3) { //[0-9]
+		$j++;
+		//Create a fallthrough switch to decrease the amount of "0", base off the pad value and incrementer
+		switch ($miVal){
+                        case 5: if ($j >= 100000) $pad = $pad - 1;
+                        case 4: if ($j >= 10000) $pad = $pad - 1;
+                        case 3: if ($j >= 1000) $pad = $pad - 1;
+                        case 2: if ($j >= 100) $pad = $pad - 1;
+                        case 1: if ($j >= 10) $pad = $pad - 1;
+                        case 0: if ($j >= 0) $pad = $pad;
+                break;
+                }//endSwitch
+                if ($pad == 5) $addPad = "00000";
+                if ($pad == 4) $addPad = "0000";
+                if ($pad == 3) $addPad = "000";
+                if ($pad == 2) $addPad = "00";
+                if ($pad == 1) $addPad = "0";
+                if ($pad == 0) $addPad = "";
+
+
+                if ($rNby == 1)
+			if ($text != ""){
+				rename $sel[$i] ($text + $addPad + $j + $suffix); }
+			else {
+				warning "Name cannot begin with a number";
+				break;
+			}
+		if ($rNby == 2)
+			if ($text != ""){
+				rename $sel[$i] ($text + $addPad + $j + $suffix + $sel[$i]); }
+			else {
+				warning "Name cannot begin with a number";
+				break;
+			}
+		if ($rNby == 3){
+			//if ($j > $less) $addPad = "";
+			rename $sel[$i] ($sel[$i] + $text + $addPad + $j + $suffix);}
+        }
+        if (size($sel) < 675 || $val == 3){
+	
+        if ($val == 1 || $val == 2){ //[a-z], [A-Z]
+        	if (size($sel) > 25){
+        	$alpha = beReturnAlphaChar ($j, 1, $case);
+                }else{
+                $alpha = beReturnAlphaChar ($j, 0, $case);
+                }
+                
+		if ($rNby == 1 )  //Replace
+			rename $sel[$i] ($text + $alpha + $suffix);
+		if ($rNby == 3)   //Suffix
+			rename $sel[$i] ($sel[$i] + $text + $alpha + $suffix);
+		if ($rNby == 2)   //Prefix
+			rename $sel[$i] ($text + $alpha + $suffix + $sel[$i]);
+	}
+
+        }else{
+                warning ("Alphabetic variable exceeding 676 nodes is not supported.");
+                break;
+        }
+
+	if ($val == 4){ //None
+		if ($rNby == 1 )  //Replace
+			rename $sel[$i] ($text + $suffix);
+		if ($rNby == 3)   //Suffix
+			rename $sel[$i] ($sel[$i] + $text +  $suffix);
+		if ($rNby == 2)   //Prefix
+			rename $sel[$i] ($text + $suffix + $sel[$i]);
+	}
+
+}
+}
+
+/*****************************************************************
+Proc: beReturnAlphaChar
+Return Type: string
+Input:  int $value: Starts with 0, which is letter a/aa then increments
+        int $pad: 0 for [a-z] total 26, and 1 for [aa-zz] total 676
+                No need for triple leters, 676 is maxium
+        string $case: "upper" or "lower"
+Purpose: Returns less then 26:          a b c d e f g
+                greater then 26:        aa ab ac ad ae af ag
+*****************************************************************/
+global proc string beReturnAlphaChar (int $value, int $pad, string $case){
+        //Declare Variables:
+        string $char[], $mChar[];
+        int $mCharValue, $charValue;
+
+        //Declare the alpha characters that will be used:
+        string $charLower[] = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"};
+        string $charUpper[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+        //Change case to upper case if "upper" is chosen, anything else will default to "lower"
+        if ($case == "upper"){
+                $char = $charUpper;
+                $mChar = $charUpper;
+        }else{
+                $char = $charLower;
+                $mChar = $charLower;
+        }
+        if ($pad == 0)
+                return $char[$value];
+
+        //dividing $value by 26 returns the index for $mChar, since $mCharValue is a int.
+        $mCharValue = $value/26;
+        //Using the modulus(the remainder), return the index of the first character.
+        $charValue = `fmod $value 26`;
+        print $mCharValue;
+        return ($char[$mCharValue] + $char[$charValue]);
+}
+
+
+global proc rNclear(){
+string $clr[4] = {"rNtext", "rNsuffix", "beSearchFor", "beReplaceWith" };
+for ($clrd in $clr){
+textField -e -tx "" $clrd;
+}//end for
+radioButtonGrp -e -sl 1 rNby ;
+radioButtonGrp -e -sl 1 rNvalue ;
+radioButtonGrp -e -sl 1 searchReplace  ;
+rNaz 1;
+}
+
+/*****************************************************************
+Proc: beSearchReplaceNames
+Return Type: none
+Input: none
+Purpose: The following proc is copied from Maya Search and Replace
+        options with changes add for Swap feature
+*****************************************************************/
+global proc beSearchReplaceNames()
+{
+	string $searchString = `textField -q -tx beSearchFor`;
+	string $replaceString= `textField -q -tx beReplaceWith`;
+	int $onString = `radioButtonGrp -q -sl searchReplace`;
+	//1 "Swap" 2 "Hierarchy" 3 "Selected" 4 "All"
+
+	if ($searchString == $replaceString) {
+		return;
+	}
+
+	string $getObjCmd = "ls";
+	if ($onString == 4) {
+		// nothing
+	} else if ($onString == 3 || $onString == 1) {
+		$getObjCmd += " -sl";
+	} else if ($onString == 2) {
+		$getObjCmd += " -sl -dag";		
+	} else {
+		string $errMsg = ("Invalid argument: "+$onString+".");
+		$errMsg += ("Valid settings are: swap, all, selected, hierarchy.");
+		error($errMsg);
+	}
+
+	string $nameList[];
+	string $allNames[] = `eval $getObjCmd`;
+
+	int $count = 0;
+	int $renamedCount = 0;
+	if ($onString != 1){
+	for ($name in $allNames) {
+		// strip off any path and namespace info
+		//
+		string $pathless = match("[a-zA-Z0-9_]*$",$name);
+
+		if (! `objExists $name`) {
+			// renaming must have modified the parent names
+			//
+			$nameList = `eval $getObjCmd`;
+			$name = $nameList[$count];
+		}
+
+		if (`reference -q -isNodeReferenced $name`) {
+			// referenced nodes cannot be renamed
+			//
+			$count++;
+			continue;
+		}
+
+		string $newName = `substitute $searchString $pathless $replaceString`;
+		if ($newName != $pathless) {
+			
+			rename $name $newName;
+			$renamedCount++;
+
+		}
+		$count++;		
+	}
+	
+	}else {
+	$nameList = `ls -sl`;
+	if (`size $nameList` == 2){
+        	string $match = `gmatch $nameList[0] ("*" + $searchString + "*")`;
+		if ($match == 1){
+		$newName[0] = `substitute $searchString $nameList[0]  $replaceString`;
+		rename $nameList[1] $newName[0];
+		print "// Replaced 1 name.";
+		}else{
+			warning "Search name is not found in intial selection.";
+		}
+	}else{
+	error "Must only Select two objects for Swap feature.";
+	}
+	}
+        if ($onString != 1)
+	print("// Replaced "+$renamedCount+" names.\n");
+}
+/*****************************************************************
+Proc: renameItHelp
+Return Type: none
+Input: none
+Purpose: Creates the help window
+*****************************************************************/
+global proc renameItHelp()
+{
+if (`window -ex renameItHelpUI`)
+	deleteUI renameItHelpUI;
+
+window -t "reNameIt Help" -wh 450 350 renameItHelpUI;
+	string $form = `formLayout`;
+		string $scroll = `scrollLayout`;
+			columnLayout;
+
+				rowColumnLayout -nc 2 -cw 1 100 -cw 2 350 -cal 2 left;
+					text -label "Title: " -font boldLabelFont;
+					text -label "reNameIt.mel";
+					text -label "Author: " -font boldLabelFont;
+					text -label "Brian Escribano";
+					text -label "";
+					text -label "www.meljunky.com";
+					text -label "";
+					text -label "brian@meljunky.com";
+					text -label "Created:" -font boldLabelFont;
+					text -label "April 5, 2005";
+					text -label "Last updated:" -font boldLabelFont;
+					text -label "April 18, 2007";
+					setParent..;
+
+				text -label "" -h 30;
+
+				text -label "   About: " -font boldLabelFont;
+                                      string $noteText =  "  This tool renames objects based on certain parameters. Some features are already\n";
+                                      $noteText += "    defaulted in Maya. Such as Search//Replace names and Prefix Hierarchy. \n";
+                                      $noteText += "   Addtional features are: \n";
+                                      $noteText += "   Rename by Replace-Replaces entire name \n";
+                                      $noteText += "   Rename by Prefix -Addes to existing names at the beginning. \n";
+                                      $noteText += "   Rename by Suffix -Addes to existing name at the end. \n";
+                                      $noteText += "   \n";
+                                      $noteText += "   Variables will increment by letter or number based of the starting value. Letter can now \n";
+                                      $noteText += "   exceed  Z, format will be [aa-zz, AA-ZZ]. Max selection is 676. RMC in number mode will \n";
+                                      $noteText += "   bring up a menu to add padding. Auto Padding will choose the correct size for you.\n";
+                                      $noteText += "   There are text box to ethier side of the variable this will allow names with the following \n";
+                                      $noteText += "   firstName + variable + lastName \n";
+                                      $noteText += "   \n";
+                                      $noteText += "   New feature to Search and Replace is Swap \n";
+                                      $noteText += "   Swap is based off selection of only 2 objects. It will search for the text in the first \n";
+                                      $noteText += "   selection and will change the replace with text for renaming of the second selection. \n";
+                                      $noteText += "   Example: \n";
+                                      $noteText += "   2 Objects selected with the following names rt_armCTRL controller1 \n";
+                                      $noteText += "   Search for: rt \n";
+                                      $noteText += "   replace with lf \n";
+                                      $noteText += "   The second object is named: lf_armCTRL \n";
+                                      
+                                      $noteText += "   \n";
+                                      $noteText += "   Rename and Reorder Attributes: \n";
+                                      $noteText += "   Load Node with the \"Load Node\" button, choose to rename the selected attribute \n";
+				      $noteText += "   or change the order of the attributes as they appear in the channel box. Use the \n";
+                                      $noteText += "   List Non-Keyable Checkbox to display non-keyable attributes along with keyable ones\n";
+                                      $noteText += "   \n";
+				text -label $noteText -align left;
+
+				text -label "" -h 10;
+
+
+				setParent..;
+			setParent..;
+		string $closeButton = `button -label "Close Window" -c "deleteUI renameItHelpUI"`;
+		setParent..;
+
+	formLayout -e
+		-attachForm $scroll left 0
+		-attachForm $scroll top 0
+		-attachForm $scroll right 0
+		-attachControl $scroll bottom 0 $closeButton
+
+		-attachForm $closeButton left 0
+		-attachNone $closeButton top
+		-attachForm $closeButton right 0
+		-attachForm $closeButton bottom 0
+		$form;
+
+showWindow renameItHelpUI;
+}

@@ -1,0 +1,2354 @@
+//_______________________________________________________________________________ 
+//HSC at IP by maya2015 (mel)
+//2014.04.10
+//常用的装配小脚本集合
+//_______________________________________________________________________________
+//************************start**********************
+global proc Conformity()
+{
+if (`window -exists HSCRigUtilsUI`)
+deleteUI HSCRigUtilsUI;
+
+window -t "七十二变" HSCRigUtilsUI;
+columnLayout -adj 1 mainCol;
+
+text -l " ";
+text -l "---------------------------------------------------";
+text -l "-------------------***七十二变***------------------------" -bgc 1.0 2 0.0 -w 40 -h 20;
+text -l "---------------------------------------------------";
+//buttonCreate
+text -l " ";
+button -l "用Curves曲线创建骨骼" -bgc 0.3 0.8 0.5 -command wp_jointsOnCurves wp_jointsOnCurvesButton;
+text -l " ";
+button -label "copySkin"  -bgc 0.6 1 0.9 -c copySkinNew ;
+text -l " ";
+button -label "抵消位移"  -bgc 0.3 0.8 0.5 -c ConnectionTranslate ;
+text -l " ";
+button -label "睫毛绑定"  -bgc 0.6 1 0.9 -c jiemaoSetUI ;
+text -l " ";
+button -label "DyHairRig" -bgc 0.3 0.8 0.5 -c makeIkhairUIN ;
+text -l " ";
+button -label "重命名"  -bgc 0.6 1 0.9 -c Rename ;
+text -l " ";
+button -label "体积骨骼"  -bgc 0.3 0.8 0.5 -c VolumeJnt ;
+text -l " ";
+text -align "right"
+-label "HSC:1290184419@qq.com"; 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+showWindow HSCRigUtilsUI; 
+}
+
+//**************************************************************************wp_jointsOnCurves****************************************************************************************************;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+global proc wp_jointsOnCurves()
+{
+wp_jointOnCurves_window();
+}
+
+global proc wp_jointOnCurves_window () 
+{//wp_jointOnCurves_window
+
+if (`window -q -ex wp_jointOnCurves_window`) deleteUI wp_jointOnCurves_window;
+
+window -title "wp Joints on Curves" -maximizeButton off -minimizeButton on -sizeable off -wh 280 65 wp_jointOnCurves_window;
+
+columnLayout;
+// text "Select curves and..."
+text -label "" -h 6;
+rowColumnLayout -numberOfColumns 2 -cw 1 5 -cw 2 150;
+text -label "";
+text -label "Joint Chain On Curves" -font "boldLabelFont";
+setParent ..;
+text -label "" -h 6; 
+// text infield "Number Of Joints"
+rowColumnLayout -numberOfColumns 3 -cw 1 85 -cw 2 35 -cw 3 60 -cs 1 15 -cs 2 5 -cs 3 5;
+text -label "Number Of Bones";
+intField -minValue 2 -v 10 wp_jointOnCurves_window_numOfJoint_first;
+button -label "Create" -bgc 0.675 0.663 0.843 -c "wp_jointsOnCurves_doIt(\"jointChain\")";
+//int $intFieldNumber = `intField -q -v Number`;
+setParent ..;
+// text "Select curves and..."
+text -label "" -h 6;
+rowColumnLayout -numberOfColumns 2 -cw 1 5 -cw 2 150;
+text -label "";
+text -label "Joints On Curves" -font "boldLabelFont";
+setParent ..;
+text -label "" -h 6; 
+// text infield "Number Of Joints"
+rowColumnLayout -numberOfColumns 3 -cw 1 85 -cw 2 35 -cw 3 60 -cs 1 15 -cs 2 5 -cs 3 5;
+text -label "Number Of Joints";
+intField -minValue 2 -v 10 wp_jointOnCurves_window_numOfJoint_second;
+button -label "Create" -bgc 0.675 0.663 0.843 -c "wp_jointsOnCurves_doIt(\"joint\")";
+//int $intFieldNumber = `intField -q -v Number`;
+setParent ..;
+text -label "" -h 6;
+// text "Select curves and..."
+rowColumnLayout -numberOfColumns 2 -cw 1 5 -cw 2 150;
+text -label "";
+text -label "Joints On" -font "boldLabelFont";
+setParent ..;
+text -label "" -h 6; 
+// text infield "Number Of Joints"
+rowColumnLayout -numberOfColumns 2 -cw 1 94 -cw 2 94 -cs 1 15 -cs 2 2;
+button -label "CV" -bgc 0.675 0.663 0.843 -c "wp_jointOnCV;";
+button -label "EP" -bgc 0.675 0.663 0.843 -c "wp_jointOnEP;";
+setParent ..;
+text -label "" -h 13; 
+showWindow wp_jointOnCurves_window;
+window -edit -wh 220 190 wp_jointOnCurves_window;
+
+}//wp_jointOnCurves_window
+
+
+
+//======================================================================
+// wp_jointOnCV procedure
+//======================================================================
+
+global proc wp_jointOnCV() 
+{//wp_jointOnCV
+
+// query dei nomi delle curve
+string $curves[] = `ls -long -sl`;
+int $NumberOfCurves = `size($curves)`;
+
+if ($NumberOfCurves > 0)
+{
+string $i;
+for ($i in $curves)
+{
+select -r $i;
+string $iShape[] = `pickWalk -d down`;
+if (`objectType -isType "nurbsCurve" $iShape[0]`)
+{
+// faccio il query delle spans della curva
+float $NumberOfSpans = `getAttr ($i + ".spans")`;
+// faccio il query del degree della curva
+float $CurveDegree = `getAttr ($i + ".degree")`;
+// calcolo il numero dei CV della curva
+// CV = Span + Degree
+float $NumberOfCV = $NumberOfSpans + $CurveDegree;
+int $x = 0;
+int $counter;
+for ($counter = 1; $counter < ($NumberOfCV + 1); $counter++)
+{
+select -r ($i + ".cv[" + $x + "]"); 
+string $TempCluster_[] = `cluster -n TempCluster`;
+float $clusterxyz[] = `xform -q -rp $TempCluster_[1]`;
+float $jointX = $clusterxyz[0];
+float $jointY = $clusterxyz[1];
+float $jointZ = $clusterxyz[2];
+select -cl;
+string $JointName = "Joint" + $x;
+joint -p $jointX $jointY $jointZ -roo yzx -n $JointName;
+$x += 1;
+delete TempClusterHandle;
+}
+}
+}
+select -r $curves;
+print "**********************************************************************************\n";
+print "**********************************************************************************\n";
+print "Objects processed:\n";
+print $curves;
+print ("---> " + $NumberOfCurves + " objects processed <--- read the script editor for more info..");
+}
+else
+{
+error "Select the curves!";
+}
+}//wp_jointOnCV
+
+
+
+//======================================================================
+// wp_jointOnEP procedure
+//======================================================================
+
+global proc wp_jointOnEP() 
+{//wp_jointOnEP
+
+// query dei nomi delle curve
+string $curves[] = `ls -long -sl`;
+int $NumberOfCurves = `size($curves)`;
+
+if ($NumberOfCurves > 0)
+{
+string $i;
+for ($i in $curves)
+{
+select -r $i;
+string $iShape[] = `pickWalk -d down`;
+if (`objectType -isType "nurbsCurve" $iShape[0]`)
+{
+// faccio il query delle spans della curva
+float $NumberOfSpans = `getAttr ($i + ".spans")`;
+// calcolo il numero degli EP della curva
+// EP = Span + 1
+float $NumberOfEP = $NumberOfSpans + 1;
+int $x = 0;
+int $counter;
+for ($counter = 1; $counter < ($NumberOfEP + 1); $counter++)
+{
+select -r ($i + ".ep[" + $x + "]"); 
+string $TempCluster_[] = `cluster -n TempCluster`;
+float $clusterxyz[] = `xform -q -rp $TempCluster_[1]`;
+float $jointX = $clusterxyz[0];
+float $jointY = $clusterxyz[1];
+float $jointZ = $clusterxyz[2];
+select -cl;
+string $JointName = "Joint" + $x;
+joint -p $jointX $jointY $jointZ -roo yzx -n $JointName;
+$x += 1;
+delete TempClusterHandle;
+}
+}
+}
+select -r $curves;
+print "**********************************************************************************\n";
+print "**********************************************************************************\n";
+print "Objects processed:\n";
+print $curves;
+print ("---> " + $NumberOfCurves + " objects processed <--- read the script editor for more info..");
+}
+else
+{
+error "Select the curves!";
+}
+}//wp_jointOnEP
+
+
+
+//======================================================================
+// wp_jointsOnCurves_doIt procedure
+//======================================================================
+
+global proc wp_jointsOnCurves_doIt(string $type) 
+{//wp_jointsOnCurves_doIt
+
+// query dei nomi delle curve
+string $curves[] = `ls -sl -long`;
+int $NumberOfCurves = `size($curves)`;
+int $NumberOfJoints;
+
+if ($type == "jointChain")
+{
+$NumberOfJoints = `intField -q -v wp_jointOnCurves_window_numOfJoint_first`;
+}
+else if ($type == "joint")
+{
+$NumberOfJoints = `intField -q -v wp_jointOnCurves_window_numOfJoint_second`;
+}
+
+
+string $i;
+int $curveCount = 0;
+for ($i in $curves)
+{
+select -r $i;
+string $iShape[] = `pickWalk -d down`;
+if (`objectType -isType "nurbsCurve" $iShape[0]`)
+{
+string $pathNodes[];
+int $numTokens = tokenize($i, "|", $pathNodes);
+string $myObj = $pathNodes[$numTokens - 1];
+// faccio il query del nome originale della curva (per poterlo riutilizzare in seguito)
+string $OriginalCurveName_ = $i;
+// duplico la curva
+select -r $i ;
+string $newCurve_[] = `duplicate -smartTransform`;
+// seleziono la curva duplicata e la freezo
+select $newCurve_[0];
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0; 
+// faccio il rebuild della curva in base al numero di joints che la mia joint Chain deve avere
+//int $numberOfSpans = $NumberOfJoints - 1;
+int $numberOfSpans;
+if ($type == "jointChain")
+{
+$numberOfSpans = $NumberOfJoints;
+}
+else if ($type == "joint")
+{
+$numberOfSpans = $NumberOfJoints - 1;
+}
+
+rebuildCurve -ch 1 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s $numberOfSpans -d 3 -tol 0.01 $newCurve_[0];
+// faccio il query delle spans della curva
+float $NumberOfSpans = `getAttr ($newCurve_[0] + ".spans")`;
+// calcolo il numero degli EP della curva
+// EP = Span + 1
+float $NumberOfEP = $NumberOfSpans + 1;
+// faccio il query della posizione del primo EditPoint della curva
+string $ep_0 = $newCurve_[0] + ".ep[0]";
+string $tempCluster[0] = `cluster $ep_0`;
+float $cluster_xyz[] = `xform -q -rp -ws $tempCluster[1]`;
+// creo il primo joint della catena
+select -cl;
+string $RootJoint;
+if ($type == "jointChain")
+{
+$RootJoint = `joint -p $cluster_xyz[0] $cluster_xyz[1] $cluster_xyz[2] -name ($myObj + "_jointChain")`;
+}
+else if ($type == "joint")
+{
+$RootJoint = `joint -p $cluster_xyz[0] $cluster_xyz[1] $cluster_xyz[2]`;
+}
+
+
+delete $tempCluster[1];
+// creo la catena di joint
+string $BaseJoint = $RootJoint;
+int $j;
+for ($j = 1; $j < $NumberOfEP; $j++)
+{
+if ($type == "jointChain")
+{
+$ep_0 = $newCurve_[0] + ".ep[" + $j + "]";
+string $tempCluster[0] = `cluster $ep_0`; 
+float $cluster_xyz[] = `xform -q -rp -ws $tempCluster[1]`;
+//string $boneName = $myObj + "_joint_" + ($j + 1);
+string $newJoint = `joint -p $cluster_xyz[0] $cluster_xyz[1] $cluster_xyz[2]`;
+parent $newJoint $BaseJoint;
+$BaseJoint = $newJoint;
+delete $tempCluster[1];
+}
+else if ($type == "joint")
+{
+$ep_0 = $newCurve_[0] + ".ep[" + $j + "]";
+string $tempCluster[0] = `cluster $ep_0`; 
+float $cluster_xyz[] = `xform -q -rp -ws $tempCluster[1]`;
+//string $boneName = $myObj + "_joint_" + ($j + 1);
+string $newJoint = `joint -p $cluster_xyz[0] $cluster_xyz[1] $cluster_xyz[2]`;
+parent -w $newJoint;
+//$BaseJoint = $newJoint;
+delete $tempCluster[1];
+} 
+}
+if ($type == "jointChain")
+{
+// ri-oriento la catena
+select -r $RootJoint;
+joint -e -oj xyz -secondaryAxisOrient yup -ch -zso;
+}
+
+// elimino la curva duplicata e utilizzata per la costruzione della catena
+delete $newCurve_[0];
+$curveCount++;
+}
+}
+
+select -r $curves;
+print "**********************************************************************************\n";
+print "**********************************************************************************\n";
+print "Objects processed:\n";
+print $curves;
+
+if ($type == "jointChain")
+{
+print ("---> " + $curveCount + " joint chains created <--- read the script editor for more info..");
+}
+else if ($type == "joint")
+{
+print ("---> " + $curveCount + " objects processed <--- read the script editor for more info..");
+}
+
+}//wp_jointsOnCurves_doIt
+//**************************************************************************wp_jointsOnCurves****************************************************************************************************;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+global proc copySkinNew() 
+{
+    string $sel[]=`ls -sl`;
+    string $selobj[]= `filterExpand -sm 12 -sm 10 -sm 9`;
+    string $skinName=`findRelatedSkinCluster($selobj[0])`;
+    string $skinjnt[]=`listConnections -t "joint" $skinName`;
+    select -cl  ;
+    for ($i=1 ;$i<size($selobj);$i++)
+     { 
+        string $beSkinCluster=`findRelatedSkinCluster($selobj[$i])`;
+        if (size($beSkinCluster)==0)
+            {
+                select $skinjnt $selobj[$i];
+                skinCluster -nw 1  -tsb -mi 5 -dr 4; 
+            }
+        select -r $selobj[0];
+        select -tgl $selobj[$i];
+        copySkinWeights  -noMirror -surfaceAssociation closestPoint -influenceAssociation closestJoint;    
+        select -cl  ;
+     }
+
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+global proc jiemaoSetUI()
+{
+		if(`window -ex jiemaoWin`==1)
+		{
+		deleteUI jiemaoWin;
+		}
+	window -t "睫毛绑定" 
+
+	jiemaoWin;
+frameLayout -w 285 -cll 1  -cl 0 -label "睫毛绑定"  -borderStyle "etchedIn"  ;			 	  			
+//frameLayout -w 340 -cll 1 -cl 1 "睫毛绑定";
+	columnLayout ; 
+                formLayout eyelashSetFormLayout ;	
+                       radioButtonGrp -nrb 2 
+                                      -sl 1
+                                      -cw2 124  124  
+                                      -la2  "正常形态" "异常形态"  eyelashradioButton;       
+                     button -label "睫毛生成"  -width 80  -c"eyelashCreat" eyelashCreatButton ;
+                     button -label "缩放关联"  -width 80  -c"eyelashSclae" eyelashSclaeButton ;
+
+                     checkBox -l "生成骨骼"   -v 1 eyelashSclaeCheckBox;
+                formLayout -e
+                     -af eyelashradioButton "left" 64
+                     -af eyelashradioButton "top" 10
+
+                     -af eyelashCreatButton "left" 114
+                     -af eyelashCreatButton "top" 40
+                     -af eyelashSclaeButton "left" 224
+                     -af eyelashSclaeButton "top" 40
+                     -af eyelashSclaeCheckBox "left" 17
+                     -af eyelashSclaeCheckBox "top" 43
+
+            eyelashSetFormLayout ;
+            
+showWindow jiemaoWin;            
+}       
+
+global proc eyelashCreat()
+{
+      int $eyelashradioOne = `radioButtonGrp -q -sl eyelashradioButton`;
+      int $eyelashradioTwo = `radioButtonGrp -q -sl eyelashradioButton`;
+      string $buffer[];
+      int $token;
+      string $face[];
+      float $uvPos[];
+      string $sel[] = `ls -sl -fl`;
+
+      for ( $uv in $sel )
+   {
+	$token = `tokenize $uv "." $buffer`;
+	//$token = `tokenize $sel[0] "." $buffer`;
+
+	string $inObj[] = `listRelatives -s -path $buffer[0]`;
+
+	$foll = `createNode follicle`;
+	select -r $foll;
+	pickWalk -d up;
+	$follTop = `ls -sl`;
+        int $shapeSize=size($inObj);
+        if($eyelashradioOne == 1)
+      {
+	eval("connectAttr -f "+$inObj[0]+".outMesh "+$foll+".inputMesh\;");
+	eval("connectAttr -f "+$inObj[0]+".worldMatrix "+$foll+".inputWorldMatrix\;");
+       }
+        if($eyelashradioTwo == 2)
+      {
+	eval("connectAttr -f "+$inObj[1]+".outMesh "+$foll+".inputMesh\;");
+	eval("connectAttr -f "+$inObj[1]+".worldMatrix "+$foll+".inputWorldMatrix\;");
+       }
+	eval("connectAttr -f "+$foll+".outTranslate "+$follTop[0]+".translate\;");
+	eval("connectAttr -f "+$foll+".outRotate "+$follTop[0]+".rotate\;");
+        select -r $uv;
+        $uvPos = `polyEditUV -q`;
+	setAttr ($foll+".parameterU") $uvPos[0];
+	setAttr ($foll+".parameterV") $uvPos[1];
+        if (`checkBox -q -v eyelashSclaeCheckBox`)
+      {
+	select $follTop;joint;
+       }
+      if ( `objExists "follicleGroup"` == 0 )
+     {
+	select -cl;
+	group -em -n "follicleGroup";
+      }
+      if ( `objExists "follicleGroup"` == 1 )
+     {
+       parent $follTop follicleGroup;
+      }
+}
+
+}	
+global proc eyelashSclae()
+{
+string $sel[]=`ls -sl`;
+string $follGrpchild[]=`listRelatives -c  follicleGroup`;
+for($i=0;$i<size($follGrpchild);$i++)
+{
+string $conObj=`connectionInfo -sfd ($follGrpchild[$i]+".scale")`;
+ if(size($conObj)==0)
+{
+connectAttr -f ($sel[0]+".scale") ($follGrpchild[$i]+".scale");
+}
+}
+
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+global proc makeIkhairUIN()
+{
+	if(`window -ex makeIkhairWindow`==1)
+		{
+		deleteUI makeIkhairWindow;
+		}
+	    window -t "MakeIKHair" 
+	    makeIkhairWindow;
+    columnLayout -adjustableColumn true;
+    	intField -w 80 -minValue 2 -v 10 jntNumberIntField;
+		button -label "创建骨骼" -w 80  -c creatJointsOnCurves ;
+
+        button -label "生成设置" -c makeIkHairNew;
+        button -label "生成曲线" -c creatCv;
+        button -label "约束" -c yueshu;
+        
+
+
+setParent ..;
+showWindow makeIkhairWindow;
+}
+
+///////////star
+
+
+//
+//	Mel script written by Christophe Petit
+//	email : xxtof@free.fr
+//
+// MODIFY THIS AT YOUR OWN RISK
+//
+// Creation Date:  3 May 2004
+//
+//
+//
+//  Procedure Name:
+//      makeIkHair
+//
+//  Description:
+//		create a splineIkHandle driven by hair system with realtime controls and blend between dynamics and keyframes on joints chains
+//
+//	Usage:
+//		select first and last joint and type : makeIkHair
+//
+//  Input Arguments:
+//      none.
+//
+//  Return Value:
+// 	none.
+
+global proc string[] ccoc_buildListOfJoint(string $child,string $father){
+
+
+	string $joint = $child;
+	string $Array[];
+	
+	$Array[0] = $joint;
+	
+	while ($joint != $father){
+	
+		string $nextJoint[] = `listRelatives -p -f -typ joint $joint`;
+		$Array[size($Array)] = $nextJoint[0];
+		$joint = $nextJoint[0];	
+	}
+	return $Array;
+}
+proc string[] ccoc_stringArrayReverseOrder (string $array[]){
+
+	string $reversed[];
+	int $last = size($array) -1 ;
+	for ($i=$last ;$i>=0 ;$i--){
+	
+		$reversed[size($reversed)] = $array[$i];
+	}
+	return $reversed;
+}
+
+
+
+
+global proc string createCurveOnChain(){
+	string $curveName;
+	string $sel[] = `ls -sl -l -typ joint`;
+	if(size($sel)==2){
+			
+		string $listJoints[] = ccoc_buildListOfJoint($sel[1],$sel[0]);
+		$listJoints = ccoc_stringArrayReverseOrder ($listJoints);
+		string $positions[];
+		for($i = 0;$i<size($listJoints);$i++){
+			float $tmp[3] = `xform -q -ws -t $listJoints[$i]`;
+			$positions[$i] =$tmp[0] + " " +  $tmp[1] + " " + $tmp[2];
+		}
+		string $cmd = "curve -d 1";
+		for($pos in $positions){
+			$cmd += " -p " + $pos;
+		}
+		for($i = 0;$i<size($positions);$i++){
+			$cmd += " -k " + $i;
+		}		
+		print $cmd;print "\n";
+		$curveName = `eval $cmd`;
+		return $curveName; 
+	}else{
+		error "createCurveOChain :  select start and end joint\n"; 
+	}
+
+}
+
+
+
+proc string polyLineCmd( int $numCvs, float $curveLength )
+{
+	if( $numCvs < 2 ){
+		return "";
+	}	
+
+	string $cmd = "curve -d 1";
+	int $i;
+	float $fac = $curveLength/(float)($numCvs-1);
+	for( $i = 0; $i < $numCvs; $i++ ){
+		$cmd += (" -p 0 0 " + ((float)$i * $fac));
+	}
+	for( $i = 0; $i < $numCvs; $i++ ){
+		$cmd += (" -k " + $i);
+	}
+	return $cmd;
+}
+
+proc int getNextFreeMultiIndex( string $attr, int $start )
+{
+	// We find the next unconnected multi index starting at
+	// the passed in index.
+	int $i;
+	// assume a max of 10 million follicles
+	for( $i = $start; $i < 10000000; $i++ ){
+		string $con = `connectionInfo -sfd ($attr + "["+$i+"]")`;
+		if( size( $con ) == 0){
+			return( $i );
+		}
+	}
+	return(0);
+}
+
+proc string[] makeIkHair_createHairCurveNode( 
+	string $hsys, 
+	string $surface, 
+	float $u, float $v, 
+	int $numCvs, 
+	int $doOut, 
+	int $doStart,
+	int $doRest,
+	int $isPassive,
+	string $startCurve,
+	float $length,
+	int $endHairSystemIndex[],
+	string $hsysGroup,
+	string $hsysOutHairGroup
+)
+{
+	int $doStartCurve = false;
+	int $COS = false;
+	string $cmd = "";
+// TODO use "exists" here
+	if( $hsys == "" ){
+		return {""}; 
+	}
+	string $hair = `createNode follicle`;
+	setAttr ($hair + ".parameterU" ) $u;
+	setAttr ($hair + ".parameterV" ) $v;
+	string $tforms[] = `listTransforms $hair`;
+	string $hairDag[];
+	$hairDag[0]= $tforms[0];
+	int $attachedToSurface = false;
+	if( $surface != "" && objExists( $surface ) ){
+		string $nType = `nodeType $surface`;
+		connectAttr ($surface + ".worldMatrix[0]") ($hair + ".inputWorldMatrix");
+		if( "nurbsSurface" == $nType ){ 
+			connectAttr ($surface + ".local") ($hair + ".inputSurface");
+		} else if( "mesh" == $nType ){
+			connectAttr ($surface + ".outMesh") ($hair + ".inputMesh");
+			string $currentUVSet[] = `polyUVSet -q -currentUVSet $surface`;
+			setAttr ($hair + ".mapSetName") -type "string" $currentUVSet[0];
+			int $isValidUv = getAttr( $hair + ".validUv" );
+			if( !$isValidUv ){
+				delete $hair;
+				return {""};
+			}
+		} 
+
+		connectAttr ($hair + ".outTranslate") ($hairDag[0] + ".translate");
+		connectAttr ($hair + ".outRotate") ($hairDag[0] + ".rotate");
+		setAttr -lock true  ($hairDag[0] + ".translate");
+		setAttr -lock true  ($hairDag[0] + ".rotate");
+	} else {
+		setAttr ($hair + ".startDirection" ) 1;
+	}
+
+	if( $doStart ){ 	
+		if( $startCurve != "" ){
+			if( `objExists $startCurve` ){
+				string $type = `nodeType $startCurve`;
+				if( $type == "nurbsCurve" ){
+					$doStartCurve = true;			
+				} else if( $type == "curveFromSurfaceCoS" ){
+					$doStartCurve = true;			
+					$COS = true;
+				}
+				if( $doStartCurve ){
+					int $curveCvs = `getAttr -size ($startCurve + ".cp")`;
+					if( $curveCvs < 3 ){
+						setAttr ($hair + ".degree" ) 1;
+					}
+				}
+			}
+			if( !$doStartCurve ){
+				warning ( "createHairCurveNode: invalid startCurve " + $startCurve);
+			}
+		}
+		if( !$doStartCurve ){
+			$cmd = polyLineCmd( $numCvs, $length );
+			if( $cmd == "" ){
+				delete $hair;
+				return {""};
+			}
+			if( $numCvs < 3 ){
+				setAttr ($hair + ".degree" ) 1;
+			}
+		}
+	} else if( $doRest ){
+		$cmd = polyLineCmd( $numCvs, $length );
+		if( $cmd == "" ){
+			delete $hair;
+			return {""} ;
+		}
+	}
+
+	if( $isPassive && !$doStart && $numCvs < 3){
+		setAttr ($hair + ".degree" ) 1;
+	}
+
+
+	if( $hsysGroup != "" ){
+		// Group the follicles into the passed in parent node.
+		// -relative here is simply in the hope that
+		// this might be slightly more efficient
+		parent -relative $hairDag[0] $hsysGroup; 
+	}
+	string $curve;
+	if( $doStart ){
+		if( $doStartCurve ){
+			if( $COS ){
+				$curve = $startCurve;
+			} else {
+				$tforms = `listTransforms $startCurve`;
+				$curve = $tforms[0];
+				$tforms = `listTransforms $curve`;
+				if( size( $tforms ) > 0 ){
+					string $curveParent = $tforms[0];
+					parent -relative $hairDag[0] $curveParent;
+				}
+			}
+		} else {
+			$curve = eval( $cmd );
+			if( $isPassive ){
+				initHairCurveDisplay( $curve, "passive" );
+			} else {
+				initHairCurveDisplay( $curve, "start" );
+			}
+		}
+		if( $COS ){
+			connectAttr ($curve + ".oc") ($hair + ".startPosition");
+		} else {
+			parent -relative $curve $hairDag[0];
+			connectAttr ($curve + ".worldSpace[0]") ($hair + ".startPosition");
+		}
+	
+	} 
+	if( $doRest ){
+		string $rest;
+		if( $doStartCurve ){	
+			$rest = `duplicate -rr $curve`;
+		} else {
+			$rest = eval( $cmd );
+		}
+		initHairCurveDisplay( $rest, "rest" );
+		parent -relative $rest $hairDag[0];
+		connectAttr ($rest + ".worldSpace[0]") ($hair + ".restPosition");
+		// setAttr ($rest + ".intermediateObject") 1;
+		setAttr ($hair + ".restPose" ) 3;
+	}
+	if( $isPassive ){
+		setAttr ($hair + ".simulationMethod") 1;
+	}
+	// connect hair to end of hsys array
+	// We use the following array so that the last index used can
+	// be passed back to the calling routine, so that we
+	// minimize searching. The calling routine should set 
+	// endHairSystemIndex to zero on the first call and then  
+	// and then allow it to track the last free slot. 
+	// The input hair is a sparce multi and holes can be created
+	// when some hairs are deleted. We always try to fill in the holes
+	// when creating new hairs.
+	$endHairSystemIndex[0] = getNextFreeMultiIndex( ($hsys + ".inputHair"), 
+								$endHairSystemIndex[0] );	
+	int $hairIndex = $endHairSystemIndex[0];
+	$endHairSystemIndex[0] += 1; // avoid checking this index twice
+	connectAttr ($hair + ".outHair") ($hsys + ".inputHair["+$hairIndex+"]");
+	if( $doOut ){
+		connectAttr ($hsys + ".outputHair["+$hairIndex+"]") ($hair + ".currentPosition");
+		string $crv = `createNode nurbsCurve`;
+		$hairDag[size($hairDag)] = $crv;
+		connectAttr ($hair + ".outCurve")  ($crv + ".create");
+		if( $isPassive ){
+			initHairCurveDisplay( $crv, "passive" );
+		} else {
+			initHairCurveDisplay( $crv, "current" );
+		}
+		if( $hsysOutHairGroup != "" ){
+			$tforms = `listTransforms $crv`;
+			parent -relative $tforms[0] $hsysOutHairGroup; 
+		}
+	}
+
+	return( $hairDag );
+}
+
+proc string[] makeIkHair_makeCurvesDynamicHairs()
+{
+	string $created[];
+	string $hsystems[] = `getSelectedHairSystems`;	
+	string $hsys = "" ;
+	if( size( $hsystems ) > 0 ){
+		$hsys = $hsystems[0];
+	} 
+	int $i, $j, $k, $l;
+	string $curves[] = `ls -sl -dag -type nurbsCurve`;
+
+	if( size( $curves ) < 1 ){
+		warning( "No curves selected\n" );
+		return $created;
+	}
+	string $parent = "";
+	int   $lastIndex[] = {0};
+	int $madeHairCurve = false;
+	string $hsysGroup = "";
+	string $hsysOutputHairGroup = "";
+	for( $i = 0; $i < size( $curves ); $i++ ){
+		string $curve = $curves[$i];
+		string $con[] = `listConnections -sh 1 ($curve + ".worldSpace[0]")`;
+		int $j;
+		int $attachedToHairCurve = false;
+		for( $j = 0; $j < size( $con ); $j++ ){
+			string $type = nodeType( $con[ $j ] );
+			if( $type == "follicle" ){
+				$attachedToHairCurve = true;
+				continue;
+			}
+		}
+		if( $attachedToHairCurve ){
+			continue;
+		}
+		int $intermediateObject = `getAttr ($curve + ".io")`;
+		if( 0 != $intermediateObject ){
+			continue;
+		}
+		
+
+
+		$madeHairCurve = true;
+		if( $hsys == "" ){
+			// create the first time we hit a valid curve
+			$hsys	 = `createNode hairSystem`;
+			$created[size($created)] = $hsys;
+			// we want uniform stiffness because the curves
+			// are initially point locked to both ends 
+			removeMultiInstance -break true ($hsys + ".stiffnessScale[1]");
+			setAttr ($hsys + ".clumpWidth") 0.0;
+			connectAttr time1.outTime ($hsys + ".currentTime");
+		}
+		string $hsysParent[] = `listTransforms $hsys`;
+		/*
+		if( size($hsysParent) > 0  ){
+			if( $hsysGroup == "" ){
+				$hsysGroup = ($hsysParent[0] + "Follicles");
+				if( !objExists($hsysGroup ) ){
+					$hsysGroup = `group -em -name $hsysGroup`;
+				}
+				
+			}
+			if( $hsysOutputHairGroup == "" ){
+				$hsysOutputHairGroup = ($hsysParent[0] + "OutputCurves");
+				if( !objExists($hsysOutputHairGroup ) ){
+					$hsysOutputHairGroup = `group -em -name $hsysOutputHairGroup`;
+				}
+			}
+		}
+		*/
+		// Determine if the curve is a COS or just a regular curve.
+		// This is cloned from "convertCurvesToStrokes.mel"
+		int $COS = 0;
+		string $relatives[] = `listRelatives -ap -p $curve`;
+		for ($j = 0; $j < size( $relatives ); $j++) {
+			string $testMe = $relatives[$j];
+			if (`nodeType $testMe` == "transform") {
+				string $testList[] = `listRelatives -ap -p $testMe`;
+				for ($k = 0; $k < size( $testList ); $k++) {
+					string $subTest = $testList[$k];
+					if (`nodeType $subTest` == "curveVarGroup") {
+						string $testList2[] = `listRelatives -ap -p $subTest`;
+						for ($l = 0; $l < size( $testList2 ); $l++) {
+							if (`nodeType $testList2[$l]` == "nurbsSurface") {
+								$COS = 1;
+								$parent = $testList2[$l];
+								$j = size( $relatives );
+								$k = size( $testList  );
+								$l = size( $testList2 );
+							}
+						}
+					}
+					else {
+						if (`nodeType $testList[$k]` == "nurbsSurface") {
+							$COS = 1;
+							$parent = $testList[$k];
+							$j = size( $relatives);
+							$k = size( $testList );
+						}
+					}
+				}
+			}
+			else if (`nodeType $testMe` == "nurbsSurface") {
+				$parent = $testMe;
+				$COS = 1;
+				$j = size( $relatives);
+			}
+		}
+		if ( $COS == 1 ) {
+			// the name in $curves is something like nurbsPlane->curve1: this
+			// has illegal characters for a name so we use the default naming
+			// string $cFS = `createNode "curveFromSurfaceCoS" -name ($curves[$i] + "cFS")`;
+			string $cFS = `createNode "curveFromSurfaceCoS"`;
+			$created[size($created)] = $cFS;
+			// Do we need to check the index of the WS connections?
+			connectAttr ($curve + ".ws[0]") ($cFS + ".curveOnSurface");
+			connectAttr ($parent + ".ws[0]") ($cFS + ".inputSurface");
+			$curve = $cFS;
+		}
+
+
+		string $surf = ""; // no surface to attach to
+		int $doRest = false;
+		string $tmp[] = makeIkHair_createHairCurveNode($hsys, $surf,
+							0.0, 0.0, 0, true, true, 
+							$doRest, false, $curve, 1.0, $lastIndex,
+							$hsysGroup, $hsysOutputHairGroup);
+		string $hname = $tmp[0];
+		$created[size($created)] = $tmp[0];
+		$created[size($created)] = $tmp[1];
+		if( size( $hname ) > 0 ){
+			setAttr ( $hname + ".pointLock" ) 3;
+			setAttr ( $hname + ".restPose" ) 1;
+		}
+	}
+	// delete the follicle groups if we did not add any hairs to them
+	if( objExists($hsysGroup ) ){
+		string $shapes[] = `ls -s -dag $hsysGroup`;
+		if( 0 == size($shapes) ){
+			delete $hsysGroup;
+		}
+	}
+	if( objExists($hsysOutputHairGroup ) ){
+		string $shapes[] = `ls -s -dag $hsysOutputHairGroup`;
+		if( 0 == size($shapes) ){
+			delete $hsysOutputHairGroup;
+		}
+	}
+	if( $madeHairCurve ){
+		select $hsys;
+	} else {
+		warning( "Selected curves already are dynamic hair curves\n" );
+	}
+	return $created;
+}
+proc string[] makeIkHair_duplicateSkeletonAndConnect(string $prefix)
+{
+
+    string $startJoint1, $joints[] = `ls -sl -type joint`;
+
+	
+
+    for ($startJoint1 in $joints)
+    {
+	// duplicate the joint chain  print $startJoint1
+
+	string $nodes[] = `duplicate -rr -rc $startJoint1`;
+	string $startJoint2 = $nodes[0];
+
+	string $joints1[] = `listRelatives -ad $startJoint1`;
+	string $joints2[] = `listRelatives -ad $startJoint2`;
+
+	// delete anything that was copied and that is not a joint (note that
+	// descendants are ordered from the bottom of the hierarchy up),
+	// rename new joints and connect their attributes to the original
+	// joints'
+
+	int $i;
+	for ($i = 0; $i < size($joints1); $i++)
+	{
+	    if (`objectType -isType joint $joints2[$i]`)
+	    {
+		rename $joints2[$i] ($prefix + $joints1[$i]);
+		connectAttr -f ($prefix + $joints1[$i] + ".r") ($joints1[$i] + ".r") ;
+	    }
+	    else
+		delete $joints2[$i];
+	}
+
+	// start joints are not included in output of listRelatives...
+
+	connectAttr -f ($startJoint2 + ".t") ($startJoint1 + ".t");
+	connectAttr -f ($startJoint2 + ".r") ($startJoint1 + ".r");
+	connectAttr -f ($startJoint2 + ".s") ($startJoint1 + ".s");
+	$startJoint2 = `rename $startJoint2 ($prefix + $startJoint1)`;
+	catch (`parent -w $startJoint2`);
+	string $list[];
+	select -r $startJoint2;
+	select -hi;
+	$list = `ls -sl`;
+	return $list;
+    }
+}
+global proc makeIkHair (){
+
+	string $sel[] = `ls -sl -l -typ joint`;
+    string $selalljnt[] = `listRelatives -ad -f  $sel`;//修改了的
+    stringArrayInsertAtIndex(1, $sel, $selalljnt[0] );
+    select $sel;
+	string $myjointss[];
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//
+//		create Curve on joints
+//
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+        
+		string $curve = `createCurveOnChain`;
+		string $tmp[];
+		
+		select -hi $sel[0];
+        $myjointss=`ls -type joint -sl`;
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//
+//		create Hair system duplicateCurve follicle
+//
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+		select -r $curve;
+		string $created[] = `makeIkHair_makeCurvesDynamicHairs`;
+		print $created;
+		string $FollicleShape[] = `listRelatives -s $created[1]`;
+		setAttr ($FollicleShape[0]+".pointLock") 1;
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//
+//		create SplineHandle for selected chain and 
+//		the duplicated curve
+//		we assume that the original is driven by hair
+//
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+		$tmp = `ikHandle -sol ikSplineSolver -ccv false -pcv false -snc true -sj $sel[0] -ee $sel[1] -c $created[2]`;
+		string $ik = $tmp[0];	
+		
+		
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//
+//		create duplicate the chain for animation
+//
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+		select -r $sel[0];
+		string $duplSkel[] = `makeIkHair_duplicateSkeletonAndConnect ("ANIM_")`;
+		//select $duplSkel[0];
+		string $congrpb[];
+		for ($i=0;$i<(`size $duplSkel`-1);$i++)
+    		{ 
+       		string $shapes[] = `circle -c 0 0 0 -nr 1 0 0 -sw 360 -r 1 -d 3 -ut 0 -tol  0.00155 -s 8 -ch 0 -n ($duplSkel[$i]+"_waveCon")`;
+              	//setAttr -lock true -keyable false ($shape[$i]+".tx");
+             	//	setAttr -lock true -keyable false ($shape[$i]+".ty");
+              	//setAttr -lock true -keyable false ($shape[$i]+".tz");  // print  $duplSkel[$i]
+                 	setAttr -lock true -keyable false ($shapes[$i]+".sx");
+              	setAttr -lock true -keyable false ($shapes[$i]+".sy");
+              	setAttr -lock true -keyable false ($shapes[$i]+".sz");
+               	setAttr -lock true -keyable false ($shapes[$i]+".v");
+			string $congroup = `group -r  -name ($shapes[0]+"Group")  $shapes[0]`;
+             		$congrpb[$i]=$congroup;
+			ewalign $congroup $duplSkel[$i];
+		
+			connectAttr -f ($shapes[0]+".rx") ($duplSkel[$i]+".rx");
+			connectAttr -f ($shapes[0]+".ry") ($duplSkel[$i]+".ry");
+			connectAttr -f ($shapes[0]+".rz") ($duplSkel[$i]+".rz");
+			
+			//connectAttr -f ($shapes[0]+".tx") ($wavectrlfkgpb[$i]+".tx");
+			//connectAttr -f ($shapes[0]+".ty") ($wavectrlfkgpb[$i]+".ty");
+			//connectAttr -f ($shapes[0]+".tz") ($wavectrlfkgpb[$i]+".tz");
+			if($i>0)
+			{
+				parentConstraint -mo $duplSkel[($i-1)]  $congroup ;
+				//parent $congroup 
+			}
+          		
+
+		}
+		group -n ($duplSkel[0]+"_waveConGrp") $congrpb;
+		select $congrpb[0];
+		string $firstWaveCon[]=`filterExpand -sm 9`;
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//
+//		create SkinCluster between duplicateCurve and 
+//		animation chain
+//
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+		select -r $curve;
+		select -add $duplSkel;
+		$tmp = `newSkinCluster "-toSelectedBones -mi 3 -dr 4"`;
+		string $skinCluster = $tmp[0];
+		
+		
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//
+//		add and connect attributes on root annimation
+//		Chain controling stiffness damping and gravity
+//		iteration startFrame collisions
+//
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		/*string $controller = `curve -n($duplSkel[0]+"DynCtr") -d 1 -p 0 0 0 -p 0 2 -2 -p 0 1 -2 -p 0 1 -4 -p 0 -1 -4 -p 0 -1 -2 -p 0 -2 -2 -p 0 0 0 -p -2 0 -2 -p -1 0 -2 -p -1 0 -4 -p 1 0 -4 -p 1 0 -2 -p 2 0 -2 -p 0 0 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 `;
+		string $shapes[] = `listRelatives -s $controller`;
+		string $shape = `rename $shapes[0] ($duplSkel[0]+"DynCtrShape")`;*/
+        string $controller=`createNode transform -n ($duplSkel[0]+"DynCtr")`;
+        createNode nurbsCurve -n ($duplSkel[0]+"DynCtrShape") -p ($duplSkel[0]+"DynCtr");
+        	setAttr -k off ".v";
+        	setAttr ".cc" -type "nurbsCurve" 
+        		1 13 0 no 3
+        		14 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 
+        		0 1 0
+        		0 0 1
+        		0 -1 0
+        		0 0 -1
+        		0 1 0
+        		-1 0 0
+        		0 -1 0
+        		1 0 0
+        		0 1 0
+        		-1 0 0
+        		0 0 1
+        		1 0 0
+        		0 0 -1
+        		-1 0 0
+        		;		
+		
+		group  -n ($duplSkel[0]+"DynCtr_grp") ($duplSkel[0]+"DynCtr");
+		parent  ($duplSkel[0]+"DynCtr_grp")  $firstWaveCon[0]; 
+        setAttr ($duplSkel[0]+"DynCtr_grp.rotate") 0 0 0;
+        setAttr ($duplSkel[0]+"DynCtr_grp.translate") 0 0 0;		
+
+		//parent $controller $duplSkel[0];  select $duplSkel
+        setAttr ($controller+".rotateX") 0;
+        setAttr ($controller+".rotateY") 0;
+        setAttr ($controller+".rotateZ") 0;
+        
+        setAttr ($controller+".translateX") 0;
+        setAttr ($controller+".translateY") 0;
+        setAttr ($controller+".translateZ") 0;
+
+	
+        
+        
+        addAttr -ln "StartFrame" -at double  -dv 1 $controller;
+        setAttr -e -keyable true ($controller + ".StartFrame");
+        addAttr -ln "Stiffness" -at double  -min 0 -dv 0.01 $controller;
+        setAttr -e -keyable true ($controller + ".Stiffness");
+        addAttr -ln "stretchDamp" -at double  -min 0 -dv .1 $controller;
+        setAttr -e -keyable true ($controller + ".stretchDamp");
+        addAttr -ln "Mass" -at double  -min 0 -dv 1 $controller;
+        setAttr -e -keyable true ($controller + ".Mass");
+        addAttr -ln "StartCurveAttract" -at double  -min 0 -dv 0.2 $controller;
+        setAttr -e -keyable true ($controller + ".StartCurveAttract");
+        addAttr -ln "DynamicsMethod"  -at "enum" -en "off:static:dynamic follicles only:All Follicles:"  $controller;
+        setAttr -e-keyable true ($controller + ".DynamicsMethod");		
+        //addAttr -ln "Bend" -at double  -min 0 -dv 0 $controller;
+        //setAttr -e -keyable true ($controller + ".Bend");		
+    		    
+					
+    		connectAttr -f ($controller + ".StartFrame") ($created[0] + ".startFrame");
+    		connectAttr -f ($controller + ".Stiffness") ($created[0] + ".stiffness");
+    		connectAttr -f ($controller + ".stretchDamp") ($created[0] + ".stretchDamp");
+    		connectAttr -f ($controller + ".Mass") ($created[0] + ".mass");
+    		connectAttr -f ($controller + ".StartCurveAttract") ($created[0] + ".startCurveAttract");
+    		connectAttr -f ($controller + ".DynamicsMethod") ($created[0] + ".simulationMethod");
+		    select -r $controller;
+        setAttr -lock true -keyable false -channelBox false ($controller + ".tx");
+        setAttr -lock true -keyable false -channelBox false ($controller + ".ty");
+        setAttr -lock true -keyable false -channelBox false ($controller + ".tz");
+
+        setAttr -lock true -keyable false -channelBox false ($controller + ".rx");
+        setAttr -lock true -keyable false -channelBox false ($controller + ".ry");
+        setAttr -lock true -keyable false -channelBox false ($controller + ".rz");
+        
+        setAttr -lock true -keyable false -channelBox false ($controller + ".sx");
+        setAttr -lock true -keyable false -channelBox false ($controller + ".sy");
+        setAttr -lock true -keyable false -channelBox false ($controller + ".sz");
+        
+        setAttr -lock true -keyable false -channelBox false ($controller + ".v");
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//
+//		create the expression for real time
+//
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	/*	$tmp = `spaceLocator`;
+		string $track_RealTime = $tmp[0];
+		$track_RealTime = `rename $track_RealTime ("TRACK_RealTime_" + $created[0])`;
+		pointConstraint $duplSkel[size($duplSkel)-1] $track_RealTime;
+		
+		string $connections[] = `listConnections -p 1  -c 1 ($created[0] + ".currentTime")`;
+		disconnectAttr $connections[1] $connections[0];
+		string $expr=`expression -n ("EXP_" + $created[0] + "_TRACK_RealTime") -s ("if(frame!= " + $created[0] + ".startFrame)\r\n"
+				 + $created[0] + ".currentTime = " + $created[0] + ".currentTime + 1 + " + $track_RealTime +".tx - " + $track_RealTime +".tx + " + $track_RealTime +".ty - " + $track_RealTime +".ty + " + $track_RealTime +".tz - " + $track_RealTime +".tz + " + $duplSkel[0] + ".chainWidthBase - "+ $duplSkel[0] + ".chainWidthBase + "+ $duplSkel[0] + ".chainWidthExtremity - "+ $duplSkel[0] + ".chainWidthExtremity + " + $duplSkel[0] + ".chainGravity - "+ $duplSkel[0] + ".chainGravity;\n" 
+				 +"else\n\t" + $created[0] + ".currentTime = " + $created[0] + ".startFrame;\n")`;
+*/
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//
+//		set default presets for dynHairChain
+//
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+		setAttr ($created[0] + ".drawCollideWidth") 1;
+		setAttr ($created[0] + ".widthDrawSkip") 0;
+		setAttr ($FollicleShape[0] + ".degree") 1;
+		string $parent[] = `listRelatives -p $sel[0]`;
+		if(size($parent))
+			parent $duplSkel[0] $parent[0];
+			
+		if(!`objExists "dynHairChain"`)
+			group -em -name "dynHairChain";
+		
+		string $group;
+		if(!`objExists ($sel[0] + "_HairControls")`){
+			//$group = `group -name ($sel[0] + "_HairControls") $created $ik $track_RealTime`;
+			$group = `group -name ($sel[0] + "_HairControls") $created $ik `;
+		}else{
+			parent $created $ik ($sel[0] + "_HairControls");
+		}
+		parent $group "dynHairChain";
+		setAttr "dynHairChain.visibility" 0;
+
+	createSurfaceJoint($myjointss);
+	
+	parent $duplSkel[0] $sel[0] $firstWaveCon[0];
+disconnectAttr  ($firstWaveCon[0]+".rotateZ") ($duplSkel[0]+".rotateZ");
+disconnectAttr  ($firstWaveCon[0]+".rotateY") ($duplSkel[0]+".rotateY");
+disconnectAttr  ($firstWaveCon[0]+".rotateX") ($duplSkel[0]+".rotateX");
+select -cl  ;
+
+
+	
+}
+
+
+
+
+//string $topjoints[]=$myjointss;
+
+
+// string $topjoint = "head_touying1"  string $topjoints[] = `ls -sl`;
+
+global proc createSurfaceJoint(string $topjoints[])
+{
+	string $skinsurface[]=`nurbsPlane -p 0 0 0 -ax 0 1 0 -w 1 -lr 1 -d 3 -n  ($topjoints[0]+"_skinSurface")`;
+	float $pivotjointx[];
+	float $pivotjointy[];
+	float $pivotjointz[];
+	for($i=0;$i<`size $topjoints`;$i++)
+		{
+			float $pointjoint[]=`xform -q -ws -pivots $topjoints[$i]` ;
+			$pivotjointx[$i]=$pointjoint[0];
+			$pivotjointy[$i]=$pointjoint[1];
+			$pivotjointz[$i]=$pointjoint[2];
+		}
+	
+	float $resultsx[]=$pivotjointx;
+	float $resultsy[]=$pivotjointy;
+	float $resultsz[]=$pivotjointz;
+
+	//float $shorterListx[] =floatArrayRemoveDuplicates($resultsx);
+	//float $shorterListy[] =floatArrayRemoveDuplicates($resultsy);
+	//float $shorterListz[] =floatArrayRemoveDuplicates($resultsz);
+	int $numx=`size $resultsx`;
+	int $numy=`size $resultsy`;
+	int $numz=`size $resultsz`;
+	//float $removedate[]={$shorterList[0],$shorterList[$num-1]};
+	//float $removelist[]=floatArrayRemove($removedate,$shorterList);
+
+	//int $ctrnum=`size $shorterList`;
+	string $skinsurfacesa[]=`listRelatives -s $skinsurface[0]`;
+	string $skinsurfaceca[]=`listConnections  $skinsurfacesa[0]`;
+	setAttr ($skinsurfaceca[1]+".patchesV") ($numz-1);
+	alignrotation $skinsurface[0] $topjoints[0];
+	rotate -r -os 0 -90 0 $skinsurface[0];
+	//move -r -ws $pivotjointx[0] $pivotjointy[0] 0 $skinsurface[0];
+	setAttr ($skinsurface[0]+".scaleZ") 0;
+	setAttr ($skinsurface[0]+".scaleX") 0.07;
+	//makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 $skinsurface[0];
+
+	move -r -ws   $resultsx[0] $resultsy[0] $resultsz[0] ($skinsurface[0]+".cv[0:3][0]")  ;
+	move -r -ws   $resultsx[0] $resultsy[0] $resultsz[0] ($skinsurface[0]+".cv[0:3][1]")  ;
+
+	move -r -ws  $resultsx[$numx-1] $resultsy[$numx-1] $resultsz[$numx-1]  ($skinsurface[0]+".cv[0:3]["+($numx+1)+"]")  ;
+
+	int $cvnum[];
+
+	for($i=0;$i<$numz;$i++)
+		{
+			$cvnum[$i]=($i+1);
+
+		}
+
+
+	for($i=1;$i<$numx;$i++)
+		{
+
+			move -r -ws  $resultsx[$i] $resultsy[$i] $resultsz[$i]  ($skinsurface[0]+".cv[0:3]["+$cvnum[$i]+"]");
+
+		}
+
+
+	delete `listHistory $skinsurface[1]`;
+
+	//int $jointnumbers=30; 
+	string $prefix = ($topjoints[0]+"_surfacejnt");
+	
+
+
+
+	string $skinjntgrp[];
+
+
+	string $surfshape[] = `listRelatives -s $skinsurface[0]`;
+	string $surface = $surfshape[0];
+	
+	string $iso = `createNode curveFromSurfaceIso -n ($skinsurface[0]+"_surfaceIso")`;
+	connectAttr -f ($skinsurface[0] + ".worldSpace[0]") ($iso + ".inputSurface");
+	setAttr ($iso+".isoparmValue") 0.5;
+	
+	setAttr ($iso+".relativeValue") 1;
+	string $curveinfo = `createNode curveInfo -n ($skinsurface[0]+"_curveInfo")`;
+	connectAttr -f ($iso+".outputCurve") ($curveinfo+".inputCurve");
+	string $mu_dv = `createNode multiplyDivide -n ($skinsurface[0]+"_mudv")`;
+	connectAttr -f ($curveinfo+".arcLength") ($mu_dv+".input1X");
+	
+	connectAttr -f ($curveinfo+".arcLength") ($mu_dv+".input2X");
+	//setAttr ($mu_dv+".input1X") `getAttr ($curveinfo+".arcLength")`;
+	setAttr ($mu_dv+".operation") 2;
+	string $s_add = `createNode addDoubleLinear -n ($skinsurface[0]+"_add")`;
+	connectAttr -f ($mu_dv+".outputX") ($s_add+".input1");
+	setAttr ($s_add+".input2") -1;
+	
+	
+	int $i;
+	for($i=0;$i<$numx;$i++)
+	{
+		string $info = `createNode pointOnSurfaceInfo -n ($prefix+$i+"_psInfo")`;
+		string $aim = `createNode aimConstraint -n ($prefix+$i+"_aimC")`;
+		string $groupA = `group -em -n ($prefix+$i+"_rig")`;
+		$skinjntgrp[$i]=$groupA;
+		connectAttr -f ($surface + ".worldSpace[0]") ($info + ".inputSurface");
+		connectAttr -f ($info + ".position") ($groupA + ".translate");
+		connectAttr -f ($info + ".tangentU") ($aim + ".worldUpVector");
+		connectAttr -f ($info + ".normal") ($aim + ".target[0].targetTranslate");
+		connectAttr -f ($aim + ".constraintRotateX") ($groupA + ".rotateX");
+		connectAttr -f ($aim + ".constraintRotateY") ($groupA + ".rotateY");
+		connectAttr -f ($aim + ".constraintRotateZ") ($groupA + ".rotateZ");
+		
+		setAttr ($info + ".parameterU") 0.5;
+		if($numx==1) setAttr ($info + ".parameterV") 0;
+		else setAttr ($info + ".parameterV") ($i/($numx-1.0));
+
+		parent $aim $groupA;
+		select -cl;
+		string $joint = `joint -n ($prefix+$i+"_JNT")`;
+        if(`objExists "Main"`)
+        {
+            connectAttr -f Main.scale ($joint+".scale");
+
+        }
+		string $groupB = `group -n ($prefix+$i+"_buf") $joint`;
+		ewalign $groupB $groupA;
+		parent $groupB $groupA;
+		select -cl;
+        if(!`objExists ($prefix+"_allGrp")`)
+        {
+            group -em -n ($prefix+"_allGrp");
+            parent  $groupA ($prefix+"_allGrp");
+        }
+        else
+        {
+            parent  $groupA ($prefix+"_allGrp");
+        }
+       		
+		string $mult = `createNode multDoubleLinear -n ($prefix+$i+"_mult")`;
+		connectAttr -f ($s_add+".output") ($mult+".input1");
+		float $parmeter = `getAttr ($info + ".parameterV")`;
+		float $value = (1-abs($parmeter-0.5)/0.5)*0.65;
+		setAttr ($mult+".input2") $value;
+		string $add = `createNode addDoubleLinear -n ($prefix+$i+"_add")`;
+		connectAttr -f ($mult+".output") ($add+".input1");
+		setAttr ($add+".input2") 1;
+		
+		connectAttr -f ($add+".output") ($groupA+".sx");
+		connectAttr -f ($add+".output") ($groupA+".sy");
+		
+		lockAndHideAttr $groupA;
+		
+		addAttr -ln parameter -at double  -min 0 -max 1 $groupA;
+		setAttr -e -keyable true ($groupA+".parameter");
+		setAttr ($groupA+".parameter") `getAttr ($info + ".parameterV")`;
+		connectAttr -f ($groupA+".parameter") ($info + ".parameterV");
+		addAttr -ln squash -at double  -min 0  $groupA;
+		setAttr -e -keyable true ($groupA+".squash");
+		setAttr ($groupA+".squash") `getAttr ($mult+".input2")`;
+		connectAttr -f ($groupA+".squash") ($mult+".input2");
+            
+	}
+	    setAttr ($topjoints[0]+"_skinSurface.visibility") 0;
+        parent ($topjoints[0]+"_skinSurface") ($prefix+"_allGrp") ;
+
+	
+	        if(!`objExists "all_surfacejnt_grp"`)
+        {
+            group -em -n "all_surfacejnt_grp";
+            parent  ($prefix+"_allGrp") all_surfacejnt_grp;
+        }
+        else
+        {
+            parent  ($prefix+"_allGrp") all_surfacejnt_grp;
+        } 
+    select -cl;
+	setAttr ($topjoints[0]+"_surfacejnt0_rig.parameter") 0.01;
+	setAttr ($topjoints[0]+"_surfacejnt"+($numx-1)+"_rig.parameter") 0.99;
+	skinCluster -mi 1 -tsb $topjoints $skinsurface[0];	
+	select -cl;
+}
+////////////////////////////////createControl/////////////////////////////
+////////////////////////////////createControl/////////////////////////////
+global proc createControl() 
+{
+	if(`window -ex createControlWin`) deleteUI createControlWin;
+	window -t "createControl" -widthHeight 250 200 -sizeable 1 -rtf 1 createControlWin;
+	scrollLayout -horizontalScrollBarThickness 16 -verticalScrollBarThickness   16;
+	columnLayout -adj 0 -rowSpacing 10 -cat left 10;
+	//radioButtonGrp -w 250 -cw3 70 80 120 -nrb 2 -label "Fashion" -la2 "Group" "Shape" -select 1 -vis false -en 0 -cc "changeDirState" mFashion;
+	radioButtonGrp -w 250 -cw3 70 80 100 -nrb 2 -label "Relating" -la2 "Combination" "Separateness" -select 2 mRelating;
+	radioButtonGrp -w 350 -cw4 70 80 100 120 -nrb 3 -label "Orientation" -la3 "X" "Y" "Z" -select 1  mOrientation;
+	radioButtonGrp -w 380 -cw5 70 80 90 90 100 -nrb 4 -label "Constrain" -la4 "Point" "Orient" "Parent" "None" -select 3  mConstrain;
+
+	rowLayout -columnWidth6 50 50 50 50 50 50 -height 28 -numberOfColumns 6 -width 300;
+	symbolButton -image "icon/circle.bmp" -c "createCircle";
+	symbolButton -image "icon/ball.bmp" -c "createBall";
+	symbolButton -image "icon/square.bmp" -c "createSquare";
+	symbolButton -image "icon/cube.bmp" -c "createCube";
+	symbolButton -image "icon/diamond.bmp" -c "createDiamond";
+	symbolButton -image "icon/cross.bmp" -c "createCross";
+	setParent ..;
+
+	rowLayout -columnWidth6 50 50 50 50 50 50 -height 28 -numberOfColumns 6 -width 300;
+	symbolButton -image "icon/clew.bmp" -c "createClew";
+	symbolButton -image "icon/star.bmp" -c "createStar";
+
+	//symbolButton -image "custom.bmp" -c "createCustom";
+	setParent ..;
+
+	//textFieldButtongroup -label "selectCon" -ed 1  -buttonLabel "Load" -bc "loadName" mText;
+	showWindow createControlWin;
+}
+
+global proc loadName()
+{
+	string $sel[] =`ls -sl`;
+	textFieldButtongroup -e -tx $sel[0] mText;
+}
+global proc changeDirState()
+{
+	int $buttonSel =`radioButtonGrp -q -select mFashion`;
+	if ($buttonSel==1)
+	{
+		radioButtonGrp -e -en 1 mRelating;
+		radioButtonGrp -e -en 1 mOrientation;
+		radioButtonGrp -e -en 1 mConstrain;
+	}
+	else
+	{
+		radioButtonGrp -e -en 0 mRelating;
+		radioButtonGrp -e -en 1 mOrientation;
+		radioButtonGrp -e -en 0 mConstrain;
+	}
+}
+		
+global proc createCircle() 
+{
+	string $selJon[] =`ls -sl`;
+	int $sizeJon =`size $selJon`;
+	//int $selButtonA=`radioButtonGrp -q -select mFashion`;
+	int $selButtonB=`radioButtonGrp -q -select mRelating`;
+	int $selButtonC=`radioButtonGrp -q -select mOrientation`;
+	int $selButtonD=`radioButtonGrp -q -select mConstrain`;
+	$createSetResult = `sets -name setgroup -em`;
+	$createSetResult = `sets -name setCon -em`;
+	//if ($selButtonA==1)
+	//{
+		for ($i=0;$i<$sizeJon;$i++)
+		{
+			string $circleCon[]=`circle -c 0 0 0 -nr 0 1 0 -sw 360 -r 1 -d 3 -ut 0 -tol 0.01 -s 8 -ch 1`;DeleteHistory;
+			if ($selButtonC ==1)
+			{
+				select -r ($circleCon[0] +".cv[0:7]");
+				rotate -r -p 0cm 0cm 0cm -os 0 0 90;
+			}
+			else
+			{
+				if ($selButtonC	==2)
+				{
+					select -r ($circleCon[0] +".cv[0:7]");
+					rotate -r -p 0cm 0cm 0cm -os 0 0 0;
+				}
+				else
+				{
+					select -r ($circleCon[0] +".cv[0:7]");
+					rotate -r -p 0cm 0cm 0cm -os 90 0 0;
+				}
+			}
+			string $newName[];
+			$newName[0] =$selJon[$i]+"_Con";
+			rename $circleCon[0] $newName[0];
+			select $newName[0];
+			string $Tsel[] =`ls -sl`;
+			select $Tsel[0];
+			string $circlegroup[];
+			$circlegroup[0]=`group -n ($Tsel[0]+"group")`; 
+			select $selJon[$i];select -add $circlegroup[0];
+			parentConstraint -weight 1;
+			delete ($Tsel[0]+"group_parentConstraint1");
+			if ($selButtonD==1)
+			{
+				select $Tsel[0];select -add $selJon[$i];
+				pointConstraint -mo -weight 1;
+			}
+			else if ($selButtonD==2)
+			{
+				select $Tsel[0];select -add $selJon[$i];
+				orientConstraint -mo -weight 1;
+			}
+			else if ($selButtonD==3)
+			{
+				select $Tsel[0];select -add $selJon[$i];
+				parentConstraint -weight 1;
+			}	
+			sets -e -add setgroup $circlegroup[0];
+			sets -e -add setCon $newName[0];
+		}
+		string $selA[] =`sets -q setgroup`;
+		int $sizeSel =`size $selA`;
+		string $selB[] =`sets -q setCon`;
+		if ($selButtonB==1)
+		{
+			for ($i=0;$i<$sizeSel-1;$i++)
+			{
+				select $selA[$i+1];select -add $selB[$i];parent;
+			}
+		}
+		sets -e -cl setgroup;sets -e -cl setCon;
+		select -r -ne setCon;select -add -ne setgroup;Delete;
+		
+	//}
+	//else
+	/*{
+		for ($i=0;$i<$sizeJon;$i++)
+		{
+			string $circleCon[]=`circle -c 0 0 0 -nr 0 1 0 -sw 360 -r 1 -d 3 -ut 0 -tol 0.01 -s 8 -ch 1`;DeleteHistory;
+			if ($selButtonC ==1)
+			{
+				select -r ($circleCon[0] +".cv[0:7]");
+				rotate -r -p 0cm 0cm 0cm -os 0 0 90;
+			}
+			else
+			{
+				if ($selButtonC	==2)
+				{
+					select -r ($circleCon[0] +".cv[0:7]");
+					rotate -r -p 0cm 0cm 0cm -os 0 0 0;
+				}
+				else
+				{
+					select -r ($circleCon[0] +".cv[0:7]");
+					rotate -r -p 0cm 0cm 0cm -os 90 0 0;
+				}
+			}
+			string $circleConShape[]=`listRelatives -s -path $circleCon[0]`;
+			parent -r -shape $circleConShape[0] $selJon[$i];
+			select $circleCon[0];Delete;
+		}
+		sets -e -cl setgroup;sets -e -cl setCon;
+		select -r -ne setCon;select -add -ne setgroup;Delete;
+	}*/
+			
+}
+
+global proc ewalign(string $current,string $target)
+{
+	if(`nodeType $current`!="transform" && `nodeType $current`!="joint")
+		{
+		print "Select objects with transform node or joints!\n";
+		return;
+		}
+	if(`nodeType $target`!="transform" && `nodeType $target`!="joint")
+		{
+		print "Select objects with transform node or joints!\n";
+		return;
+		}
+
+	float $targetPos[3];;
+	$targetPos = `xform -q -ws -pivots $target`;
+	move -ws -rpr $targetPos[0] $targetPos[1] $targetPos[2] $current; 
+	float $targetRot[3];
+	$targetRot =`xform -q -ws -ro $target`;
+	rotate -ws $targetRot[0] $targetRot[1] $targetRot[2] $current;	
+}
+global proc alignrotation(string $current,string $target)
+{
+	if(`nodeType $current`!="transform" && `nodeType $current`!="joint")
+		{
+		print "Select objects with transform node or joints!\n";
+		return;
+		}
+	if(`nodeType $target`!="transform" && `nodeType $target`!="joint")
+		{
+		print "Select objects with transform node or joints!\n";
+		return;
+		}
+
+	float $targetRot[3];
+	$targetRot =`xform -q -ws -ro $target`;
+	rotate -ws $targetRot[0] $targetRot[1] $targetRot[2] $current;	
+}
+
+global proc lockAndHideAttr(string $currentNode)
+{
+	if (`objExists $currentNode`==0)
+		{
+		print "nothing has been selected.\n";
+		return;
+		}
+	string $Attr_List[];
+	string $attr;
+	$Attr_List = `listAttr -k $currentNode`;
+	for ($attr in $Attr_List)
+		setAttr -keyable 0 -lock 1  ($currentNode + "." + $attr);
+	$Attr_List = `listAttr -cb $currentNode`;
+		if (`size $Attr_List`!=0)
+			for ($attr in $Attr_List)
+				setAttr -keyable 0 -channelBox 0  ($currentNode + "." + $attr);
+		else
+			return;
+}
+global proc makeIkHairNew()
+{
+    string $sel[]=`ls -sl -type"joint"`;
+    if(size($sel)>0)
+    {
+        for($i=0;$i<size($sel);$i++)
+        {
+            select $sel[$i];
+            makeIkHair;
+        }
+    }
+    
+
+}
+
+///////////////////////////////////生成曲线/////////////////////////////////////////////////////////////////////////
+global proc creatCv()
+{
+           string $selJnt[] = `ls -sl`;
+           for($i=0;$i<size($selJnt);$i++)
+   {
+	string $baseJoint = $selJnt[$i];
+           select -hierarchy $baseJoint;
+           string $selalljnt[]=`ls -sl`;
+           int $seljntSize=`size($selalljnt)`;
+           string $endJoint=$selalljnt[$seljntSize-1];
+
+
+	//Create a vector array to store the world space coordinates of the joints.
+	vector $jointPos[];
+	//String variable to house current joint being queried in the while loop.
+	string $currentJoint = $baseJoint;
+	//Counter integer used in the while loop to determine the proper index in the vector array.
+	int $counter = 0;
+
+
+
+
+
+//Initial selection going into the while loop/
+		select $baseJoint;
+		//Will loop through all the joints between the base and end by pickwalking through them.
+		//The loop stores the world space of each joint into $jointPos as it iterates over them.
+		while ($currentJoint != $endJoint)
+		{
+			$jointPos[$counter] = `joint -q -p -a $currentJoint`;
+			pickWalk -d down;
+			$sel = `ls -sl`;
+			$currentJoint = $sel[0];
+			$counter++;
+		} 
+		
+		//Theses 3 lines store the position of the end joint that the loop will miss.
+		$sel = `ls -sl`;
+		$currentJoint = $sel[0];
+		$jointPos[$counter] = `joint -q -p -a $currentJoint`;
+			
+		//Now that $jointPos[] holds the world space coords of our joints, we need to build a cv curve
+		//with points at each XYZ coord.
+		
+		//This string will house the command to create our curve.
+		string $buildCurve = "curve -d 1 ";
+		//Another counter integer for the for loop
+		int $cvCounter = 0;
+		
+		//Loops over and adds the position of each joint to the buildCurve string.
+		while ($cvCounter <= $counter)
+		{
+			$buildCurve = ($buildCurve + " -p " + $jointPos[$cvCounter]);
+			$cvCounter++;
+		}
+		
+		//Adds the end terminator to the build curve command
+		$buildCurve = $buildCurve + ";";
+		//Evaluates the $buildCurve string as a Maya command. (creates the curve running through the joints)
+		string $nameOfCurve = `eval ($buildCurve)`;
+
+                        string $cvyuanshi[] = `ls -sl -fl`;
+                        string $cy = $cvyuanshi[0];
+                        for($cy in $cvyuanshi){
+                        string $hair = `rename ($cy) "folliclecv1"`;
+                        ToggleCVs;
+
+                         print ($hair);
+
+                        }
+   }
+
+
+}
+
+global proc yueshu()
+{
+    string $sel[]=`ls -sl`;
+    for($i=0;$i<size($sel)-1;$i++)
+    {
+        parentConstraint -mo -weight 1   $sel[size($sel)-1] $sel[$i];
+        scaleConstraint -mo -weight 1 $sel[size($sel)-1] $sel[$i];;
+    
+    }
+}
+
+global proc creatJointsOnCurves() 
+{
+    string $curves[] = `ls -sl -long`;
+    int $NumberOfCurves = `size($curves)`;
+    string $type="jointChain";
+    int $NumberOfJoints = `intField -q -v jntNumberIntField`;
+
+    string $i;
+    int $curveCount = 0;
+    for ($i in $curves)//$i = $curves[0]
+    {
+    	select -r $i;
+    	string $iShape[] = `pickWalk -d down`;
+    			
+    	if (`objectType -isType "nurbsCurve" $iShape[0]`)
+    	{
+    		string $pathNodes[];
+    		int $numTokens = tokenize($i, "|", $pathNodes);
+    		string $myObj = $pathNodes[$numTokens - 1];
+    		string $OriginalCurveName_ = $i;
+    		select -r $i ;
+    		string $newCurve_[] = `duplicate -smartTransform`;
+    		select $newCurve_[0];
+    		makeIdentity -apply true -t 1 -r 1 -s 1 -n 0; 
+    		int $numberOfSpans;
+    		$numberOfSpans = $NumberOfJoints;
+    		rebuildCurve -ch 1 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s $numberOfSpans -d 3 -tol 0.01 $newCurve_[0];
+    		float $NumberOfSpans = `getAttr ($newCurve_[0] + ".spans")`;
+    		float $NumberOfEP = $NumberOfSpans + 1;
+    		string $ep_0 = $newCurve_[0] + ".ep[0]";
+    		string $tempCluster[0] = `cluster $ep_0`;
+    		float $cluster_xyz[] = `xform -q -rp -ws $tempCluster[1]`;
+    		select -cl;
+    		string $RootJoint;
+    		$RootJoint = `joint -p $cluster_xyz[0] $cluster_xyz[1] $cluster_xyz[2] -name ($myObj + "_jointChain")`;
+    		delete $tempCluster[1];
+    		string $BaseJoint = $RootJoint;
+    		int $j;
+    		for ($j = 1; $j < $NumberOfEP; $j++)
+    		{
+    				$ep_0 = $newCurve_[0] + ".ep[" + $j + "]";
+    				string $tempCluster[0] = `cluster $ep_0`;	
+    				float $cluster_xyz[] = `xform -q -rp -ws $tempCluster[1]`;
+    				string $newJoint = `joint -p $cluster_xyz[0] $cluster_xyz[1] $cluster_xyz[2]`;
+    				parent $newJoint $BaseJoint;
+    				$BaseJoint = $newJoint;
+    				delete $tempCluster[1];
+    		}
+			select -r $RootJoint;
+			joint -e -oj xyz -secondaryAxisOrient yup -ch -zso;
+    		delete $newCurve_[0];
+    		$curveCount++;
+    	}
+    }    
+    delete $curves ;
+    print ("---> " + $curveCount + " joint chains created <---  read the script editor for more info..");
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+global proc Rename()
+{
+    	if (`window -ex BRreNameWin`)
+
+	deleteUI  BRreNameWin;
+	window -title "Batch Renaming Window"
+    	-wh 500 300  -mxb 0  BRreNameWin;    		
+  formLayout renOptionFom;
+	frameLayout -l "改名操作" -labelAlign "center"
+			-borderStyle "etchedIn" renOptionFrm;
+	columnLayout renOptionLay;
+	radioButtonGrp -numberOfRadioButtons 3
+    	  -label "改名类型"
+			-labelArray3 "加前缀" "加后缀" "替换字符"
+			-sl 1 renType;
+	radioButtonGrp -numberOfRadioButtons 2 -shareCollection renType
+			-label ""
+			-labelArray2  "取新名" "" renType2;
+
+	radioButtonGrp
+     	-numberOfRadioButtons 2
+     	-label "操作范围"
+	    -labelArray2 "被选物体" "包括子物体" 
+			-sl 1 renRange;
+	setParent..;
+	setParent..;
+	frameLayout -l "替换字符" -labelAlign "center"
+			-borderStyle "etchedIn" repNameFrm;
+	 		
+	columnLayout -adjustableColumn true  repNameLay;
+	textFieldGrp 
+			-label "旧文字" -en 0	
+			-text "old" oldstring;
+
+	textFieldGrp
+			-label "新字符" -en 0 
+			-text "new" newstring;
+	setParent..;
+	setParent..;
+
+	frameLayout -l "新名称" -labelAlign "center"
+			-borderStyle "etchedIn" newNameFrm;
+
+	columnLayout -adjustableColumn true newNameLay;
+	textFieldGrp 
+			-label "前缀" -en 1
+			-text "Prefix_" preString ;
+	textFieldGrp 
+			-label "后缀" -en 0
+			-text "_Postfix" postString ;
+	textFieldGrp 
+			-label "物体名" -en 0
+			-text "Obj_" objString ;
+	setParent..;
+	setParent..;
+
+	button -l "Replace" 
+			-annotation "Rename Objects Operation"
+			-c "gxb_BRrenameTool_Main;deleteUI  BRreNameWin;" okBtn;
+	button -l "Apply" 
+			-annotation "Rename Objects Operation"
+			-c "gxb_BRrenameTool_Main;" optBtn;
+	button -l "Close"
+			-annotation "Close Curren Windows"
+			-c "deleteUI  BRreNameWin;" closeBtn;	
+	setParent..;
+
+	string $cmdOnOldStr = "textFieldGrp -e -en 1 oldstring;";
+	string $cmdOffOldStr = "textFieldGrp -e -en 0 oldstring;";
+
+	string $cmdOnNewStr = "textFieldGrp -e -en 1 newstring;";
+	string $cmdOffNewStr = "textFieldGrp -e -en 0 newstring;";
+
+	string $cmdOnObjStr = "textFieldGrp -e -en 1 objString;";
+	string $cmdOffObjStr = "textFieldGrp -e -en 0 objString;";
+
+	string $cmdOnPreStr = "textFieldGrp -e -en 1 preString;";
+	string $cmdOffPreStr = "textFieldGrp -e -en 0 preString;";
+
+	string $cmdOnPosStr = "textFieldGrp -e -en 1 postString;";
+	string $cmdOffPosStr = "textFieldGrp -e -en 0 postString;";
+
+
+
+	radioButtonGrp -e -on1 ($cmdOnPreStr + $cmdOffOldStr + $cmdOffNewStr + $cmdOffObjStr + $cmdOffPosStr)
+			-on2 ($cmdOffPreStr + $cmdOffOldStr + $cmdOffNewStr + $cmdOffObjStr + $cmdOnPosStr)
+			-on3 ($cmdOffPreStr + $cmdOnOldStr + $cmdOnNewStr + $cmdOffObjStr + $cmdOffPosStr)
+			renType;
+	radioButtonGrp -e
+			-on1 ($cmdOffPreStr + $cmdOffOldStr + $cmdOffNewStr + $cmdOnObjStr + $cmdOffPosStr)
+			-on2 ($cmdOffPreStr + $cmdOffOldStr + $cmdOffNewStr + $cmdOffObjStr + $cmdOffPosStr)
+			renType2;
+
+	formLayout -e	
+		-af okBtn left 5
+		-af okBtn bottom 5 
+		-ap okBtn right 0 30 
+
+		-ac optBtn left 5 okBtn
+		-af optBtn bottom 5 
+		-ap optBtn right 0 65 
+
+		-ac closeBtn left 5 optBtn
+		-af closeBtn bottom 5
+		-af closeBtn right 5
+
+		-af renOptionFrm top 5
+		-af renOptionFrm left 5
+		-af renOptionFrm right 5 
+
+		-ac repNameFrm top 5 renOptionFrm
+		-af repNameFrm left 5
+		-af repNameFrm right 5 
+
+		-ac newNameFrm top 5 repNameFrm
+		-af newNameFrm left 5
+		-af newNameFrm right 5 
+		renOptionFom;
+
+showWindow BRreNameWin;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+//                                                                                                                                                                                                                                                                //                                                                                                                  
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+global proc VolumeJnt()
+{
+		if(`window -ex VolumeJntWin`==1)
+		{
+		deleteUI VolumeJntWin;
+		}
+	window -t "体积骨骼" 
+
+	VolumeJntWin;
+                     frameLayout -w 285 -cll 1  -cl 0 -label "体积骨骼驱动";			 	  			
+                     columnLayout ; 
+                     formLayout VolumeSetFormLayout ;	
+                     radioButtonGrp -nrb 3 
+                                    -sl 1
+                                    -cw2 124  124  
+                                    -la3  "ScaleX" "ScaleY" "ScaleZ"  OrientScaleJntButton ;
+                     radioButtonGrp -nrb 3 
+                                    -sl 1
+                                    -cw2 124  124  
+                                    -la3  "RotateX" "RotateY" "RotateZ"  OrientRotateJntButton ;                                                                                     
+                     button -label "生成骨骼" -bgc 0.3 0.8 0.5 -width 80  -c "CreatJnt" CreatJntButton ; 
+                     floatField -v 90 -w 80 -h 20 JntDriven; 
+                     text -l "Driven"  Text;
+                     text -l "Rotate"  RotateText;
+                     floatField -v -45 -w 80 -h 20 JntRotateDriven; 
+                     text -l "Scale"  ScaleText;
+                     floatField -v 3 -w 80 -h 20 JntScaleDriven;
+                     button -label "设置驱动" -bgc 0.3 0.8 0.5 -width 80  -c "SetDriven" SetDrivenButton ; 
+                formLayout -e
+                     -af OrientScaleJntButton "left" 10
+                     -af OrientScaleJntButton "top"  10
+
+                     -af OrientRotateJntButton "left" 10
+                     -af OrientRotateJntButton "top"  90
+
+                     -af CreatJntButton "left" 10
+                     -af CreatJntButton "top"  50
+
+                     -af JntDriven "left" 10
+                     -af JntDriven "top"  130
+                     
+                     -af Text "left" 140
+                     -af Text "top"  130   
+                     
+                     -af RotateText "left" 255
+                     -af RotateText "top"  130
+                                          
+                     -af JntRotateDriven "left" 295
+                     -af JntRotateDriven "top"  130 
+                     
+                     -af ScaleText "left" 390
+                     -af ScaleText "top"  130                         
+
+                     -af JntScaleDriven "left" 420
+                     -af JntScaleDriven "top"  130 
+
+                     -af SetDrivenButton "left" 10
+                     -af SetDrivenButton "top"  170                                                       
+                VolumeSetFormLayout ;
+            
+showWindow VolumeJntWin;            
+} 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//                                                                                                                              //
+//                                              生成骨骼                                                                         //
+//                                                                                                                              //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+global proc CreatJnt()
+{
+          
+          string $SkinJnt[] = `ls -sl`;
+          select -r $SkinJnt[0] ;
+          pickWalk -d up;
+          string $SkinJntParent[0] = `ls -sl`;
+          int $OrientScaleJntButtonOne = `radioButtonGrp -q -sl OrientScaleJntButton`;
+          if($OrientScaleJntButtonOne == 1)
+          {
+                //string $SkinJnt[] = `ls -sl`;
+                select -r $SkinJnt[0] ;
+                string $VolumeJntA = `joint `;
+                string $VolumeJntB = `joint `;
+                string $VolumeJntC = `joint `;
+                select -r $VolumeJntA $SkinJntParent[0] ;
+                parent; 
+                setAttr ($VolumeJntB + ".translateX") 0.5;
+                setAttr ($VolumeJntC + ".translateX") 1.0;
+                
+                select -r $SkinJnt[0] ;
+                string $VolumeJntfA = `joint`;
+                string $VolumeJntfB = `joint`;
+                string $VolumeJntfC = `joint`;
+                select -r $VolumeJntfA $SkinJntParent[0] ;
+                parent; 
+                setAttr ($VolumeJntfB + ".translateX") -0.5;
+                setAttr ($VolumeJntfC + ".translateX") -1.0;
+                //select -r $VolumeJntfA;
+                //joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+                select -cl  ;
+                select -r $SkinJnt[0] ;
+          } 
+          if($OrientScaleJntButtonOne == 2)
+          {
+                //string $SkinJnt[] = `ls -sl`;
+                select -r $SkinJnt[0] ;
+                string $VolumeJntA = `joint `;
+                string $VolumeJntB = `joint `;
+                string $VolumeJntC = `joint `;
+                select -r $VolumeJntA $SkinJntParent[0] ;
+                parent; 
+                setAttr ($VolumeJntB + ".translateY") 0.5;
+                setAttr ($VolumeJntC + ".translateY") 1.0;
+                
+                select -r $SkinJnt[0] ;
+                string $VolumeJntfA = `joint `;
+                string $VolumeJntfB = `joint `;
+                string $VolumeJntfC = `joint `;
+                select -r $VolumeJntfA $SkinJntParent[0] ;
+                parent; 
+                setAttr ($VolumeJntfB + ".translateY") -0.5;
+                setAttr ($VolumeJntfC + ".translateY") -1.0;
+                //select -r $VolumeJntfA;
+                //joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+                select -cl  ;  
+                select -r $SkinJnt[0] ;              
+          }
+          if($OrientScaleJntButtonOne == 3)
+          {
+                //string $SkinJnt[] = `ls -sl`;
+                select -r $SkinJnt[0] ;
+                string $VolumeJntA = `joint `;
+                string $VolumeJntB = `joint `;
+                string $VolumeJntC = `joint `;
+                select -r $VolumeJntA $SkinJntParent[0] ;
+                parent; 
+                setAttr ($VolumeJntB + ".translateZ") 0.5;
+                setAttr ($VolumeJntC + ".translateZ") 1.0;
+                
+                select -r $SkinJnt[0] ;
+                string $VolumeJntfA = `joint `;
+                string $VolumeJntfB = `joint `;
+                string $VolumeJntfC = `joint `;
+                select -r $VolumeJntfA $SkinJntParent[0] ;
+                parent; 
+                setAttr ($VolumeJntfB + ".translateZ") -0.5;
+                setAttr ($VolumeJntfC + ".translateZ") -1.0;
+                //select -r $VolumeJntfA;
+                //joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+                select -cl  ; 
+                select -r $SkinJnt[0] ;                
+          }
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//                                                                                                                              //
+//                                              设置驱动                                                                         //
+//                                                                                                                              //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+global proc SetDriven()
+{
+
+          int $OrientRotateJntButton = `radioButtonGrp -q -sl OrientRotateJntButton`;
+          int $OrientScaleJntButtonOne = `radioButtonGrp -q -sl OrientScaleJntButton`;
+          //int $OrientRotateJntButtonTwo = `radioButtonGrp -q -sl OrientRotateJntButton`; 
+          //int $OrientRotateJntButtonThree = `radioButtonGrp -q -sl OrientRotateJntButton`; 
+          float $JntDriven = `floatField -q -v JntDriven`;
+          float $JntRotateDriven = `floatField -q -v JntRotateDriven`; 
+          float $JntScaleDriven = `floatField -q -v JntScaleDriven`;  
+          string $SkinJnt[] = `ls -sl`;      
+          for ($i=1 ;$i<size($SkinJnt);$i++)
+          {
+                  select -r $SkinJnt[$i] ;
+                  pickWalk -d down;
+                  string $SkinScaleJnt[] = `ls -sl`; 
+                  
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//                                                                                                                              //
+//                                              设置旋转驱动                                                                      //
+//                                                                                                                              //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                  if($OrientRotateJntButton == 1)////////RotateX
+                  {
+                      setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinJnt[$i]+".rotateX");
+   
+                      setAttr ($SkinJnt[0]+".rotateX") $JntDriven;
+                      setAttr ($SkinJnt[$i]+".rotateX") $JntRotateDriven;
+                      setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinJnt[$i]+".rotateX");
+   
+                      setAttr ($SkinJnt[0]+".rotateX") ($JntDriven*-1);
+                      setAttr ($SkinJnt[$i]+".rotateX") ($JntRotateDriven*-1);
+                      setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinJnt[$i]+".rotateX");
+
+                      setAttr ($SkinJnt[0]+".rotate") 0 0 0;                      
+                  }  
+
+                  if($OrientRotateJntButton == 2)////////RotateY
+                  {
+                      setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinJnt[$i]+".rotateY");
+   
+                      setAttr ($SkinJnt[0]+".rotateY") $JntDriven;
+                      setAttr ($SkinJnt[$i]+".rotateY") $JntRotateDriven;
+                      setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinJnt[$i]+".rotateY");
+   
+                      setAttr ($SkinJnt[0]+".rotateY") ($JntDriven*-1);
+                      setAttr ($SkinJnt[$i]+".rotateY") ($JntRotateDriven*-1);
+                      setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinJnt[$i]+".rotateY");
+
+                      setAttr ($SkinJnt[0]+".rotate") 0 0 0;                      
+                  }
+
+                  if($OrientRotateJntButton == 3)////////RotateZ
+                  {
+                      setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinJnt[$i]+".rotateZ");
+   
+                      setAttr ($SkinJnt[0]+".rotateZ") $JntDriven;
+                      setAttr ($SkinJnt[$i]+".rotateZ") $JntRotateDriven;
+                      setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinJnt[$i]+".rotateZ");
+   
+                      setAttr ($SkinJnt[0]+".rotateZ") ($JntDriven*-1);
+                      setAttr ($SkinJnt[$i]+".rotateZ") ($JntRotateDriven*-1);
+                      setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinJnt[$i]+".rotateZ");
+
+                      setAttr ($SkinJnt[0]+".rotate") 0 0 0;                      
+                  }           
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+//                                                                                                                              //
+//                                              设置缩放驱动                                                                      //
+//                                                                                                                              //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                  if($OrientScaleJntButtonOne == 1)////////scaleX
+                  {
+                      if($OrientRotateJntButton == 1)
+                          {setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinScaleJnt[$i]+".scaleX");
+   
+                          setAttr ($SkinJnt[0]+".rotateX") $JntDriven;
+                          setAttr ($SkinScaleJnt[$i]+".scaleX") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinScaleJnt[$i]+".scaleX");
+       
+                          setAttr ($SkinJnt[0]+".rotateX") ($JntDriven*-1);
+                          setAttr ($SkinScaleJnt[$i]+".scaleX") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinScaleJnt[$i]+".scaleX");
+    
+                          setAttr ($SkinJnt[0]+".rotate") 0 0 0; 
+                          }
+                      if($OrientRotateJntButton == 2)
+                          {setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinScaleJnt[$i]+".scaleX");
+   
+                          setAttr ($SkinJnt[0]+".rotateY") $JntDriven;
+                          setAttr ($SkinScaleJnt[$i]+".scaleX") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinScaleJnt[$i]+".scaleX");
+       
+                          setAttr ($SkinJnt[0]+".rotateY") ($JntDriven*-1);
+                          setAttr ($SkinScaleJnt[$i]+".scaleX") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinScaleJnt[$i]+".scaleX");
+    
+                          setAttr ($SkinJnt[0]+".rotate") 0 0 0; 
+                          } 
+                      if($OrientRotateJntButton == 3)
+                          {setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinScaleJnt[$i]+".scaleX");
+   
+                          setAttr ($SkinJnt[0]+".rotateZ") $JntDriven;
+                          setAttr ($SkinScaleJnt[$i]+".scaleX") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinScaleJnt[$i]+".scaleX");
+       
+                          setAttr ($SkinJnt[0]+".rotateZ") ($JntDriven*-1);
+                          setAttr ($SkinScaleJnt[$i]+".scaleX") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinScaleJnt[$i]+".scaleX");
+    
+                          setAttr ($SkinJnt[0]+".rotate") 0 0 0; 
+                          }                                                                          
+                  }  
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                  if($OrientScaleJntButtonOne == 2)////////scaleY
+                  {
+                      if($OrientRotateJntButton == 1)
+                          {setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinScaleJnt[$i]+".scaleY");
+   
+                          setAttr ($SkinJnt[0]+".rotateX") $JntDriven;
+                          setAttr ($SkinScaleJnt[$i]+".scaleY") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinScaleJnt[$i]+".scaleY");
+       
+                          setAttr ($SkinJnt[0]+".rotateX") ($JntDriven*-1);
+                          setAttr ($SkinScaleJnt[$i]+".scaleY") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinScaleJnt[$i]+".scaleY");
+    
+                          setAttr ($SkinJnt[0]+".rotate") 0 0 0; 
+                          }
+                      if($OrientRotateJntButton == 2)
+                          {setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinScaleJnt[$i]+".scaleY");
+   
+                          setAttr ($SkinJnt[0]+".rotateY") $JntDriven;
+                          setAttr ($SkinScaleJnt[$i]+".scaleY") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinScaleJnt[$i]+".scaleY");
+       
+                          setAttr ($SkinJnt[0]+".rotateY") ($JntDriven*-1);
+                          setAttr ($SkinScaleJnt[$i]+".scaleY") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinScaleJnt[$i]+".scaleY");
+    
+                          setAttr ($SkinJnt[0]+".rotate") 0 0 0; 
+                          } 
+                      if($OrientRotateJntButton == 3)
+                          {setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinScaleJnt[$i]+".scaleY");
+   
+                          setAttr ($SkinJnt[0]+".rotateZ") $JntDriven;
+                          setAttr ($SkinScaleJnt[$i]+".scaleY") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinScaleJnt[$i]+".scaleY");
+       
+                          setAttr ($SkinJnt[0]+".rotateZ") ($JntDriven*-1);
+                          setAttr ($SkinScaleJnt[$i]+".scaleY") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinScaleJnt[$i]+".scaleY");
+    
+                          setAttr ($SkinJnt[0]+".rotate") 0 0 0; 
+                          }                                                                          
+                  }  
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                  if($OrientScaleJntButtonOne == 3)////////scaleZ
+                  {
+                      if($OrientRotateJntButton == 1)
+                          {
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinScaleJnt[$i]+".scaleZ");
+   
+                          setAttr ($SkinJnt[0]+".rotateX") $JntDriven;
+                          setAttr ($SkinScaleJnt[$i]+".scaleZ") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinScaleJnt[$i]+".scaleZ");
+       
+                          setAttr ($SkinJnt[0]+".rotateX") ($JntDriven*(-1));
+                          setAttr ($SkinScaleJnt[$i]+".scaleZ") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateX") ($SkinScaleJnt[$i]+".scaleZ");
+    
+                          setAttr ($SkinJnt[0]+".rotate") 0 0 0 ; 
+                          }
+                      if($OrientRotateJntButton == 2)
+                          {
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinScaleJnt[$i]+".scaleZ");
+   
+                          setAttr ($SkinJnt[0]+".rotateY") $JntDriven;
+                          setAttr ($SkinScaleJnt[$i]+".scaleZ") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinScaleJnt[$i]+".scaleZ");
+       
+                          setAttr ($SkinJnt[0]+".rotateY") ($JntDriven*(-1));
+                          setAttr ($SkinScaleJnt[$i]+".scaleZ") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateY") ($SkinScaleJnt[$i]+".scaleZ");
+    
+                          setAttr ($SkinJnt[0]+".rotate") 0 0 0 ; 
+                          } 
+                      if($OrientRotateJntButton == 3)
+                          {
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinScaleJnt[$i]+".scaleZ");
+   
+                          setAttr ($SkinJnt[0]+".rotateZ") $JntDriven;
+                          setAttr ($SkinScaleJnt[$i]+".scaleZ") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinScaleJnt[$i]+".scaleZ");
+       
+                          setAttr ($SkinJnt[0]+".rotateZ") ($JntDriven*(-1));
+                          setAttr ($SkinScaleJnt[$i]+".scaleZ") $JntScaleDriven;
+                          setDrivenKeyframe -cd ($SkinJnt[0]+".rotateZ") ($SkinScaleJnt[$i]+".scaleZ");
+    
+                          setAttr ($SkinJnt[0]+".rotate") 0 0 0 ; 
+                          }                                                                          
+                  }
+
+          }
+}
+Conformity;
+
+
+
+
+
+
+     

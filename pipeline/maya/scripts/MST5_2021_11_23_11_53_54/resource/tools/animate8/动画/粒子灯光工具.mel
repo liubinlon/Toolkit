@@ -1,0 +1,199 @@
+//粒子灯光动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////
+global proc gtLiziLightsWin(){
+if(`window -ex gtLiziLightsWin`) deleteUI -window gtLiziLightsWin;
+if(`windowPref -ex gtLiziLightsWin`) windowPref -r gtLiziLightsWin;
+
+window -wh 400 300 -title "老船角色绑定-☆☆☆☆☆-粒子灯光动画工具" gtLiziLightsWin;
+ columnLayout -adj 1 mainColumnattr;
+     text -l "查看程序说明，了解更多应用细节\n老船动画吧：http://www.animate8.com/";
+button -l "访 问 老 船 动 画 吧！" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com\"";
+formLayout liziForm;
+columnLayout -adj 1 liziCol;
+intFieldGrp -l "粒子灯光数量" -nf 1 -v1 100 liziNum;
+text -l "灯光颜色——红色";
+floatFieldGrp -nf 2 -v1 0.1 -v2 1 -l "红色，最小和最大值"  redF;
+text -l "灯光颜色——绿色";
+floatFieldGrp -nf 2 -v1 0.1 -v2 1  -l "绿色，最小和最大值"  greenF;
+text -l "灯光颜色——蓝色";
+floatFieldGrp -nf 2 -v1 0.1 -v2 1 -l "蓝色，最小和最大值" blueF;
+text -l "灯光亮度";
+floatFieldGrp -nf 2 -v1 .5 -v2 1.5 -l "灯光，最小和最大值" intensF;
+separator -style single  sep1;
+
+floatFieldGrp -nf 1 -v1 1  -l "灯光强度缩放" intensFScale;
+rowColumnLayout -nc 2 -cw 1 200 -cw 2 200;
+
+button -c "gtLiziDeng;" -l "创建粒子灯光"  but1;
+button -c "gtLiziDengBake;" -l "烘焙粒子灯光关键帧"  but2;
+setParent..;
+
+text -l "请选择粒子，点击工具按钮，烘焙灯光关键帧";
+
+formLayout -e 
+-af liziCol left 5 -af liziCol top 3 -af liziCol right 5 liziForm;
+showWindow gtLiziLightsWin;
+}
+///////////////////////////
+global proc gtLiziDeng(){
+
+string $sel[]=`ls -sl`;
+
+float $rmin=`floatFieldGrp -q -v1 redF`;
+float $rmax=`floatFieldGrp -q -v2 redF`;
+float $gmin=`floatFieldGrp -q -v1 greenF`;
+float $gmax=`floatFieldGrp -q -v2 greenF`;
+float $bmin=`floatFieldGrp -q -v1 blueF`;
+float $bmax=`floatFieldGrp -q -v2 blueF`;
+float $imin=`floatFieldGrp -q -v1 intensF`;
+float $imax=`floatFieldGrp -q -v2 intensF`;
+int $num=`intFieldGrp -q -v1 liziNum`;
+float $inst=`floatFieldGrp -q -v1 intensFScale`;
+addAttr -ln "part"  -at double $sel[0];
+
+int $nnn=$num-1;
+group -em -n ("liziLightGrp");
+xform -os -piv 0 0 0;
+
+for($i=0;$i<$num;$i++){
+float $r=rand($rmin,$rmax);
+float $g=rand($gmin,$gmax);
+float $b=rand($bmin,$bmax);
+float $indensity=rand($imin,$imax);
+defaultPointLight(1, $r,$g,$b, 2, 0, 0,0,0, 1);
+	rename ("liziLight"+$i);
+	setAttr ("liziLight"+$i+".intensity") $indensity;
+	setAttr ("liziLight"+$i+".v") 0;
+addAttr -ln "inst"  -at double  ("liziLight"+$i);
+addAttr -ln "part"  -at double  ("liziLight"+$i);
+        connectAttr -f ($sel[0]+".part") ("liziLight"+$i+".part");
+
+	setAttr ("liziLight"+$i+".inst") $indensity;
+	setAttr -lock true ("liziLight"+$i+".inst");
+
+select -r ("liziLight"+$i);
+select -add ("liziLightGrp");
+parent;
+}
+
+setAttr ($sel[0]+".maxCount") $num;
+setAttr ($sel[0]+".lifespanMode") 3;
+
+string $shape[]=`listRelatives -s $sel[0]`;
+int $state=`objExists ($sel[0]+".intensity")`;
+if($state!=1){
+addAttr -ln "intensity"  -at double -dv $inst -k 1 $sel[0];
+setAttr ($shape[0]+".particleRenderType") 7;
+addAttr -ln radiusPP -dt doubleArray ($shape[0]);
+addAttr -ln radiusPP0 -dt doubleArray ($shape[0]);
+addAttr -ln "sizeMin"  -at double  -k 1 -dv 0.1 $sel[0];
+addAttr -ln "sizeMax"  -at double  -k 1 -dv 0.5 $sel[0];  
+addAttr -ln "lightHold"  -at bool  -k 1 -dv 0 $sel[0];
+}
+
+int $ex=`objExists ($shape[0]+".event")`;
+if($ex==0){
+  event -die 0 -count 0 $sel[0];  
+}
+
+shadingNode -asShader blinn -n ($sel[0]+"BlinnM");
+select -r ($sel[0]);
+hyperShade -assign ($sel[0]+"BlinnM");
+setAttr ($sel[0]+"BlinnM.color") -type double3 0 0 0 ;
+setAttr ($sel[0]+"BlinnM.transparency") -type double3 0.9 0.9 0.9 ;
+setAttr ($sel[0]+"BlinnM.eccentricity") 0.1;
+setAttr ($sel[0]+"BlinnM.specularRollOff") 0.5;
+setAttr ($sel[0]+"BlinnM.specularColor") -type double3 1 1 1 ;
+
+string $exp="";
+	$exp+="if(";
+	$exp+=($shape[0]);
+	$exp+=".particleId>";
+	$exp+=($nnn);
+	$exp+=")";
+	$exp+=($shape[0]);
+	$exp+=".lifespanPP=0;\n";
+	$exp+="if(";
+	$exp+=($shape[0]);
+	$exp+=".lifespanPP!=0){\n";
+	$exp+="int $id=";
+	$exp+=($shape[0]);
+	$exp+=".particleId;\n";
+	$exp+="vector $pos=";
+	$exp+=($shape[0]);
+	$exp+=".position;\n";
+	$exp+="setAttr (\"liziLight\"+$id+\".tx\") ($pos.x);\n";
+	$exp+="setAttr (\"liziLight\"+$id+\".ty\") ($pos.y);\n";
+	$exp+="setAttr (\"liziLight\"+$id+\".tz\") ($pos.z);\n";
+	$exp+="setAttr (\"liziLight\"+$id+\".v\") 1;\n}\n";
+	$exp+="float $min="+$sel[0]+".sizeMin;\n";
+	$exp+="float $max="+$sel[0]+".sizeMax;\n";
+	$exp+="float $rad=rand($min,$max);\n";
+	$exp+=$shape[0]+".radiusPP=$rad;\n";
+
+dynExpression -s $exp -c $shape[0];
+
+int $ex=`objExists ($shape[0]+".event")`;
+
+string $expA="";
+	$expA+="if(";
+	$expA+=($shape[0]);
+	$expA+=".lifespanPP!=0){\n";
+	$expA+="vector $pos=";
+	$expA+=($shape[0]);
+	$expA+=".position;\n";
+	$expA+="int $id=";
+	$expA+=($shape[0]);
+	$expA+=".particleId;\n";
+	$expA+="setAttr (\"liziLight\"+$id+\".tx\") ($pos.x);\n";
+	$expA+="setAttr (\"liziLight\"+$id+\".ty\") ($pos.y);\n";
+	$expA+="setAttr (\"liziLight\"+$id+\".tz\") ($pos.z);\n";
+	if($ex==1){
+	$expA+="if(";
+	$expA+=($shape[0]);
+	$expA+=".event!=0){\n";
+	$expA+="if("+$sel[0]+".lightHold==0)";	
+	$expA+="setAttr (\"liziLight\"+$id+\".v\") 0;\n";
+	$expA+=($shape[0]);
+	$expA+=".lifespanPP=0;\n}";
+	}
+	$expA+="}\n";
+
+dynExpression -s $expA -rad $shape[0];
+
+string $expO="";
+	$expO+="if(frame==1){\n";
+	$expO+="for($i=0;$i<";
+	$expO+=($num);
+	$expO+=";$i++){\nsetAttr  (\"liziLight\"+$i+\".v\") 0;\n";
+	$expO+="float $ins=`getAttr ";
+	$expO+=($sel[0]);
+	$expO+=".intensity`;\n";
+	$expO+="float $inst=`getAttr (\"liziLight\"+$i+\".inst\")`;\n";
+	$expO+="setAttr (\"liziLight\"+$i+\".intensity\") ($ins*$inst);}}";
+expression -s $expO -ae 1 -uc all ;
+}
+////////////////////////
+global proc gtLiziDengBake(){
+    string $sel[]=`ls -sl`;
+    string $lights[]=`listConnections -s 0 -d 1 ($sel[0]+".part")`;
+    $startFrame		=	`playbackOptions -q -min`;
+	$endFrame		=	`playbackOptions -q -max`;
+	for($j=$startFrame;$j<$endFrame+1;$j++){
+    currentTime -e $j;
+    for($i=0;$i<size($lights);$i++){
+        setKeyframe ($lights[$i]+".t");
+        setKeyframe ($lights[$i]+".v");        
+        }
+    }
+}
+///////////////////////////
+gtLiziLightsWin;

@@ -1,0 +1,52 @@
+//批量蒙皮权重绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtCopySkinWeightsWin(){
+   if(`window -ex gtCopySkinWeightsWin`) deleteUI -window gtCopySkinWeightsWin;
+    window -wh 340 200  -t "老船角色绑定-☆-批量蒙皮权重绑定工具!" gtCopySkinWeightsWin;
+    columnLayout -adj 1 mainColumnattr;
+ text -l "点击下方按钮↓↓↓↓↓" -al "center";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40 -w 340 -c "showHelp -a \"http://www.animate8.com/archives/1238\"";
+    formLayout  -w 350 gtCOTAF;
+
+    textFieldGrp -l "蒙皮权重完成物体：" -text "" -cw2 120  120 gtLoarSkinObj;
+    button  -l "载入蒙皮物体" -c "ttgLaodSkinObjNamProc" -w 80 but2;
+
+    button  -l "拷贝蒙皮权重值" -c "gtCopySkinWeightsProc" but2a;
+    
+    formLayout -e
+    
+    -af gtLoarSkinObj left 5 -af gtLoarSkinObj top 5  -ap gtLoarSkinObj right 0 70
+    -ac but2 left 5 gtLoarSkinObj -af but2 top 5  -af but2 right 10 
+    
+    -af but2a left 5 -ac but2a top 5 but2  -af but2a right 10
+    gtCOTAF;     
+    showWindow gtCopySkinWeightsWin;   
+}
+//////////////////////////
+global proc gtCopySkinWeightsProc(){
+    string $sel[]=`ls -sl`;
+    string $skinObj=`textFieldGrp -q -tx gtLoarSkinObj`;
+    for($i=0;$i<size($sel);$i++){
+    select -r ($skinObj) ;
+    select -add ($sel[$i]);
+    copySkinWeights  -noMirror -surfaceAssociation closestPoint -influenceAssociation closestJoint;
+    }
+}
+//////////////////////
+global proc ttgLaodSkinObjNamProc(){
+string $gtCname="";
+string $sel[]=`ls -sl`;
+string $teststring=$sel[0];
+$gtCname=$teststring;
+textFieldGrp  -e -text $gtCname gtLoarSkinObj;
+}
+/////////////////////////
+gtCopySkinWeightsWin;

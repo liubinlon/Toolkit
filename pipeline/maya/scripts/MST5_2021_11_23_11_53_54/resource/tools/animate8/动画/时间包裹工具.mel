@@ -1,0 +1,80 @@
+/////////////////
+//MAYA时间包裹动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+
+global proc gtFrameWarpWin(){
+
+if(`window -ex gtFrameWarpWin`==1){ deleteUI -window gtFrameWarpWin;}
+window  -t "老船角色绑定-☆-时间包裹动画工具!!!" -wh 400 350 gtFrameWarpWin;
+
+columnLayout -adj 1;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1313\"";
+
+text -l "可以包裹动画曲线，可以拉长或者缩短动画时间\n编辑工具生成的定位器0-100动画时间\n整体缩放场景动画时间\n定位器末端关键帧时间\n大于100，拉伸动画，小于100缩短动画";
+string $form=`formLayout`;
+
+separator -style "double" sep1;
+button -l "选择动画时间包裹" -c "gtFrameWarp selected" but1;
+separator -style "double" sep2;
+button -l "全部动画时间包裹"   -c "gtFrameWarp all" but2;
+separator -style "double" sep3;
+
+formLayout -e
+ -af sep1 "left" 30 -af sep1 "right" 30 -af sep1 "top" 0
+ -af but1 "left" 30 -af but1 "right" 30 -af but1 "top" 10
+ -af sep2 "left" 30 -af sep2 "right" 30 -af sep2 "top" 40
+ -af but2 "left" 30 -af but2 "right" 30 -af but2 "top" 50
+ -af sep3 "left" 30 -af sep3 "right" 30 -af sep3 "top" 80
+ $form;
+showWindow gtFrameWarpWin;
+}
+
+///////////////////////////////////////
+global proc gtFrameWarp(string $what){
+string $selected[]=`ls -sl`;
+string $frameWarp=`createNode animCurveTT -n "gtframeWarp"`;
+setKeyframe -t 0 -v 0 $frameWarp;
+setKeyframe -t 100 -v 100 $frameWarp;
+select -r $frameWarp;
+keyTangent -itt linear -ott linear;
+
+string $timeWLoc[]=`spaceLocator -p 0 0 0 -n "timeWrapLoc"`;
+connectAttr -f ($frameWarp+".output") ($timeWLoc[0]+".translateX");
+
+if($what=="all"){
+string $animCurves[]=`ls -type animCurveTA -type animCurveTU -type animCurveTL`;
+for ($animCurve in $animCurves){
+connectAttr -f ($frameWarp+".output") ($animCurve+".input");
+}
+}
+else
+{
+if(`size $selected`==0){
+delete $frameWarp;
+error "没有选择任何物体";
+return;
+}
+for($item in $selected){
+string $connections[]=`listConnections $item`;
+for ($conn in $connections){
+string $type=`nodeType $conn`;
+if($type=="animCurveTL"||$type=="animCurveTU"||$type=="animCurveTA"){
+connectAttr -f ($frameWarp+".output") ($conn+".input");
+                }
+            }
+        }
+    }
+    select -r ($timeWLoc[0]);
+    GraphEditor;
+}
+
+//////////////////////////////////
+gtFrameWarpWin;

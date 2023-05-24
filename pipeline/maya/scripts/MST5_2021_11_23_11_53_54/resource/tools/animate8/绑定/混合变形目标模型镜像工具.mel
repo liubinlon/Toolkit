@@ -1,0 +1,744 @@
+//混合变形目标模型镜像绑定工具
+//该工具原始代码，来源与外国网站，老船工作室对其进行修改、汉化，方便使用
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtcgTKabSymMesh (){
+	global int $abSymTable[];
+	
+	global string $abSbg;
+	int $sbgBnsEn = false; 
+	string $selBaseGeo;
+	
+	if (size($abSymTable) > 0){ 
+		$selBaseGeo = $abSbg;
+		$sbgBnsEn = true;
+	}
+	
+	if (`window -exists abSymWin`)deleteUI -window abSymWin;
+		window -t "老船角色绑定-☆-混合变形目标模型镜像工具!" -w 180 -h 415 abSymWin;
+	columnLayout -adj 1 mainColumnattr;
+        text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1263\"";
+
+    setParent..;
+        
+	formLayout -numberOfDivisions 100 abSymForm;
+	radioButtonGrp -l "镜像轴向:" -numberOfRadioButtons 3 -l1 "YZ" -l2 "XZ" -l3 "XY"
+		-select 1 -columnWidth4 60 52 52 52 -onCommand "abSymCtl(\"saRbGrp\")" saRbGrp;
+	separator sep1;
+	text -l "全局容差：" tolTxt;
+	textField -editable true -text ".001" tolFld;
+	separator sep2;
+	button -l "选择基础模型" -command "clear($abSymTable);abSymCtl(\"sbgBn\")" sbgBn;
+	textField -editable true -text $selBaseGeo sbgFld;
+	separator sep3;
+	button -l "检查模型对称" -command "abSymCtl(\"favBn\")" csBn;
+	button -l "镜像选择的顶点" -enable $sbgBnsEn -command "abSymCtl(\"smBn\")" smBn;
+	button -l "选择移动的顶点" -enable $sbgBnsEn -command "abSymCtl(\"smvBn\")" smvBn;
+	separator sep4;
+	button -l "镜像模型" -enable $sbgBnsEn -command "abSymCtl(\"msBn\")" msBn;
+	button -l "翻转模型" -enable $sbgBnsEn -command "abSymCtl(\"fsBn\")" fsBn;
+	button -l "恢复到基础形态" -enable $sbgBnsEn  -command "abSymCtl(\"rsBn\")" rsBn;
+	checkBox -l "操作 -X 到 +X" -value true maChkBx;
+	checkBox -l "应用轴心点作为原点" -value true upoChkBx;
+	button -l "关闭" -height 24 -command "abSymCtl(\"cBn\")" cBn;
+	
+	int $tMarg = 7;
+	int $lMarg = 5;
+	int $rMarg = 5;
+	int $ctSpc = 5; 
+	int $cbSpc = 20;
+		
+	formLayout -e
+		
+		-attachForm saRbGrp "top" $tMarg
+		-attachForm saRbGrp "left" 18
+		
+		-attachForm sep1 "left" $lMarg
+		-attachControl sep1 "top" $ctSpc saRbGrp
+		-attachForm sep1 "right" $rMarg
+		
+		-attachForm tolTxt "left" $lMarg
+		-attachControl tolTxt "top" ($ctSpc+2) sep1
+		-attachControl tolFld "left" $ctSpc tolTxt
+		-attachControl tolFld "top" $ctSpc sep1
+		-attachForm tolFld "right" $rMarg
+		
+		-attachForm sep2 "left" $lMarg
+		-attachControl sep2 "top" $ctSpc tolFld
+		-attachForm sep2 "right" $rMarg
+		
+		-attachForm sbgBn "left" $lMarg
+		-attachControl sbgBn "top" $ctSpc sep2
+		-attachForm sbgBn "right" $rMarg
+		
+		-attachForm sbgFld "left" $lMarg
+		-attachControl sbgFld "top" $ctSpc sbgBn
+		-attachForm sbgFld "right" $rMarg
+		
+		-attachForm sep3 "left" $lMarg
+		-attachControl sep3 "top" $ctSpc sbgFld
+		-attachForm sep3 "right" $rMarg
+		
+		-attachForm csBn "left" $lMarg
+		-attachControl csBn "top" $ctSpc sep3
+		-attachForm csBn "right" $rMarg
+		
+		-attachForm smBn "left" $lMarg
+		-attachControl smBn "top" $ctSpc csBn
+		-attachForm smBn "right" $rMarg
+		
+		-attachForm smvBn "left" $lMarg
+		-attachControl smvBn "top" $ctSpc smBn
+		-attachForm smvBn "right" $rMarg
+		
+		-attachForm sep4 "left" $lMarg
+		-attachControl sep4 "top" $ctSpc smvBn
+		-attachForm sep4 "right" $rMarg
+		
+		-attachForm rsBn "left" $lMarg
+		-attachControl rsBn "top" $ctSpc sep4
+		-attachForm rsBn "right" $rMarg
+		
+		-attachForm msBn "left" $lMarg
+		-attachControl msBn "top" $ctSpc rsBn
+		-attachForm msBn "right" $rMarg
+				
+		-attachForm fsBn "left" $lMarg
+		-attachControl fsBn "top" $ctSpc msBn
+		-attachForm fsBn "right" $rMarg
+		
+		-attachForm maChkBx "left" $lMarg
+		-attachControl maChkBx "top" $ctSpc fsBn
+		
+		-attachForm upoChkBx "left" $lMarg
+		-attachControl upoChkBx "top" $ctSpc maChkBx
+		
+		-attachForm cBn "left" $lMarg
+		-attachControl cBn "top" $cbSpc upoChkBx
+		-attachForm cBn "right" $rMarg
+		
+		abSymForm;
+	
+	showWindow abSymWin;
+}
+///////////////////////////
+global proc string[] abCheckSym (string $obj, int $axis, float $tol, int $bTable, int $usePiv) {
+
+	global int $abSymTable[];
+	string $aNegVerts[];
+	string $aPosVerts[];
+	string $aNonSymVerts[];
+	string $aStr[];
+	string $vtx;
+	string $str;
+	int $aPosVertsInt[];
+	int $aNegVertsInt[];
+	int $aInt[];
+	int $totVtx;
+	int $i;
+	int $j;
+	int $mAxisInd = $axis - 1; 
+	int $axis2Ind = ($mAxisInd + 1) % 3;
+	int $axis3Ind = ($mAxisInd + 2) % 3;
+	int $mod;
+	int $prog;
+	int $vertCounter = 0;
+	float $aNegVertTrans[];
+	float $aPosVertTrans[];
+	float $aVtxTrans[];
+	float $aVtx2Trans[];
+	float $bBox[];
+	float $mid;
+	float $midOffset;
+	float $posOffset;
+	float $negOffset;
+	float $flt;
+	float $progNum;
+	float $progDenom;
+	float $test1;
+	float $test2;
+	
+	if ($usePiv){
+		$aVtxTrans = `xform -q -ws -t $obj`;
+		$mid = $aVtxTrans[$mAxisInd];
+	}else{
+		if ($bTable){
+			clear($abSymTable);
+			$bBox = `xform -q -ws -boundingBox $obj`;
+			$mid = $bBox[$mAxisInd] + (($bBox[($mAxisInd+3)] - $bBox[$mAxisInd])/2);
+		}else{
+			$mid = 0; 
+		}
+	}
+		
+	$aInt = `polyEvaluate -v $obj`; 
+	$totVtx = $aInt[0];
+	
+	waitCursor -state on;
+	progressWindow -title "工作" -progress 0 -status "检索";
+	$progDenom = $totVtx;
+	$flt = ceil($progDenom/50);
+	$mod = $flt;
+
+	for ($i=0;$i<$totVtx;$i++){
+		
+
+		if (($i % $mod) == 0){ 
+			$progNum = $i;
+			$prog = ($progNum/$progDenom)*100.0;
+			progressWindow -e -progress $prog;
+		}
+		
+		$vtx = $obj+".vtx["+$i+"]";
+		$aVtxTrans = `xform -q -ws -translation $vtx`;
+		$midOffset = $aVtxTrans[$mAxisInd] - $mid;
+		if ($midOffset >= 0){
+			$aPosVerts[size($aPosVerts)] = $vtx;
+			if ($bTable){$aPosVertsInt[size($aPosVertsInt)] = $i;}
+			$aVtxTrans = `xform -q -ws -t $vtx`;
+			$aPosVertTrans[size($aPosVertTrans)] = $aVtxTrans[$mAxisInd];
+		}else{
+			if ($midOffset < 0){
+				$aNegVerts[size($aNegVerts)] = $vtx;
+				if ($bTable){$aNegVertsInt[size($aNegVertsInt)] = $i;}
+				$aVtxTrans = `xform -q -ws -t $vtx`;
+				$aNegVertTrans[size($aNegVertTrans)] = $aVtxTrans[$mAxisInd];
+			}
+		}
+	}
+
+	if ($bTable){$str = "创建对称模式";}else{$str = "检查对称结果";}
+	progressWindow -e -progress 0 -status $str;
+	$progDenom = size($aPosVerts);
+	$flt = ceil($progDenom/50);
+	$mod = $flt;
+		
+	for ($i=0;$i<size($aPosVerts);$i++){
+		
+		if (($i % $mod) == 0){ 
+			$progNum = $i;
+			$prog = ($progNum/$progDenom)*100.0;
+			progressWindow -e -progress $prog;
+		}
+		
+		$vtx = $aPosVerts[$i];
+		$posOffset = ($aPosVertTrans[$i] - $mid);
+		if ($posOffset < $tol){
+			$aPosVerts[$i] = "m";
+			$vertCounter ++;
+			continue;
+		}
+		for ($j=0;$j<size($aNegVerts);$j++){
+			if ($aNegVerts[$j] == "m"){continue;}
+			$negOffset = $mid - $aNegVertTrans[$j];
+			if ($negOffset < $tol){
+				$aNegVerts[$j] = "m";
+				$vertCounter ++;
+				continue;
+			}
+			if (abs($posOffset - $negOffset) <= $tol){
+				$aVtxTrans = `xform -q -ws -t $vtx`;
+				$aVtx2Trans = `xform -q -ws -t $aNegVerts[$j]`;
+				$test1 = $aVtxTrans[$axis2Ind] - $aVtx2Trans[$axis2Ind];
+				$test2 = $aVtxTrans[$axis3Ind] - $aVtx2Trans[$axis3Ind];
+				if (abs($test1) < $tol && abs($test2) < $tol){
+
+					if ($bTable){
+						$abSymTable[size($abSymTable)] = $aPosVertsInt[$i];
+						$abSymTable[size($abSymTable)] = $aNegVertsInt[$j];
+						$vertCounter += 2;
+					}
+					$aPosVerts[$i] = $aNegVerts[$j] = "m"; 
+					break;
+				}
+			}
+		}
+	}
+	$aStr = {"m"};
+	$aPosVerts = stringArrayRemove($aStr, $aPosVerts);
+	$aNegVerts = stringArrayRemove($aStr, $aNegVerts);
+	$aNonSymVerts = stringArrayCatenate($aPosVerts, $aNegVerts);
+
+	if ($bTable){$int = size($abSymTable) + $vertCounter;
+		if ($vertCounter != $totVtx){
+			warning "基础模型不是左右对称，有些顶点不会达到预期结果";
+		}else{
+			print "基础模型是左右对称的模型";
+		}
+	}
+	progressWindow -endProgress;
+	waitCursor -state off;
+	return $aNonSymVerts;
+}
+
+
+global proc int abGetSymVtx (int $vtxInt){
+	global int $abSymTable[];
+	int $mVtxInt = -1;
+	int $i;
+	
+	for ($i=0;$i<size($abSymTable);$i++){
+		if ($vtxInt == $abSymTable[$i]){
+			if (($i % 2) == 0){
+				$mVtxInt = $abSymTable[$i+1];
+			}else{
+				$mVtxInt = $abSymTable[$i-1];
+			}
+			break;
+		}
+	}
+	return $mVtxInt;
+}
+
+
+global proc abMirrorSel (string $obj, string $baseObj, string $aSelVerts[], int $axis, int $negToPos, int $flip, int $usePiv, float $tol){
+
+	global int $abSymTable[];
+	string $aStr[];
+	string $str;
+	string $vtx;
+	string $obj;
+	int $aPosVertsInt[];
+	int $aNegVertsInt[];
+	int $aZeroVertsInt[];
+	int $mAxisInd = $axis - 1; 
+	int $axis2Ind = ($mAxisInd + 1) % 3;
+	int $axis3Ind = ($mAxisInd + 2) % 3;
+	int $vertNum;
+	int $i;
+	int $j;
+	int $prog;
+	int $mod;
+	int $showProg = false; 
+	float $bBox[];
+	float $baseMid;
+	float $baseMidOffset;
+	float $aVtxTrans[];
+	float $aFlpVtxTrans[];
+	float $mid; 
+	float $progNum;
+	float $progDenom;
+	float $flt;
+	
+	if ($usePiv){
+		$aVtxTrans = `xform -q -ws -t $obj`;
+		$mid = $aVtxTrans[$mAxisInd];
+		$aVtxTrans = `xform -q -ws -t $baseObj`;
+		$baseMid = $aVtxTrans[$mAxisInd];
+	}else{
+		$mid = 0;
+		$bBox = `xform -q -ws -boundingBox $baseObj`;
+		$baseMid = $bBox[$mAxisInd] + (($bBox[($mAxisInd+3)] - $bBox[$mAxisInd])/2);
+	}
+	
+	waitCursor -state on;
+	if (size($aSelVerts) > 200){ 
+		$showProg = true;
+		$str = "镜像形态";
+		if ($flip){$str = "翻转形态";}
+		progressWindow -title "工作" -progress 0 -status $str;
+		$progDenom = size($aSelVerts);
+		$flt = ceil($progDenom/50);
+		$mod = $flt;
+	}
+		
+	for ($i=0;$i<size($aSelVerts);$i++){
+		
+		if ($showProg){
+			if (($i % $mod) == 0){ 
+				$progNum = $i;
+				$prog = ($progNum/$progDenom)*50.0;
+				progressWindow -e -progress $prog;
+			}
+		}
+		
+		$vtx = $aSelVerts[$i];
+		$vertNum = match("([0-9])+", (match ("([0-9])+\\]", $vtx)));
+		$aVtxTrans = `xform -q -ws -translation ($baseObj+".vtx["+$vertNum+"]")`;
+		$baseMidOffset = $aVtxTrans[$mAxisInd] - $baseMid;
+		if (abs($baseMidOffset) < $tol){
+			$aZeroVertsInt[size($aZeroVertsInt)] = $vertNum;
+			continue;
+		}
+		if ($baseMidOffset > 0){
+			$aPosVertsInt[size($aPosVertsInt)] = $vertNum;
+			continue;
+		}
+		if ($baseMidOffset < 0){
+			$aNegVertsInt[size($aNegVertsInt)] = $vertNum;
+			continue;
+		}
+	}
+	
+	if ($negToPos){
+		$aPosVertsInt = $aNegVertsInt;
+	}
+	
+	if ($showProg){
+		$progDenom = size($aPosVertsInt);
+		$flt = ceil($progDenom/50);
+		$mod = $flt;
+	}
+	
+	for ($i=0;$i<size($aPosVertsInt);$i++){
+		
+		if ($showProg){
+			if (($i % $mod) == 0){ 
+				$progNum = $i;
+				$prog = ($progNum/$progDenom)*50.0 + 50;
+				progressWindow -e -progress $prog;
+			}
+		}
+		
+		$vertNum = abGetSymVtx($aPosVertsInt[$i]);
+		if ($vertNum != -1){
+			if (!$flip){ 
+				$aVtxTrans = `xform -q -ws -t ($obj+".vtx["+$aPosVertsInt[$i]+"]")`;
+				$aVtxTrans[$mAxisInd] = 2*$mid - $aVtxTrans[$mAxisInd];
+				xform -ws -t $aVtxTrans[0] $aVtxTrans[1] $aVtxTrans[2] ($obj+".vtx["+$vertNum+"]");
+			}else{ 
+				$aVtxTrans = `xform -q -ws -t ($obj+".vtx["+$aPosVertsInt[$i]+"]")`;
+				$aVtxTrans[$mAxisInd] = 2*$mid - $aVtxTrans[$mAxisInd];
+				$aFlpVtxTrans = `xform -q -ws -t ($obj+".vtx["+$vertNum+"]")`;
+				$aFlpVtxTrans[$mAxisInd] = 2*$mid - $aFlpVtxTrans[$mAxisInd];
+				xform -ws -t $aVtxTrans[0] $aVtxTrans[1] $aVtxTrans[2] ($obj+".vtx["+$vertNum+"]");
+				xform -ws -t $aFlpVtxTrans[0] $aFlpVtxTrans[1] $aFlpVtxTrans[2] ($obj+".vtx["+$aPosVertsInt[$i]+"]");
+			}
+		}
+	}
+	for ($i=0;$i<size($aZeroVertsInt);$i++){ 
+		if ($flip){
+			$aVtxTrans = `xform -q -ws -t ($obj+".vtx["+$aZeroVertsInt[$i]+"]")`;
+			$aVtxTrans[$mAxisInd] = 2*$mid - $aVtxTrans[$mAxisInd];
+			xform -ws -t $aVtxTrans[0] $aVtxTrans[1] $aVtxTrans[2] ($obj+".vtx["+$aZeroVertsInt[$i]+"]");
+		}else{
+			$aVtxTrans = `xform -q -ws -t ($obj+".vtx["+$aZeroVertsInt[$i]+"]")`;
+			$aVtxTrans[$mAxisInd] = $mid;
+			xform -ws -t $aVtxTrans[0] $aVtxTrans[1] $aVtxTrans[2] ($obj+".vtx["+$aZeroVertsInt[$i]+"]");
+		}
+	}
+	if ($showProg){progressWindow -endProgress;}
+	waitCursor -state off;
+}
+
+
+global proc abRevertSel(string $aSelVerts[], string $obj, string $baseObj){
+	string $str;
+	string $vtx;
+	int $vertNum;
+	int $i;
+	int $prog;
+	int $mod;
+	int $showProg = false;  
+	float $aBaseTrans[];
+	float $progNum;
+	float $progDenom;
+	float $flt;
+	
+	if (size($aSelVerts) > 200){ 
+		$showProg = true;
+		progressWindow -title "工作" -progress 0 -status "恢复默认形态";
+		$progDenom = size($aSelVerts);
+		$flt = ceil($progDenom/50);
+		$mod = $flt;
+	}
+	
+	waitCursor -state on;
+	for ($i=0;$i<size($aSelVerts);$i++){
+		if ($showProg){
+			if (($i % $mod) == 0){ 
+				$progNum = $i;
+				$prog = ($progNum/$progDenom)*100;
+				progressWindow -e -progress $prog;
+			}
+		}
+		$vtx = $aSelVerts[$i];
+		$vertNum = match("([0-9])+", (match ("([0-9])+\\]", $vtx)));
+		$aBaseTrans = `xform -q -os -t ($baseObj+".vtx["+$vertNum+"]")`;
+		xform -os -t $aBaseTrans[0] $aBaseTrans[1] $aBaseTrans[2] $vtx;
+	}
+	if ($showProg){progressWindow -endProgress;}	
+	waitCursor -state off;
+}
+
+
+global proc string[] abSelMovedVerts(string $obj, string $baseObj, float $tol){
+	int $aInt[];
+	int $totVtx;
+	int $i;
+	int $j;
+	int $posDif;
+	float $tFlt;
+	float $aVtxTrans[];
+	float $aVtx2Trans[];
+	string $objStr = $obj+".vtx[";
+	string $baseObjStr = $baseObj+".vtx[";
+	string $aRetSel[];
+	
+	$aInt = `polyEvaluate -v $obj`; 
+	$totVtx = $aInt[0];
+	for ($i=0;$i<$totVtx;$i++){
+		$posDif = false;
+		$aVtx2 = $objStr+$i+"]";
+		$aVtxTrans = `xform -q -os -t ($baseObjStr+$i+"]")`;
+		$aVtx2Trans = `xform -q -os -t $aVtx2`;
+		for ($j=0;$j<3;$j++){
+				$tFlt = $aVtxTrans[$j] - $aVtx2Trans[$j];
+				if (abs($tFlt) > $tol){
+					$posDif = true;
+				}
+		}
+		if ($posDif) {
+			$aRetSel[size($aRetSel)] = $aVtx2;
+		}	
+	}
+	return $aRetSel;
+}
+
+
+global proc string[] abSelSideVerts (string $obj, string $baseObj, int $mAxisInd, int $selNeg, int $usePiv, float $tol){
+	
+	int $aInt[];
+	int $totVtx;
+	int $i;
+	string $aRetSel[]; 
+	string $vtxStr;
+	float $aVtxTrans[];
+	float $bBox[];
+	float $baseMid;
+	float $baseMidOffset;
+	
+	$mAxisInd -= 1; 
+	
+	$aInt = `polyEvaluate -v $obj`; 
+	$totVtx = $aInt[0];
+	
+	if ($selNeg == 2){ 
+		for ($i=0;$i<$totVtx;$i++){
+			$vtx = $obj+".vtx["+$i+"]";
+			$aRetSel[size($aRetSel)] = $vtx;
+		}
+		return $aRetSel;
+	}
+	
+	if ($usePiv){
+		$aVtxTrans = `xform -q -ws -t $baseObj`;
+		$baseMid = $aVtxTrans[$mAxisInd];
+	}else{
+		$bBox = `xform -q -ws -boundingBox $baseObj`;
+		$baseMid = $bBox[$mAxisInd] + (($bBox[($mAxisInd+3)] - $bBox[$mAxisInd])/2);
+	}
+
+	for ($i=0;$i<$totVtx;$i++){
+		$vtxStr = ".vtx["+$i+"]";
+		$aVtxTrans = `xform -q -ws -translation ($baseObj+$vtxStr)`;
+		$baseMidOffset = $aVtxTrans[$mAxisInd] - $baseMid;
+		if (abs($baseMidOffset) < $tol){
+			$aRetSel[size($aRetSel)] = $obj+$vtxStr;
+			continue;
+		}
+		if ($baseMidOffset > 0 && !$selNeg){
+			$aRetSel[size($aRetSel)] = $obj+$vtxStr;
+			continue;
+		}
+		if ($baseMidOffset < 0 && $selNeg){
+			$aRetSel[size($aRetSel)] = $obj+$vtxStr;
+			continue;
+		}
+	}
+	return $aRetSel;
+}
+
+
+global proc string[] abSelMirror (string $obj, string $aSelVerts[]){
+	global int $abSymTable[];
+	string $aRetVerts[];
+	string $vtxStr;
+	int $i;
+	int $vertNum;
+	int $mVertNum;
+	
+	if (size($abSymTable) == 0){
+		warning "没有基础模型";
+		return $aSelVerts;
+	}
+	waitCursor -state on;
+	$vtxStr = $obj+".vtx[";
+	for ($i=0;$i<size($aSelVerts);$i++){
+		$vertNum = match("([0-9])+", (match ("([0-9])+\\]", ($vtxStr+$aSelVerts[$i]+"]"))));
+		$mVertNum = abGetSymVtx($vertNum);
+		if ($mVertNum != -1){
+			$aRetVerts[size($aRetVerts)] = ($vtxStr+$mVertNum+"]");
+		}else{ 
+			$aRetVerts[size($aRetVerts)] = ($vtxStr+$vertNum+"]");
+		}
+	}
+	waitCursor -state off;
+	return $aRetVerts;
+}
+
+
+global proc abClearSbg (){
+	global int $abSymTable[];	
+	global string $abSbg;
+	button -e -enable false smBn;
+	button -e -enable false smvBn;
+	button -e -enable false msBn;
+	button -e -enable false fsBn;
+	button -e -enable false rsBn;
+	$abSbg = "";
+	textField -e -text "" sbgFld;
+}
+
+
+global proc abSymCtl (string $action){
+	global int $abSymTable[];
+	global string $abSbg;
+	string $sel[] = `ls -sl -fl`;
+	string $aStr[];
+	string $aSelVerts[];
+	string $aHiliteObj[];
+	string $baseObj = `textField -q -text sbgFld`;
+	string $str;
+	string $selMesh;
+	float $tol = `textField -q -text tolFld`;
+	int $axisSel = `radioButtonGrp -q -select saRbGrp`;
+	int $negToPos = `checkBox -q -value maChkBx`;
+	int $usePiv = `checkBox -q -value upoChkBx`;
+	int $warned = false; 
+	
+	$aStr = `filterExpand -sm 12 $sel`;
+	if (size($aStr) > 1){
+		warning "请选择一个多边形物体";
+		$warned = true;
+	}else{
+		$selMesh = $aStr[0]; 
+	}
+	
+	if ($selMesh == ""){
+		$aHiliteObj = `ls -hilite`;
+		if (size($aHiliteObj) == 1){
+			$selMesh = $aHiliteObj[0];
+			$aSelVerts = `filterExpand -sm 31 $sel`;
+		}else{
+			if (size($aHiliteObj) > 1){
+				clear($aSelVerts);
+				warning "只能一个物体在元素模式被编辑";
+				$warned = true;
+			}
+		}
+	}else{
+		select $selMesh; 
+	}
+	
+	switch ($action){
+		
+		case "sbgBn":
+			if ($selMesh != ""){
+				abCheckSym($selMesh, $axisSel, $tol, true, $usePiv);
+				$abSbg = $selMesh;
+				textField -e -text $selMesh sbgFld;
+				button -e -enable true smBn;
+				button -e -enable true smvBn;
+				button -e -enable true msBn;
+				button -e -enable true fsBn;
+				button -e -enable true rsBn;
+			}else{
+				abClearSbg();
+			}
+			break;
+		
+		case "favBn":
+			if ($selMesh != ""){
+				$aSelVerts = abCheckSym($selMesh, $axisSel, $tol, false, $usePiv);
+				if (size($aSelVerts) > 0){
+					selectMode -component;
+					select $aSelVerts;
+					print (size($aSelVerts)+" 个不对称顶点");
+				}else{
+					select $selMesh;
+					print ($selMesh+" 是左右对称");
+				}
+			}
+			break;
+			
+		case "smBn":
+			if (size($aSelVerts) > 0){
+				$aSelVerts = abSelMirror ($selMesh, $aSelVerts);
+				select $aSelVerts;
+			}
+			break;
+			
+		case "smvBn":
+			if ($selMesh != ""){
+				$aSelVerts = abSelMovedVerts($selMesh, $baseObj, $tol);
+				select $aSelVerts;
+			}
+			break;
+		
+		case "msBn":
+			if (size($aSelVerts) > 0){
+				abMirrorSel($selMesh, $baseObj, $aSelVerts, $axisSel, $negToPos, false, $usePiv, $tol);
+			}else{
+				if ($selMesh != ""){ 
+					$aSelVerts = abSelSideVerts ($selMesh, $baseObj, $axisSel, $negToPos, $usePiv, $tol);
+					abMirrorSel($selMesh, $baseObj, $aSelVerts, $axisSel, $negToPos, false, $usePiv, $tol);
+				}
+			}
+			break;
+			
+		case "fsBn":
+			if (size($aSelVerts) > 0){
+				abMirrorSel($selMesh, $baseObj, $aSelVerts, $axisSel, $negToPos, true, $usePiv, $tol);
+			}else{
+				if ($selMesh != ""){ 
+					$aSelVerts = abSelSideVerts ($selMesh, $baseObj, $axisSel, $negToPos, $usePiv, $tol);
+					abMirrorSel($selMesh, $baseObj, $aSelVerts, $axisSel, $negToPos, true, $usePiv, $tol);
+				}
+			}
+			break;
+					
+		case "rsBn":
+			if (size($aSelVerts) > 0){
+				abRevertSel($aSelVerts, $selMesh, $baseObj);
+			}else{
+				if ($selMesh != ""){ 
+					$aSelVerts = abSelSideVerts ($selMesh, $baseObj, $axisSel, 2, $usePiv, $tol); 
+					abRevertSel($aSelVerts, $selMesh, $baseObj);
+				}
+			}
+			break;
+				
+		case "cBn":
+			abClearSbg();
+			deleteUI -window abSymWin;
+			break;
+		
+		case "saRbGrp":
+			abClearSbg();
+			switch ($axisSel){
+				case 1:
+					$str = "X";
+					break;
+				case 2:
+					$str = "Y";
+					break;
+				case 3:
+					$str = "Z";
+					break;
+				
+			}
+			$str = "操作 -"+$str+" 到 +"+$str;
+			checkBox -e -l $str maChkBx;
+	}
+}
+///////////////////
+gtcgTKabSymMesh;

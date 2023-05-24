@@ -1,0 +1,650 @@
+//样条IK骨骼拉伸绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtSplineIksetupWin(){
+
+if(`window -ex gtSplineIksetupWin`) deleteUI  -window gtSplineIksetupWin;
+window -wh 400 200 -title "老船动画吧-样条IK骨骼拉伸绑定工具"  gtSplineIksetupWin;
+columnLayout -adj 1   mainColumnL;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1648\"";
+	rowColumnLayout -nc 3 -cw 1 100 -cw 2 150 -cw 3 150;
+text -l "   "  -h 24  textConName;
+textField -text ""  ttgRigConName;
+button -l "载入总控制器" -c  "ttgLaodConNamProc;"   loadConNamBut;
+setParent..;
+	floatSliderGrp -l "控制器大小："  -f 1 -v 1 -min 0.01 -max 10  gtConradius;
+	separator -style double;
+	
+	intSliderGrp -l "样条IK曲线点简化数量"  -f 1 -v 6 -min 2 -max 50  gtIntIkCVconnumber;
+
+    setParent..;
+	rowColumnLayout -nc 4 -cw 1 30 -cw 2 160 -cw 3 50  -cw 4 200 ;
+	text -l "     ";
+	text -l "创建FK控制：";
+    checkBox -l "" -v 1 gtikNoFkBoxB;	
+    button -l "创建简化样条IK绑定" -c  "gtiksplinesetup";
+    setParent..;
+	
+separator -style double;	
+showWindow gtSplineIksetupWin;
+}
+/////////////////////
+global proc ttgLaodConNamProc(){
+
+string $gtCname="";
+string $sel[]=`ls -sl`;
+string $teststring=$sel[0];
+$gtCname=$teststring;
+textField  -e -text $gtCname ttgRigConName;
+}
+///////////////////////
+global proc  gtiksplinesetup(){
+        int $fk=`checkBox -q -v gtikNoFkBoxB`;
+int $curvePoint=`intSliderGrp -q -v gtIntIkCVconnumber`;
+
+    float $scl=`floatSliderGrp -q -v gtConradius`;
+    
+int $ikfk=1;
+string $sel[]=`ls -sl`;
+
+for($ii=0;$ii<size($sel);$ii++){
+    
+string $gttextm[];
+int $gttextnum=`tokenize ($sel[$ii]) "_" $gttextm`;
+string $gtside=($gttextm[1]);
+
+string $childs[]=`listRelatives -c -ad ($sel[$ii])`;
+int $segment=size($childs);
+string $endbn=$childs[0];
+select -r $childs[1];
+select -add $endbn;
+delete `orientConstraint`;
+select -r $endbn;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+string $basebn=$sel[$ii];
+if($ikfk==1){
+
+    if($fk==1){
+    select -r  $basebn;
+   duplicate -rr;
+   rename ($basebn+"splineIkBnA");
+setAttr ($basebn+"splineIkBnA.radius") 0.01;
+    for($i=1;$i<($segment+1);$i++){
+ pickWalk -d down;
+rename ($basebn+"splineIkBn"+$i);
+setAttr ($basebn+"splineIkBn"+$i+".radius") 0.01;
+
+}
+
+ select -r  $basebn;
+duplicate -rr;
+   rename ($basebn+"splineFkBnA");
+setAttr ($basebn+"splineFkBnA.radius") 0.01;
+
+    for($i=1;$i<($segment+1);$i++){
+ pickWalk -d down;
+rename ($basebn+"splineFkBn"+$i);
+setAttr ($basebn+"splineFkBn"+$i+".radius") 0.01;
+
+}
+
+ select -r  $basebn;
+   rename ($basebn+"BnA");
+
+    for($i=1;$i<($segment+1);$i++){
+ pickWalk -d down;
+rename ($basebn+"Bn"+$i);
+}
+
+select -r ($basebn+"splineFkBnA");
+select -add ($basebn+"splineIkBnA");
+select -add ($basebn+"BnA");
+string $upconstraintp[]=`parentConstraint`;
+
+shadingNode -asUtility blendColors -n ($basebn+"scaleColorBlend");
+connectAttr -f ($basebn+"splineIkBnA.scale") ($basebn+"scaleColorBlend.color1");
+connectAttr -f ($basebn+"splineFkBnA.scale") ($basebn+"scaleColorBlend.color2");
+connectAttr -f ($basebn+"scaleColorBlend.outputR")  ($basebn+"BnA.scaleX");
+
+ for($i=1;$i<($segment+1);$i++){
+select -r ($basebn+"splineFkBn"+$i);
+select -add ($basebn+"splineIkBn"+$i);
+select -add ($basebn+"Bn"+$i);
+string $constraintp[]=`parentConstraint`;
+}
+ for($i=1;$i<($segment);$i++){
+connectAttr -f ($basebn+"BnA.sx") ($basebn+"Bn"+$i+".sx");
+}
+
+
+////////////////////////// 
+select -r ($basebn+"splineFkBnA"); 
+ for($i=1;$i<($segment+1);$i++){
+select -add ($basebn+"splineFkBn"+$i);
+}
+
+ string $fksel[]=`ls -sl`;
+for($i=0;$i<size($fksel);$i++){
+    circle -ch 0 -o on -nr 1 0 0 -r ($scl)  -n ($fksel[$i]+"Con");
+    group -n ($fksel[$i]+"ConGrpB");
+    group -n ($fksel[$i]+"ConGrp");
+    group -n ($fksel[$i]+"ConGrpA");
+    select -r ($fksel[$i]);
+    select -add ($fksel[$i]+"ConGrpA");
+    delete `parentConstraint`;
+    select -r ($fksel[$i]+"Con");
+    select -add ($fksel[$i]);
+    parentConstraint;
+   // scaleConstraint;
+    setAttr -lock true ($fksel[$i]+"Con.tx");
+    setAttr -lock true ($fksel[$i]+"Con.ty");
+    setAttr -lock true ($fksel[$i]+"Con.tz");  
+    setAttr -lock true ($fksel[$i]+"Con.sx");
+    setAttr -lock true ($fksel[$i]+"Con.sy");
+    setAttr -lock true ($fksel[$i]+"Con.sz"); 
+    string $shape[]=`listRelatives -s ($fksel[$i]+"Con")`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }    
+    
+}
+
+select -r ($basebn+"splineFkBn1ConGrpA");
+select -add ($basebn+"splineFkBnACon");
+parent;
+
+
+ for($i=1;$i<($segment);$i++){
+int $j=$i+1;
+    select -r ($basebn+"splineFkBn"+$j+"ConGrpA");
+select -add ($basebn+"splineFkBn"+$i+"Con");
+parent;
+}
+//////////////////////
+int $fknumbn=size($fksel);
+select -r ($fksel[($fknumbn-1)]+"Con");
+addAttr -ln "rotx"  -at double -k 1 ;
+addAttr -ln "roty"  -at double -k 1 ;
+addAttr -ln "rotz"  -at double -k 1 ;
+addAttr -ln "showCon"  -at bool -k 1 ;
+   
+
+for($i=0;$i<($fknumbn);$i++){
+    connectAttr -f ($fksel[(size($fksel)-1)]+"Con.rotx") ($fksel[$i]+"ConGrp.rotateX");
+    connectAttr -f ($fksel[(size($fksel)-1)]+"Con.roty") ($fksel[$i]+"ConGrp.rotateY");
+    connectAttr -f ($fksel[(size($fksel)-1)]+"Con.rotz") ($fksel[$i]+"ConGrp.rotateZ");    
+}
+
+for($i=0;$i<($fknumbn-1);$i++){
+     string $shap[]=`listRelatives -s ($fksel[$i]+"Con")`;
+    connectAttr -f ($fksel[(size($fksel)-1)]+"Con.showCon") ($shap[0]+".v");    
+}
+//////////////////////////////////////
+
+select -r ($basebn+"Bn"+$segment);
+
+circle -ch 0 -o on -nr 1 0 0 -r ($scl*0.5)  -n ($basebn+"IKFK");
+    group -n ($basebn+"IKFKGrp");
+    select -r ($basebn+"Bn"+$segment);
+    select -add ($basebn+"IKFKGrp");
+    parentConstraint;
+    
+    setAttr -lock true($basebn+"IKFK.tx");
+    setAttr -lock true ($basebn+"IKFK.ty");
+    setAttr -lock true ($basebn+"IKFK.tz");  
+    setAttr -lock true ($basebn+"IKFK.sx");
+    setAttr -lock true ($basebn+"IKFK.sy");
+    setAttr -lock true ($basebn+"IKFK.sz");
+
+    setAttr -lock true ($basebn+"IKFK.rx");
+    setAttr -lock true ($basebn+"IKFK.ry");
+    setAttr -lock true ($basebn+"IKFK.rz"); 
+        setAttr -lock true ($basebn+"IKFK.v"); 
+
+   
+  select -r ($basebn+"IKFK.cv[1]");
+select -tgl ($basebn+"IKFK.cv[3]");
+select -tgl ($basebn+"IKFK.cv[5]");
+select -tgl ($basebn+"IKFK.cv[7]");
+
+scale -r  0.2 0.2 0.2 ;       
+
+       
+select -r ($basebn+"IKFK.cv[0:7]") ;
+if($gtside=="r"){
+move -r -ls -wd 0 (0-$scl*1.5) 0 ;
+}else{
+move -r -ls -wd 0 ($scl*1.5) 0 ; 
+}
+
+setAttr ($basebn+"IKFK.overrideEnabled") 1;
+setAttr ($basebn+"IKFK.overrideColor") 6;
+      
+////////////
+
+string $conN=`textField -q -tx ttgRigConName`;
+int $exsitcon=`objExists ($conN)`;
+if($exsitcon==1){
+select -r ($conN);
+select -add ($basebn+"IKFKGrp");
+scaleConstraint;
+}
+
+//////////////////
+select -r ($basebn+"IKFK");
+addAttr -ln "ikfk"  -at double  -min 0 -max 10 -dv 10 -k 1;
+shadingNode -asUtility setRange -n  ($basebn+"ikfksetrange");
+connectAttr -f ($basebn+"IKFK.ikfk") ($basebn+"ikfksetrange.valueX");
+setAttr ($basebn+"ikfksetrange.maxX") 1;
+setAttr ($basebn+"ikfksetrange.oldMaxX") 10;
+shadingNode -asUtility reverse -n ($basebn+"ikfkreverse");
+
+connectAttr -f ($basebn+"ikfksetrange.outValueX") ($basebn+"ikfkreverse.inputX");
+
+connectAttr -f ($basebn+"ikfksetrange.outValueX") ($upconstraintp[0]+"."+$basebn+"splineIkBnAW1");
+connectAttr -f ($basebn+"ikfkreverse.outputX") ($upconstraintp[0]+"."+$basebn+"splineFkBnAW0");
+
+connectAttr -f ($basebn+"ikfksetrange.outValueX") ($basebn+"scaleColorBlend.blender");
+
+ for($i=1;$i<($segment+1);$i++){
+    string $constraintpC[]=`listConnections -s 0 -d 1 ($basebn+"splineIkBn"+$i+".scale")`;
+connectAttr -f ($basebn+"ikfksetrange.outValueX") ($constraintpC[0]+"."+$basebn+"splineIkBn"+$i+"W1");
+connectAttr -f ($basebn+"ikfkreverse.outputX") ($constraintpC[0]+"."+$basebn+"splineFkBn"+$i+"W0");
+    }
+}else {
+     select -r  $basebn;
+   rename ($basebn+"splineIkBnA");
+    for($i=1;$i<($segment+1);$i++){
+ pickWalk -d down;
+rename ($basebn+"splineIkBn"+$i);
+    }    
+}
+
+select -r ($basebn+"splineIkBnA");
+    
+}
+
+string $iksel[]=`ls -sl`;
+    $basebn=$iksel[0];
+    select -r ($basebn);
+    pickWalk -d down;
+    string $elbowbn[]=`ls -sl`;
+    for($i=1;$i<$segment;$i++){
+            pickWalk -d down;
+    }
+    string $end[]=`ls -sl`;
+    string $endbn=$end[0];
+
+
+select -r ($basebn+".rotatePivot") ;
+select -add ($endbn+".rotatePivot") ;
+ikHandle -sol ikSplineSolver -scv false -roc 1 -pcv false -ns 4;
+string $ikhandle[]=`ls -sl`;
+select -r ($ikhandle[0]);
+rename ($sel[$ii]+"ikhandle");
+
+string $endEffector[]=`listConnections -s 1 -d 0 ($sel[$ii]+"ikhandle.endEffector")`;
+setAttr ($endEffector[0]+".visibility") 0;
+setAttr -lock true ($endEffector[0]+".v");
+
+string $curve[]=`listConnections -d 0 -s 1 ($sel[$ii]+"ikhandle.inCurve")`;
+select -r ($curve[0]);
+
+select -r ($curve[0]+".cv[0:1000]") ;
+
+string $points[]=`ls -sl`;
+string $tm[];
+int $t=`tokenize ($points[0]) ":" $tm`;
+string $gtmm=$tm[1];
+string $gttm[];
+int $t=`tokenize ($gtmm) "]" $gttm`;
+int $pointnum=($gttm[0]);
+int $num=$pointnum+1;
+
+select -r ($curve[0]);
+rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s ($curvePoint-1) -d 3 -tol 0.01 ($curve[0]);;
+
+select -r ($curve[0]+".cv[0:1000]") ;
+string $points[]=`ls -sl`;
+string $tm[];
+int $t=`tokenize ($points[0]) ":" $tm`;
+string $gtmm=$tm[1];
+string $gttm[];
+int $t=`tokenize ($gtmm) "]" $gttm`;
+int $pointnum=($gttm[0]);
+int $num=$pointnum+1;
+//////////////////
+
+select -r ($curve[0]);
+duplicate -rr;
+rename ($curve[0]+"temp");
+float $pos[]=`joint -q -p ($basebn)`;
+select -cl;
+joint -p $pos[0] $pos[1] $pos[2] -n ($curve[0]+"tempBn0");
+
+for($i=2;$i<($num-2);$i++){
+    int $j=$i-1;
+select -r ($curve[0]+"temp.cv["+$i+"]");
+newCluster " -envelope 1";
+rename ($curve[0]+"cluster"+$j);
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc"+$j);
+select -r ($curve[0]+"cluster"+$j);
+select -add ($curve[0]+"loc"+$j);
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster"+$j);
+select -add ($curve[0]+"loc"+$j);
+parent;
+float $pos[]=`getAttr ($curve[0]+"loc"+$j+".translate")`;
+select -r ($curve[0]+"tempBn"+($j-1));
+joint -p $pos[0] $pos[1] $pos[2] -n ($curve[0]+"tempBn"+$j);
+select -r ($curve[0]+"loc"+$j);
+delete;
+}
+float $pos[]=`joint -q -p ($endbn)`;
+select -r ($curve[0]+"tempBn"+($num-4));
+joint -p $pos[0] $pos[1] $pos[2] -n ($curve[0]+"tempBn"+($num-3));
+select -r ($curve[0]+"tempBn0");
+joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+
+select -r ($curve[0]+"temp");
+delete;
+
+///////////////////////////
+
+float $xx[]=`xform -q -ws -t ($basebn)`;
+if($xx[0]<0){
+   select -r ($curve[0]+"tempBn0") ; 
+    rename ($curve[0]+"tempBnA0") ; 
+    mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "" "";
+    rename ($curve[0]+"tempBnB0") ; 
+    joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+    mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "" "";
+    rename ($curve[0]+"tempBn0") ;    
+    select -r ($curve[0]+"tempBnA0") ($curve[0]+"tempBnB0"); 
+    delete;
+    }
+    
+select -r ($curve[0]+"tempBn"+($num-4));
+select -add ($curve[0]+"tempBn"+($num-3));
+delete`orientConstraint`;
+select -r ($curve[0]+"tempBn"+($num-3));
+makeIdentity -apply true -t 0 -r 1 -s 0 -n 0;    
+/////////////////////////
+
+select -r ($curve[0]+".cv[0:1]");
+newCluster " -envelope 1";
+rename ($curve[0]+"cluster0");
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc0");
+select -r ($curve[0]+"tempBn0");
+select -add ($curve[0]+"loc0");
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster0");
+select -add ($curve[0]+"loc0");
+parent;
+
+for($i=2;$i<($num-2);$i++){
+    int $j=$i-1;
+select -r ($curve[0]+".cv["+$i+"]");
+newCluster " -envelope 1";
+rename ($curve[0]+"cluster"+$j);
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc"+$j);
+select -r ($curve[0]+"tempBn"+$j);
+select -add ($curve[0]+"loc"+$j);
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster"+$j);
+select -add ($curve[0]+"loc"+$j);
+parent;
+}
+
+int $lastNum=($num-2);
+select -r ($curve[0]+".cv["+$lastNum+":10000]");
+newCluster " -envelope 1";
+rename ($curve[0]+"cluster"+($lastNum-1));
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc"+($lastNum-1));
+select -r ($curve[0]+"tempBn"+($lastNum-1));
+select -add ($curve[0]+"loc"+($lastNum-1));
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster"+($lastNum-1));
+select -add ($curve[0]+"loc"+($lastNum-1));
+parent;
+
+select -r ($curve[0]+"tempBn0");
+delete;
+
+select -cl;
+for($i=0;$i<($num-2);$i++){
+select -add ($curve[0]+"loc"+$i);
+}
+
+string $locsel[]=`ls -sl`;
+select -cl;
+
+for($i=0;$i<size($locsel);$i++){
+    float $p[]=`getAttr  ($locsel[$i]+".translate")`;
+joint -p  ($p[0])  ($p[1]) ($p[2]) -n ($curve[0]+"bn"+$i);  
+}
+
+select -r ($curve[0]+"bn0"); 
+joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+
+/////////////////
+if($xx[0]<0){
+   select -r ($curve[0]+"bn0") ; 
+    rename ($curve[0]+"bnA0") ; 
+    mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "" "";
+    rename ($curve[0]+"bnB0") ; 
+    joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+    mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "" "";
+    rename ($curve[0]+"bn0") ;    
+    select -r ($curve[0]+"bnA0") ($curve[0]+"bnB0"); 
+    delete;
+    }
+    
+//////////////
+select -r ($curve[0]+"bn"+($num-4)); 
+select -add ($curve[0]+"bn"+($num-3)); 
+delete `orientConstraint`;
+select -r ($curve[0]+"bn"+($num-3)); 
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+group -em; xform -os -piv 0 0 0;
+rename ($curve[0]+"ikConGrp");
+
+for($i=0;$i<($num-2);$i++){
+
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con"+$i);
+group -n ($curve[0]+"ConGrp"+$i);
+group -n ($curve[0]+"ConGrpA"+$i);
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+if($gtside=="r"){
+    setAttr ($curve[0]+"ConGrpA"+$i+".sz") -1;
+    setAttr ($curve[0]+"ConGrpA"+$i+".sx") -1;
+    setAttr ($curve[0]+"ConGrpA"+$i+".sy") -1;
+}
+select -r ($curve[0]+"bn"+$i); 
+select -add ($curve[0]+"ConGrpA"+$i);
+delete `parentConstraint`;
+select -r ($curve[0]+"loc"+$i);
+select -add ($curve[0]+"Con"+$i);
+parent;
+
+
+select -r ($curve[0]+"ConGrpA"+$i);
+select -add ($curve[0]+"ikConGrp");
+parent;
+setAttr ($curve[0]+"loc"+$i+".visibility") 0;
+setAttr -lock true ($curve[0]+"loc"+$i+".v");
+
+setAttr -lock true ($curve[0]+"Con"+$i+".rx");
+setAttr -lock true ($curve[0]+"Con"+$i+".ry");
+setAttr -lock true ($curve[0]+"Con"+$i+".rz");
+setAttr -lock true ($curve[0]+"Con"+$i+".sx");
+setAttr -lock true ($curve[0]+"Con"+$i+".sy");
+setAttr -lock true ($curve[0]+"Con"+$i+".sz");
+setAttr -lock true ($curve[0]+"Con"+$i+".v");
+
+    string $shape[]=`listRelatives -s ($curve[0]+"Con"+$i)`;
+ setAttr ($shape[0]+".overrideEnabled") 1;
+ if($gtside=="r"){
+setAttr ($shape[0]+".overrideColor") 13;
+}else if($gtside=="l"){
+setAttr ($shape[0]+".overrideColor") 22;
+}else{
+    setAttr ($shape[0]+".overrideColor") 6;
+    }  
+}
+
+select -r ($curve[0]+"bn0"); 
+delete;
+//////////////////////////////////////
+select -r ($curve[0]);
+arclen -ch 1;
+
+string $shapeAA[]=`listRelatives -s ($curve[0])`;
+string $infoA[]=`listConnections -s 0 -d 1 ($shapeAA[0]+".worldSpace[0]")`;
+float $legUplen=`getAttr ($infoA[0]+".arcLength")`;
+
+shadingNode -asUtility multiplyDivide -n ($curve[0]+"disMulF") ;
+
+string $conN=`textField -q -tx ttgRigConName`;
+int $exsitcon=`objExists ($conN)`;
+if($exsitcon==1){
+    connectAttr -f ($conN+".sy") ($curve[0]+"disMulF.input1X");
+}else{
+setAttr ($curve[0]+"disMulF.input1X") 1;}
+
+setAttr ($curve[0]+"disMulF.input2X") $legUplen ;
+
+
+shadingNode -asUtility multiplyDivide -n ($curve[0]+"disMul") ;
+shadingNode -asUtility condition -n ($curve[0]+"disCnd") ;
+connectAttr -f ($infoA[0]+".arcLength") ($curve[0]+"disMul.input1X");
+setAttr ($curve[0]+"disMul.operation") 2;
+
+connectAttr -f  ($curve[0]+"disMulF.outputX") ($curve[0]+"disMul.input2X");
+
+connectAttr -f ($curve[0]+"disMul.outputX") ($curve[0]+"disCnd.firstTerm");
+connectAttr -f ($curve[0]+"disMul.outputX") ($curve[0]+"disCnd.colorIfTrueR");
+
+setAttr ($curve[0]+"disCnd.secondTerm") 1;
+setAttr ($curve[0]+"disCnd.operation") 2;
+
+shadingNode -asUtility condition -n ($curve[0]+"disclampCnd") ;
+connectAttr -f ($curve[0]+"disCnd.outColorR")  ($curve[0]+"disclampCnd.firstTerm");
+connectAttr -f ($curve[0]+"disCnd.outColorR")  ($curve[0]+"disclampCnd.colorIfTrueR");
+
+setAttr ($curve[0]+"disclampCnd.operation") 4;
+
+select -r ($curve[0]);
+addAttr -ln "strech"  -at double  -min 1 -max 10 -dv 1.2 -k 1;
+addAttr -ln "shortlength"  -at double  -min 0.01 -max 10 -dv 1 -k 1;
+
+connectAttr -f ($curve[0]+".shortlength") ($curve[0]+"disCnd.secondTerm");
+connectAttr -f ($curve[0]+".shortlength") ($curve[0]+"disCnd.colorIfFalseR");
+
+connectAttr -f ($curve[0]+".strech")  ($curve[0]+"disclampCnd.secondTerm");
+connectAttr -f ($curve[0]+".strech")  ($curve[0]+"disclampCnd.colorIfFalseR");
+string $ik[]=`listConnections -s 0 -d 1 ($shapeAA[0]+".worldSpace[0]")`;
+
+string $ikHandle=$ik[1];
+string $startjoint[]=`listConnections -s 1 -d 0 ($ikHandle+".startJoint")`;
+string $endeffector[]=`listConnections -s 1 -d 0 ($ikHandle+".endEffector")`;
+select -r ($endeffector);
+pickWalk -d up;
+string $endjoint[]=`ls -sl`;
+
+string $curentjoint=($startjoint[0]);
+string $selectbn="select -r ";
+while($curentjoint != $endjoint[0]){
+    $selectbn+=($curentjoint+" ");
+    select -r $curentjoint;
+    pickWalk -d down;
+    string $joint[]=`ls -sl`;
+    $curentjoint=$joint[0];
+}
+
+    $selectbn+=($endjoint[0]+";");
+
+eval $selectbn;
+string $bn[]=`ls -sl`;
+for($i=0;$i<size($bn);$i++){
+    connectAttr -f ($curve[0]+"disclampCnd.outColorR") ($bn[$i]+".scaleX");
+}
+
+/////////////////////////
+
+select -r ($curve[0]+"Con"+($num-3)); 
+
+string $rollCon[]=`ls -sl`;
+setAttr -lock 0 ($rollCon[0]+".rx");
+setAttr -lock 0 ($rollCon[0]+".ry");
+setAttr -lock 0 ($rollCon[0]+".rz");
+select -r ($rollCon[0]);
+
+addAttr -ln "twistMulti"  -at double  -min 0.1 -max 5 -dv 1.0 -k 1;
+addAttr -ln "strech"  -at double  -min 1 -max 10 -dv 1.2 -k 1;
+addAttr -ln "shortlength"  -at double  -min 0.01 -max 10 -dv 1 -k 1;
+
+shadingNode -asUtility multiplyDivide -n ($sel[$ii]+"iksplinetwistmul");
+connectAttr -f ($rollCon[0]+".rx") ($sel[$ii]+"iksplinetwistmul.input1X");
+connectAttr -f ($rollCon[0]+".twistMulti") ($sel[$ii]+"iksplinetwistmul.input2X");
+connectAttr -f ($sel[$ii]+"iksplinetwistmul.outputX") ($ikHandle+".twist");
+
+connectAttr -f   ($curve[0]+"Con0.rx") ($ikHandle+".roll");
+setAttr -lock 0 ($curve[0]+"Con0.rx");
+
+connectAttr -f ($rollCon[0]+".strech") ($curve[0]+".strech");
+connectAttr -f ($rollCon[0]+".shortlength") ($curve[0]+".shortlength");
+
+///////////////////
+if($ikfk==1&&$fk==1){
+select -r ($sel[$ii]+"IKFK") ;
+shadingNode -asUtility condition -n ($sel[$ii]+"IKFKshowIkCondition");
+connectAttr -f ($sel[$ii]+"IKFK.ikfk") ($sel[$ii]+"IKFKshowIkCondition.firstTerm");
+shadingNode -asUtility condition -n ($sel[$ii]+"IKFKshowFkCondition");
+connectAttr -f ($sel[$ii]+"IKFK.ikfk") ($sel[$ii]+"IKFKshowFkCondition.firstTerm");
+setAttr ($sel[$ii]+"IKFKshowFkCondition.secondTerm") 10;
+
+connectAttr -f ($sel[$ii]+"IKFKshowFkCondition.outColorR") ($sel[$ii]+"splineFkBnAConGrpA.visibility");
+connectAttr -f ($sel[$ii]+"IKFKshowIkCondition.outColorR") ($curve[0]+"ikConGrp.visibility");
+
+connectAttr -f ($sel[$ii]+"IKFKshowFkCondition.outColorR") ($sel[$ii]+"splineFkBnA.visibility");
+connectAttr -f ($sel[$ii]+"IKFKshowIkCondition.outColorR") ($sel[$ii]+"splineIkBnA.visibility");
+}
+
+select -r ($ikHandle) ;
+select -add ($curve[0]) ;
+group -n ($sel[$ii]+"iksplineGrp");
+if($fk==1)select -add ($sel[$ii]+"IKFKGrp");
+group -n  ($sel[$ii]+"DonotmoveConGrp");
+
+setAttr ($sel[$ii]+"iksplineGrp.visibility") 0;
+setAttr -lock true ($sel[$ii]+"iksplineGrp.v");
+    }
+print "......................IK CON DONW...........................";
+}
+
+///////////////////////////
+gtSplineIksetupWin;

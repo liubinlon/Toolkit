@@ -1,0 +1,246 @@
+//曲线骨骼绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+//////////////////////////////////////////////////////
+global proc gtcurveBone(){
+    
+string $sel[]=`ls -sl`;
+float $perlen=`floatSliderGrp -q -v gtfloatFcurve`;
+
+for($k=0;$k<size($sel);$k++){
+    float $len=`arclen ($sel[$k])`;
+    int $pointnum=floor($len/$perlen);
+    rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s ($pointnum) -d 3 -tol 0.01 ($sel[$k]);
+    
+select -r ($sel[$k]+".cv[0:1000]");
+string $points[]=`ls -sl`;
+string $tm[];
+int $t=`tokenize ($points[0]) ":" $tm`;
+string $tmm=$tm[1];
+string $ttm[];
+int $t=`tokenize ($tmm) "]" $ttm`;
+int $pointnum=$ttm[0];
+
+int $num=$pointnum-1;
+    select -r ($sel[$k]+".cv[1]");
+    select -add ($sel[$k]+".cv["+($num)+"]");
+delete;
+
+select -r ($sel[$k]+".cv[0]");
+newCluster " -envelope 1";
+rename ($sel[$k]+"cluster0");
+spaceLocator -p 0 0 0;
+rename ($sel[$k]+"loc0");
+select -r ($sel[$k]+"cluster0");
+select -add ($sel[$k]+"loc0");
+parentConstraint;
+float $p[]=`getAttr  ($sel[$k]+"loc0.translate")`;
+
+select -cl;
+joint -p ($p[0]) ($p[1]) ($p[2]) -n ($sel[$k]+"joint0");
+
+select -r ($sel[$k]+"cluster0");
+select -add ($sel[$k]+"loc0");
+delete;
+
+for($i=0;$i<($pointnum-2);$i++){
+    $j=$i+1;
+    select -r ($sel[$k]+".cv["+$j+"]");
+newCluster " -envelope 1";
+rename ($sel[$k]+"cluster"+$j);
+spaceLocator -p 0 0 0;
+rename ($sel[$k]+"loc"+$j);
+select -r ($sel[$k]+"cluster"+$j);
+select -add ($sel[$k]+"loc"+$j);
+parentConstraint;
+float $p[]=`getAttr  ($sel[$k]+"loc"+$j+".translate")`;
+    
+    
+    select -r ($sel[$k]+"joint"+$i);
+    joint -p ($p[0]) ($p[1]) ($p[2]) -n ($sel[$k]+"joint"+$j);
+    select -r ($sel[$k]+"cluster"+$j);
+    select -add ($sel[$k]+"loc"+$j);
+    delete;
+    select -cl;
+       
+    }
+    
+     select -r ($sel[$k]+"joint0");
+    joint -e  -oj xyz -secondaryAxisOrient ydown -ch -zso;
+    }
+}
+///////////////////////////////////////////
+
+global proc gtcurveBrebulid(){
+
+string $sel[]=`ls -sl`;
+float $perlen=`floatSliderGrp -q -v gtfloatFcurve`;
+
+for($k=0;$k<size($sel);$k++){
+    float $len=`arclen ($sel[$k])`;
+    int $pointnum=floor($len/$perlen);
+    rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s ($pointnum) -d 3 -tol 0.01 ($sel[$k]);
+    select -r ($sel[$k]+".cv[0:1000]");
+string $points[]=`ls -sl`;
+string $tm[];
+int $t=`tokenize ($points[0]) ":" $tm`;
+string $tmm=$tm[1];
+string $ttm[];
+int $t=`tokenize ($tmm) "]" $ttm`;
+int $pointnum=$ttm[0];
+int $num=$pointnum-1;
+    select -r ($sel[$k]+".cv[1]");
+    select -add ($sel[$k]+".cv["+($num)+"]");
+delete;
+    }    
+}
+
+
+///////////////////////////////////////////////////////////
+global proc gtcurveBoneProc(){
+string $sel[]=`ls -sl`;
+for($k=0;$k<size($sel);$k++){
+   
+select -r ($sel[$k]+".cv[0:1000]");
+string $points[]=`ls -sl`;
+string $tm[];
+int $t=`tokenize ($points[0]) ":" $tm`;
+string $tmm=$tm[1];
+string $ttm[];
+int $t=`tokenize ($tmm) "]" $ttm`;
+int $pointnum=$ttm[0];
+
+select -r ($sel[$k]+".cv[0]");
+newCluster " -envelope 1";
+rename ($sel[$k]+"cluster0");
+spaceLocator -p 0 0 0;
+rename ($sel[$k]+"loc0");
+select -r ($sel[$k]+"cluster0");
+select -add ($sel[$k]+"loc0");
+parentConstraint;
+float $p[]=`getAttr  ($sel[$k]+"loc0.translate")`;
+
+select -cl;
+joint -p ($p[0]) ($p[1]) ($p[2]) -n ($sel[$k]+"joint0");
+
+select -r ($sel[$k]+"cluster0");
+select -add ($sel[$k]+"loc0");
+delete;
+
+for($i=0;$i<$pointnum;$i++){
+    $j=$i+1;
+    select -r ($sel[$k]+".cv["+$j+"]");
+newCluster " -envelope 1";
+rename ($sel[$k]+"cluster"+$j);
+spaceLocator -p 0 0 0;
+rename ($sel[$k]+"loc"+$j);
+select -r ($sel[$k]+"cluster"+$j);
+select -add ($sel[$k]+"loc"+$j);
+parentConstraint;
+float $p[]=`getAttr  ($sel[$k]+"loc"+$j+".translate")`;
+    
+    
+    select -r ($sel[$k]+"joint"+$i);
+    joint -p ($p[0]) ($p[1]) ($p[2]) -n ($sel[$k]+"joint"+$j);
+    select -r ($sel[$k]+"cluster"+$j);
+    select -add ($sel[$k]+"loc"+$j);
+    delete;
+    select -cl;
+       
+    }
+    
+    select -r ($sel[$k]+"joint0");
+    joint -e  -oj xyz -secondaryAxisOrient ydown -ch -zso;
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+global proc gtcurveBoneProcA(){
+int $numJ=`intFieldGrp -q -v1 gtJiontNum`;
+string $sel[]=`ls -sl`;
+
+for($k=0;$k<size($sel);$k++){
+string $path=$sel[$k];
+
+for($i=0;$i<$numJ+1;$i++){
+    float $perP=1.0/$numJ;
+    select -cl;
+    joint -p 0 0 0 -n ($path+"Joint"+$i) ;
+    select -r ($path+"Joint"+$i) ;
+    select -add $path;
+   string $Path =`pathAnimation -fractionMode true -follow true -followAxis x -upAxis y -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank false `;
+    	
+    	string $input[]=`listConnections -s 1 -d 0 ($Path+".uValue")`;
+		select -r $input[0];
+		delete; 
+   		float $offSet = ($i+0.000) / $numJ;
+       setAttr ($Path+".uValue") $offSet;
+    }
+    select -r  ($path+"Joint0") ;
+    DeleteMotionPaths;
+    makeIdentity -apply true -t 0 -r 1 -s 0 -n 0;
+
+  for($i=1;$i<$numJ+1;$i++){
+    int $j=$i-1;
+    select -r  ($path+"Joint"+$i) ;
+    DeleteMotionPaths;
+    makeIdentity -apply true -t 0 -r 1 -s 0 -n 0;
+
+    select -add ($path+"Joint"+$j) ;
+    parent;
+    }  
+    
+    select -r  ($path+"Joint0") ;
+    joint -e  -oj xyz -secondaryAxisOrient ydown -ch -zso;
+    
+    select -r ($path+"Joint"+($numJ-1)) ;
+    select -add ($path+"Joint"+$numJ) ;
+    delete`orientConstraint -offset 0 0 0 -weight 1`;
+    select -r ($path+"Joint"+$numJ) ;  
+    makeIdentity -apply true -t 0 -r 1 -s 0 -n 0;
+      
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+global proc gtcurveBoneWin (){
+	
+	if (`window -q -ex gtcurveBoneWin`) deleteUI gtcurveBoneWin;
+	
+	window -title "老船角色绑定-☆-曲线关节绑定工具！" -w 400 -h 260 gtcurveBoneWin;	
+	
+    columnLayout -adj 1 dynChainColumn;
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频！" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1332\"";
+	floatSliderGrp -l "曲线点的间距："  -f 1 -v 1 -min 0.01 -max 50  gtfloatFcurve;
+    setParent..;
+	rowColumnLayout -nc 2 -cw 1 240 -cw 2 150;
+	text "选择曲线，根据曲线点间距的数值，重建曲线";
+	button -l "重建曲线" -c "gtcurveBrebulid;";
+	separator -w 400;
+    separator -w 400;
+	text "选择曲线，程序会自动重建曲线，之后创建关节";
+	button -l "重建曲线并创建关节" -c "gtcurveBone";
+	separator -w 400;
+    separator -w 400;
+	text "选择曲线，不重建曲线，直接创建关节";
+	button -l "根据选择的曲线创建关节" -c "gtcurveBoneProc;";
+	separator -w 400;
+    separator -w 400;
+
+	intFieldGrp -l "关节数量" -v1 10 gtJiontNum;
+	button -l "创建指定数量的关节" -c "gtcurveBoneProcA;";
+	separator -w 400;
+	separator -w 400;		
+	showWindow gtcurveBoneWin;
+}
+////////////////////////////////////
+gtcurveBoneWin;
+////////////////////////////////////////////2016-9-26

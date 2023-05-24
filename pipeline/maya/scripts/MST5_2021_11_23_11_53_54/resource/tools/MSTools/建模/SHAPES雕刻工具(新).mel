@@ -1,0 +1,6 @@
+if (!`pluginInfo -q -l SHAPESBrush`)
+{
+    string $Path_plug = (`moduleInfo -mn "MS_Toolkit" -p`)+"/tools/MSTools/MST_DATA/plug-ins/"+(`about -v`);
+    loadPlugin ($Path_plug+"/SHAPESBrush.mll");}
+
+SHAPESBrushToolCtx; toolPropertyWindow;

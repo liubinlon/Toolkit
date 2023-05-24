@@ -1,0 +1,624 @@
+global proc ap_RenameObjs ()
+
+{
+	string $win = "ap_RenameObjs_Win";
+
+	if (`window -ex $win`) {
+		deleteUI $win;
+		windowPref -remove $win;
+	}
+
+	ap_RenameObjs_Ui $win;
+	showWindow $win;
+}
+
+// global proc selectBelow() {
+// 	print (`listRelatives -ad -type "transform"`);
+// }
+
+global proc chiAddSuffix() {
+
+	string $sel[] = `ls -sl`;
+	string $s = "";
+	
+	string $suffixStr = `textField -q -tx ap_RenameObjs_Fld_Txt_3`;
+
+	for ($s in $sel) {
+		rename $s ($s + $suffixStr);
+	}
+}
+
+//Layout the ui
+global proc ap_RenameObjs_Ui (string $win)
+
+{
+	string $ro = "ap_RenameObjs_";
+
+	window -t "改名工具包（整理）" -mb 1 -tlb 1 -mnb 1 -s 1 $win;
+	
+	//Create menu items
+/*
+	menu -p $win -to 1 -l "Settings";
+	menuItem -c "ap_RenameObjs_ap_RenameObjs_Browse prefix" -l "Prefix File";
+	menuItem -c "ap_RenameObjs_ap_RenameObjs_Browse suffix" -l "Suffix File";
+*/
+	// menu -p $win -to 1 -l "Extra";
+	// menuItem -c "ap_Capitalize; ap_RenameObjs_Update_Tsl ap_RenameObjs_Tsl_1;" -l "Capitalize Name";
+	// menuItem -c "select -hi" -l "Select -hi";
+	// menuItem -c "print (size(`ls -sl`) + \" Objects Selected.\")" -l "Print no of objects selected";
+
+  	string $form_1 = `formLayout -p $win ($ro + "Form_1")`;
+
+	string $col_1 = `columnLayout -p $form_1 -adj 1 ($ro + "Col_1")`;
+
+// 	button -l "Select below" -c "selectBelow()";
+	button -l "lun make unique => Create Set" -c "makeObjsUnique(1)";
+	button -l "lun make unique => Rename" -c "makeObjsUnique(0)";
+	button -l "select all transforms below" -c "select -hi;string $f = `itemFilter -byType transform`;select -r `lsThroughFilter -sl $f`;";
+	button -l "Run Suffix (without changing #)" -c "chiAddSuffix;ap_RenameObjs_Update_Tsl ap_RenameObjs_Tsl_1;";
+	
+	separator -h 10;
+	
+	string $frm_1 = `frameLayout -p $col_1 -cl 0 -cll 1 -bv 0 -mh 5 -fn "plainLabelFont" -li 5 -l "Rename:" ($ro + "Frm_1")`;
+	
+	string $col_2 = `columnLayout -p $frm_1 -adj 1 ($ro + "Col_2")`;
+
+ 	string $row_1 = `rowLayout -p $col_2 -nc 3 -cw3 55 300 55 -adj 2 -cat 1 "right" 5 -cat 2 "both" 0 -cat 3 "left" 5 ($ro + "Row_1")`;
+
+	text -l "Prefix";
+	string $txtFld_1 = `textField -cc "setFocus ap_RenameObjs_But_1" ($ro + "Fld_Txt_1")`;
+	button -c "ap_RenameObjs_Rename 1" -l "Run" ($ro + "But_1");
+	
+	string $pop_1 = `popupMenu -p $txtFld_1 ($ro + "Pop_1")`;
+	popupMenu -e -pmc ("ap_RenameObjs_Update_Popup \"" + $pop_1 + "\" \"prefix\" \"" + $txtFld_1 + "\"") $pop_1;
+	
+ 	string $row_2 = `rowLayout -p $col_2 -nc 3 -cw3 55 300 55 -adj 2 -cat 1 "right" 5 -cat 2 "both" 0 -cat 3 "left" 5 ($ro + "Row_2")`;
+
+	text -l "Name";
+	string $txtFld_2 = `textField -cc "setFocus ap_RenameObjs_But_2" ($ro + "Fld_Txt_2")`;
+	button -c "ap_RenameObjs_Rename 2" -l "Run" ($ro + "But_2");
+
+	string $row_3 = `rowLayout -p $col_2 -nc 3 -cw3 55 300 55 -adj 2 -cat 1 "right" 5 -cat 2 "both" 0 -cat 2 "both" 0 -cat 3 "left" 5 ($ro + "Row_3")`;
+
+	text -l "Suffix";
+	string $txtFld_3 = `textField -cc "setFocus ap_RenameObjs_But_3" ($ro + "Fld_Txt_3")`;
+	button -c "ap_RenameObjs_Rename 3" -l "Run" ($ro + "But_3");
+
+	string $pop_2 = `popupMenu -p $txtFld_3 ($ro + "Pop_2")`;
+	popupMenu -e -pmc ("ap_RenameObjs_Update_Popup \"" + $pop_2 + "\" \"suffix\" \"" + $txtFld_3 + "\"") $pop_2;
+
+	string $frm_2 = `frameLayout -p $col_1 -cl 0 -cll 1 -bv 0 -mh 5 -fn "plainLabelFont" -li 5 -l "Replace: [ namespace works too ! ]" ($ro + "Frm_2")`;
+
+	string $col_3 = `columnLayout -p $frm_2 -adj 1 ($ro + "Col_3")`;
+	string $row_4 = `rowLayout -p $col_3 -nc 2 -cw2 55 355 -adj 2 -cat 1 "right" 5 -cat 2 "right" 20 ($ro + "Row_4")`;
+	
+	text -l "Replace";
+	string $txtFld_4 = `textField ($ro + "Fld_Txt_4")`;
+
+	string $row_5 = `rowLayout -p $col_3 -nc 2 -cw2 55 355 -adj 2 -cat 1 "right" 5 -cat 2 "right" 20 ($ro + "Row_5")`;
+
+	text -l "With";
+	string $txtFld_5 = `textField ($ro + "Fld_Txt_5")`;
+
+	string $row_6 = `rowLayout -p $col_3 -nc 2 -cw2 55 355 -adj 2 -cat 1 "right" 5 -cal 2 "center" -cat 2 "right" 20 ($ro + "Row_6")`;
+
+	text -l "";
+	string $but_4 = `button -c "ap_RenameObjs_Rename 4" -l "Replace" ($ro + "But_4")`;
+
+	string $frm_3 = `frameLayout -p $col_1 -cl 0 -cll 1 -bv 0 -mh 5 -fn "plainLabelFont" -li 5 -l "Append Number:" ($ro + "Frm_3")`;
+	string $col_4 = `columnLayout -p $frm_3 -adj 1 ($ro + "Col_3")`;
+	
+	string $row_7 = `rowLayout -p $col_4 -nc 2 -cw2 55 355 -adj 2 -cat 1 "right" 5 -cat 2 "right" 20 ($ro + "Row_7")`;
+
+	text -l "Start";
+	string $intFld_1 = `intField -min 0 -v 1 ($ro + "IntFld_1")`;
+
+	string $row_8 = `rowLayout -p $col_4 -nc 2 -cw2 55 355 -adj 2 -cat 1 "right" 5 -cat 2 "right" 20 ($ro + "Row_8")`;
+	
+	text -l "Increment";
+	string $intFld_2 = `intField -min 1 -v 1 ($ro + "IntFld_2")`;
+
+	string $row_9 = `rowLayout -p $col_4 -nc 2 -cw2 55 355 -adj 2 -cat 1 "right" 5 -cat 2 "right" 20 ($ro + "Row_9")`;
+	
+	text -l "Padding";
+	string $intFld_3 = `intField -min 1 -v 1 ($ro + "IntFld_3")`;
+
+	string $row_10 = `rowLayout -p $col_4 -nc 2 -cw2 55 355 -adj 2 -cat 1 "right" 5 -cat 2 "right" 20 ($ro + "Row_10")`;
+
+	text -l "";
+	string $but_6 = `button -c "ap_RenameObjs_Rename 5" -l "              Apply Number" ($ro + "But_6")`;
+
+	string $frm_4 = `frameLayout -p $form_1 -cl 0 -cll 1 -bv 0 -mh 5 -fn "plainLabelFont" -li 5 -l "Selected Objects:" ($ro + "Frm_4")`;
+
+ 	string $tsl_1 = `textScrollList -p $frm_4 ($ro + "Tsl_1")`;
+
+	frameLayout -e -ec "ap_RenameObjs_Cll_Tsl ap_RenameObjs_Win ap_RenameObjs_Tsl_1" $frm_4;
+	frameLayout -e -cc "ap_RenameObjs_Cll_Tsl ap_RenameObjs_Win ap_RenameObjs_Tsl_1" $frm_4;
+
+ 	formLayout -e
+
+    		-attachForm $col_1 "top" 5
+    		-attachForm $col_1 "left" 5
+    		-attachForm $col_1 "right" 5
+    		-attachNone $col_1 "bottom"
+   
+    		-attachControl $frm_4 "top" 0 $col_1
+    		-attachForm $frm_4 "left" 5
+    		-attachForm $frm_4 "right" 5
+    		-attachForm $frm_4 "bottom" 0
+  	$form_1;
+
+	window -e -wh 250 550 -s 1 $win;
+
+	ap_RenameObjs_Update_Tsl $tsl_1;
+		
+	scriptJob -p $tsl_1 -e SelectionChanged ("ap_RenameObjs_Update_Tsl \"" + $tsl_1 + "\"");
+}
+
+//Collapse the object list
+
+global proc ap_RenameObjs_Cll_Tsl (string $win, string $tsl_1)
+
+{
+	string $frm_4 = "ap_RenameObjs_Frm_4";
+
+	if (`frameLayout -q -cl $frm_4` == 1)
+
+	{
+		
+		deleteUI $tsl_1;
+	}
+
+	else
+
+	{
+ 		$tsl_1 = `textScrollList -p $frm_4 $tsl_1`;
+		scriptJob -p $tsl_1 -e SelectionChanged ("ap_RenameObjs_Update_Tsl \"" + $tsl_1 + "\"");
+
+		ap_RenameObjs_Update_Tsl $tsl_1;
+	}
+}
+
+global proc ap_RenameObjs_Update_Tsl (string $tsl_1)
+	
+{
+	string $objs[];
+	
+	if (`textScrollList -exists $tsl_1`)
+
+	{
+		textScrollList -e -ra $tsl_1;
+
+		$objs = `ls -l -sl`;
+
+		if (`size $objs` != 0)
+	
+		{
+			for ($obj in $objs)
+	
+			{	
+				string $sn = `match "[^|]*$" $obj`;
+				textScrollList -e -a $sn $tsl_1;
+			}
+		}
+	}
+}
+
+global proc ap_RenameObjs_Update_Popup (string $pop, string $type, string $field)
+
+{
+	int $p = 0;
+	string $items[], $itemName, $filePath;
+
+	popupMenu -e -dai $pop;
+
+	if ($type == "prefix") $filePath = `optionVar -q "prefix"`;
+	else if ($type == "suffix") $filePath = `optionVar -q "suffix"`;
+
+	if ($filePath != 0)
+
+	{
+		if (`filetest -r $filePath`) $items = `ap_ReadFile $filePath`;
+		else menuItem -p $pop -en 0 -l "No file set" ($pop + "_Item_" + $p);
+	}
+
+	else menuItem -p $pop -en 0 -l "No file set" ($pop + "_Item_" + $p);
+
+	$items = `ap_RemoveDuplicates $items`;
+	$items = `sort $items`;
+
+	for ($i in $items)
+
+	{
+		if ($i != "")
+
+		{
+			$itemName = `menuItem -p $pop -l $i ($pop + "_Item_" + $p)`;
+			menuItem -e -c ("eval (\"textField -e -tx `menuItem -q -l \\\"" + $itemName + "\\\"` \\\"" + $field + "\\\"\")") $itemName;
+			$p++;
+		}
+	}
+
+	if (`popupMenu -q -ni $pop` == 0) menuItem -p $pop -en 0 -l "None" ($pop + "_Item_" + $p);
+}
+
+global proc ap_RenameObjs_ap_RenameObjs_Browse (string $fileType)
+
+{
+	string $filePath, $items[];
+
+	if ($fileType == "prefix")
+
+	{
+		$filePath = `ap_RenameObjs_Browse ".px"`;
+
+		if ($filePath != "")
+
+		{
+			if (`optionVar -ex $fileType`) optionVar -rm $fileType;
+	
+			optionVar -sv $fileType $filePath;
+		
+			ap_RenameObjs_Update_Popup "ap_RenameObjs_Pop_1" "prefix" "ap_RenameObjs_Txt_Fld_1";
+		}
+	}
+
+	else if ($fileType == "suffix")
+
+	{
+		$filePath = `ap_RenameObjs_Browse ".sx"`;
+
+		if ($filePath != "")
+
+		{
+			if (`optionVar -ex $fileType`) optionVar -rm $fileType;
+	
+			optionVar -sv $fileType $filePath;
+	
+			ap_RenameObjs_Update_Popup "ap_RenameObjs_Pop_2" "prefix" "ap_RenameObjs_Txt_Fld_3";
+		}
+	}
+}
+
+global proc ap_RenameObjs_Rename (int $mode)
+
+{
+	//Retrieve user input
+
+	string $p = `textField -q -tx ap_RenameObjs_Fld_Txt_1`;
+	string $n = `textField -q -tx ap_RenameObjs_Fld_Txt_2`;
+	string $s = `textField -q -tx ap_RenameObjs_Fld_Txt_3`;
+
+	string $r = `textField -q -tx ap_RenameObjs_Fld_Txt_4`;
+	string $w = `textField -q -tx ap_RenameObjs_Fld_Txt_5`;	
+
+	//List objects
+
+	string $objs[] = `ls -l -sl`;
+	
+	//Sort the list of objects into hierarchial order
+
+	string $sorted[] = `ap_SortHierarchy $objs`;
+
+	//Reverse the list so the lowest children are first in the list
+
+	string $reversed[] = `ap_ReverseArray $sorted`;
+
+	//if (`match "[0-9]*$" $name` != "") $name += "_";
+
+	for ($obj in $reversed)
+
+	{
+		switch ($mode)
+
+		{
+			case 1:
+			string $sn = `match "[^|]*$" $obj`;
+			$renameCommand = ("rename " + $obj + " " + ($p + $sn));
+			break;
+
+			case 2:
+			$renameCommand = ("rename " + $obj + " " + $n);
+			break;
+
+			case 3:
+			string $sn = `match "[^|]*$" $obj`;
+			$sn = `match ".*[^_0-9]" $sn`;
+			$renameCommand = ("rename " + $obj + " " + ($sn + $s));
+			break;
+
+			case 4:
+			string $sn = `match "[^|]*$" $obj`;	
+
+			if ($r == "") error "";
+			//if ($w == "") error "";		
+
+			$sn = `substitute $r $sn $w`;
+			$renameCommand = ("rename " + $obj + " " + $sn);
+			break;
+
+			case 5:
+			string $sn = `match "[^|]*$" $obj`;
+			$sn = `match ".*[^_0-9]" $sn`;
+			string $numbers[] = `ap_RenameObjs_Number $objs`;
+
+			for ($o = 0; $o < `size $objs`; $o++)
+
+			{
+				if ($objs[$o] == $obj)
+
+				{
+					$renameCommand = ("rename " + $obj + " " + ($sn + "_" + $numbers[$o]));
+					break;			
+				}
+			}
+
+			break;
+		}
+
+		//If the rename command generates errors, catch them and continue		
+
+		if (catch (`eval $renameCommand`)) print "";
+	}
+
+	ap_RenameObjs_Update_Tsl ap_RenameObjs_Tsl_1;
+}
+
+
+
+global proc string[] ap_RenameObjs_Number (string $objs[])
+
+{
+	string $numbers[];
+	string $numString;
+	string $zeros = "";
+
+	int $numZeros;
+
+	//Load the values of the intField boxes into variables
+	
+	int $start = `intField -q -v ap_RenameObjs_IntFld_1`;
+	int $inc = `intField -q -v ap_RenameObjs_IntFld_2`;
+	int $pad = `intField -q -v ap_RenameObjs_IntFld_3`;
+
+	int $current = $start;
+
+	if ($pad == 1)
+
+	{
+		for ($obj in $objs)
+
+		{
+			$numbers[`size $numbers`] = $current;
+			$current = $current + $inc;
+		}
+	}
+	
+	if ($pad > 1)
+
+	{
+		for ($obj in $objs)
+
+		{
+			$numString = $current;
+
+			if (`size $numString` < $pad)
+
+			{	
+				$numZeros = $pad - (`size $numString`);
+						
+				for ($n = $numZeros; $n > 0; $n--)
+
+				{
+					$zeros = $zeros + "0";
+				}
+
+				$numString = $zeros + $numString;
+				$numbers[`size $numbers`] = $numString;
+			}
+
+			else $numbers[`size $numbers`] = $current;
+
+			$current = $current + $inc;	
+			$zeros = "";
+		}
+	}
+
+	return $numbers;
+}
+
+global proc string ap_RenameObjs_Browse (string $fileExt)
+
+{
+	string $dir, $filePath, $path;
+
+	switch ($fileExt)
+
+	{
+		case ".px":
+
+			$path = `optionVar -q "prefix"`;
+			
+			if ($path == 0) 
+
+			{
+				$filePath = `fileDialog -dm ("*" + $fileExt)`;
+			}
+
+			else
+
+			{
+				$dir = `match "^.*[/\\]" $path`;
+				$filePath = `fileDialog -dm ($dir + "\*" + $fileExt)`;
+			}
+				
+			break;
+
+		case ".sx":
+
+			$path = `optionVar -q "suffix"`;
+			
+			if ($path == 0) 
+
+			{
+				$filePath = `fileDialog -dm ("*" + $fileExt)`;
+			}
+
+			else
+
+			{
+				$dir = `match "^.*[/\\]" $path`;
+				$filePath = `fileDialog -dm ($dir + "\*" + $fileExt)`;
+			}
+				
+			break;
+	}
+
+	return $filePath;
+}
+
+global proc string[] ap_SortHierarchy (string $objs[]) {
+	
+	string $levels[];
+	string $sorted[];
+	
+	int $n;
+	int $lowest = 0;
+	int $current = 0;
+
+	for ($obj in $objs)	{
+		$n = (`ap_NumberParents $obj`);
+
+		if ($n != "") {
+			$levels[`size $levels`] = $n;
+		}
+		else $levels[`size $levels`] = 0;
+
+		if ($n > $lowest) {
+			$lowest = $n;
+		}
+	}
+
+	while ($current <= $lowest)	{
+		for ($o = 0; $o < `size $objs`; $o++) {
+			if ($levels[$o] == $current) {
+				$sorted[`size $sorted`] = $objs[$o];
+			}
+		}
+		$current++;
+	}
+
+	return $sorted;
+}
+/////////////////////////////
+global proc string[] ap_ReadFile (string $filePath)
+
+{
+	int $strip = 1;
+
+	string $lines[];
+	string $line = " ";
+
+	if (`filetest -r $filePath`) {
+		$fileId = `fopen $filePath "r"`;
+
+		while (`size $line` > 0) {
+			$line = `fgetline $fileId`;
+
+			if (`size $line`) {
+				if ($strip) $lines[`size $lines`] = `substitute "\n" $line ""`;
+				else $lines[`size $lines`] = $line;
+			}
+		}
+		fclose $fileId;
+	}
+	else error "File does not exist or is not readable";
+	
+	return $lines;
+}
+
+
+
+//////////////////
+
+global proc ap_Capitalize ()
+
+{
+	string $sn, $renameCommand;
+	string $objs[] = `ls -l -sl`;
+
+	string $sorted[] = `ap_SortHierarchy $objs`;
+	string $reversed[] = `ap_ReverseArray $sorted`;
+
+	for ($obj in $reversed)
+
+	{
+		$sn = `match "[^|]*$" $obj`;
+		string $capsString = `capitalizeString $sn`;
+		
+		$renameCommand = ("rename " + $obj + " " + $capsString);
+		if (catch (`eval $renameCommand`)) print "Error in Rename | ap_Capitalize.mel";
+	}
+}
+
+
+///////////////
+
+
+global proc string ap_ArrayElement (string $array[]) {
+	string $element = $array[0];
+	return $element;
+}
+
+global proc string[] ap_AddArray (string $a[], string $b[]) {
+	for ($val in $b) {
+		$a[`size $a`] = $val;
+	}
+	return $a;
+}
+
+global proc string[] ap_SubtractArray (string $a[], string $b[]) {
+	string $returnArray[];
+	int $exists;
+
+	for($elementA in $a) {
+		$exists = 0;
+
+		for ($elementB in $b) {
+			if ($elementA == $elementB) $exists = 1;
+		}
+		
+		if (!$exists) {
+			$returnArray[`size $returnArray`] = $elementA;
+		}
+	}
+	
+	return $returnArray;
+}
+
+global proc int ap_NumberParents (string $obj) {
+	string $parentObjs[];
+	int $p = `tokenize $obj "|" $parentObjs`;
+	$p--;
+
+	return $p;
+}
+
+global proc string ap_FileName () {
+	string $filePath = substitute ("Mel procedure found in: ", (string) `whatIs "returnFileName"`, "");
+	return $filePath;
+}
+
+global proc string[] ap_ReverseArray (string $array[]) {
+	string $returnArray[];
+	int $arraySize = `size $array`;
+
+	for ($e = 0; $e < `size $array`; $e++) {
+		$returnArray[$arraySize - 1 - $e] = $array[$e];
+	}
+
+	return $returnArray;
+}
+
+
+ap_RenameObjs();

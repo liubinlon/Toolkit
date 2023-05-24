@@ -1,0 +1,259 @@
+if(`window -exists attrChange`)
+{
+    deleteUI -window attrChange;
+}
+
+//UI
+window -t "CFXSimTool v0.1.0" attrChange;
+
+columnLayout -adjustableColumn true -w 400 -h 600;
+text -label "\n Batch Change Attribute \n \n Note:Can Change Shape Node Attribute For Now \n \n" -align "center";
+textFieldGrp -label "Attribute" attrTFG;
+floatFieldGrp -label "Value" valueFFG;
+button -l " Apply "  -c attrChange;
+text -l "\nYetiCurvesSet\n";
+optionMenu -label "Attribute Quick Select" -width 300 aL;
+    menuItem -label "weight";
+    menuItem -label "lengthWeight";
+    menuItem -label "innerRadius";
+    menuItem -label "outerRadius";
+    menuItem -label "density";
+    menuItem -label "baseAttraction";
+    menuItem -label "tipAttraction";
+    menuItem -label "attractionBias";
+    menuItem -label "randomAttraction";
+    menuItem -label "twist";
+    menuItem -label "surfaceDirectionLimit";
+    menuItem -label "faceDirectionLimitFalloff";
+
+
+
+
+button -label "Quick Apply" -c attrQChange;
+
+text -l "\n对象指定不同颜色\n";
+floatSliderGrp -label "shaderRGB" -field true -min 0 -max 1 PPL ;
+button -label "Accept" -c "LinkNmu";
+
+button -label "DeleNoShader" -c "delenoshader";
+
+
+text -l "\nQuick animation lock \n快速运动动画模拟解决方案\n";
+button -label "Create LockTranslate \n 锁定位移 " -c "Lock" -w 200 -h 40 ;
+button -label "Create RestTranslate\n 还原位移" -c "Rest" -w 200 -h 40 ;
+text -l "\n穿插优化\n";
+button - l "SetSculpting" -c CC -w 200 -h 80;
+
+
+text -l "\n设置曲线随机颜色\n";
+rowColumnLayout  -numberOfColumns 2 -cs 2 5 -cs 3 8;
+button -l "Change Color"  -c colorChange -w 200 -h 40;
+button -l "Reset Color"   -c colorReset -w 200 -h 40;
+
+
+
+
+//rowColumnLayout  -numberOfColumns 2 -cs 2 5 -cs 3 8;
+//button -l"Create LockTranslate_Loc" -c"lo" -w 200 -h 40;
+//button -l"Create UnlockTranslate_Loc" -c"un" -w 200;
+
+
+//text -l "\n Change Wireframe Color Randomly \n"
+
+
+
+
+
+//.................................link.....................................
+global proc CC()
+{
+string $sL[] = `ls -sl`;
+int $s[] = `polyEvaluate -v $sL[0]`;
+int $m = $s[0] - 1;
+string $n = $sL[0] + "." + "vtx[0:" + $m + "]";
+select -r $n;
+setKeyframe -breakdown 0 -hierarchy none -controlPoints 0 -shape 0 $n;
+hilite -u $sL[0] ;
+select -r $sL[0];
+SetMeshRelaxTool;
+}
+
+
+
+
+global proc Lock()
+{
+    waitCursor -state on;$ignoreUpdateCallback = true;
+    catch(`loadPlugin "C:/Program Files/Autodesk/Maya2018/bin/plug-ins/MayaMuscle.mll"`);
+    $ignoreUpdateCallback = false;waitCursor -state off;
+    MayaMuscleInitStrings;whatIs findcMuscleSystem;
+    cMuscleSurfAttachSetup();
+    isolateSelect -state 1 modelPanel4;
+    string $d[] = `ls -sl`;
+    pickWalk -d up;
+    string $g[] = `ls -sl`;
+    string $dd[] = `spaceLocator -n "LockTranslate_Loc+1"`;
+    int $q = `currentTime -q`;
+    int $o = `playbackOptions -q -minTime`;
+    int $b = `playbackOptions -q -maxTime`;
+    for($ad in $dd)
+    {
+        for($a in $d)
+        {
+            for($c=$o;$c<$b+1;$c++)
+            {
+                currentTime $c;
+                float $aa = `getAttr ($a+".tx")`;setAttr ($ad+".tx")  ($aa*-1);
+                float $bb = `getAttr ($a+".ty")`;setAttr ($ad+".ty")  ($bb*-1);
+                float $cc = `getAttr ($a+".tz")`;setAttr ($ad+".tz")  ($cc*-1);
+                SetKeyTranslate;
+            }    
+        }
+        setAttr -lock true ($ad+".tx");setAttr -lock true ($ad+".ty");setAttr -lock true ($ad+".tz");
+        setAttr -lock true ($ad+".rx");setAttr -lock true ($ad+".ry");setAttr -lock true ($ad+".rz");
+        setAttr -lock true ($ad+".sx");setAttr -lock true ($ad+".sy");setAttr -lock true ($ad+".sz");
+        setAttr -lock true ($ad+".v");
+    }
+    delete $g;
+    currentTime $q;
+    isolateSelect -state 0 modelPanel4;
+}
+
+
+global proc Rest()
+{
+    string $d[] = `ls -sl`;
+    isolateSelect -state 1 modelPanel4;
+    string $dd[] = `spaceLocator -n "UnlockTranslate_Loc+1"`;
+    int $q = `currentTime -q`;
+    int $o = `playbackOptions -q -minTime`;
+    int $b = `playbackOptions -q -maxTime`;
+    for($ad in $dd)
+    {
+        for($a in $d)
+        {
+            for($c=$o;$c<$b+1;$c++)
+            {
+                currentTime $c;
+                float $aa = `getAttr ($a+".tx")`;setAttr ($ad+".tx")  ($aa*-1);
+                float $bb = `getAttr ($a+".ty")`;setAttr ($ad+".ty")  ($bb*-1);
+                float $cc = `getAttr ($a+".tz")`;setAttr ($ad+".tz")  ($cc*-1);
+                SetKeyTranslate;
+            }    
+        }
+        setAttr -lock true ($ad+".tx");setAttr -lock true ($ad+".ty");setAttr -lock true ($ad+".tz");
+        setAttr -lock true ($ad+".rx");setAttr -lock true ($ad+".ry");setAttr -lock true ($ad+".rz");
+        setAttr -lock true ($ad+".sx");setAttr -lock true ($ad+".sy");setAttr -lock true ($ad+".sz");
+        setAttr -lock true ($ad+".v");
+    }
+    currentTime $q;
+    isolateSelect -state 0 modelPanel4;
+}
+
+//...................................................................................
+global proc delenoshader()
+{
+    
+  hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");  
+    
+    }
+
+
+
+
+global proc LinkNmu()
+{
+    
+ float $t = `floatSliderGrp -q -v  PPL`;
+
+string $sel[]=`ls -sl`;
+float $f=rand(0,1);
+for($objects in $sel)
+{
+
+
+
+string $shaderName=`shadingNode -asShader  lambert`;
+string $shaderNameSG=`sets -renderable true -noSurfaceShader true -empty -name ($shaderName+"SG")`;
+connectAttr -f ($shaderName+".outColor") ($shaderNameSG+".surfaceShader");
+
+string $HsvName=`shadingNode -asUtility remapHsv`;
+
+
+connectAttr -force ($HsvName+".outColor") ($shaderName+".color");
+
+
+select -r $objects;
+sets -e -forceElement $shaderNameSG;
+
+
+setAttr ($HsvName+".color") -type double3 1 0.156 0.346322 ;
+setAttr ($HsvName+".hue[1].hue_FloatValue") $f;
+}}
+
+
+global proc attrChange()
+{
+    string $objList[] = `ls -sl`;
+    
+    float $value = `floatFieldGrp -q -value1 valueFFG`;
+    string $attr = `textFieldGrp -q -text attrTFG`;
+    
+    string $objOfList;
+    
+    for($objOfList in $objList)
+    {
+        pickWalk -d down;
+        setAttr($objOfList + "." + $attr) $value;
+    }
+}
+
+global proc attrQChange()
+{
+    string $objList[] = `ls -sl`;
+    
+    float $value = `floatFieldGrp -q -value1 valueFFG`;
+    string $attr = `optionMenu -q -v aL`;
+    
+    string $objOfList;
+    
+    for($objOfList in $objList)
+    {
+        pickWalk -d down;
+        setAttr($objOfList + "." + $attr) $value;
+    }
+}
+
+global proc colorChange()
+{
+    string $object[] = `ls -sl`;
+    int $i;
+    
+    do{
+        $i = rand(4,31);
+    }
+    while($i == 5);
+    
+    
+    for($objOfList in $object)
+    {
+        pickWalk -d down;
+        setAttr($objOfList + "." + "overrideEnabled") 1;
+        setAttr($objOfList + "." + "overrideColor") $i;
+    }
+}
+
+global proc colorReset()
+{
+    string $object[] = `ls -sl`;
+    
+    for($objOfList in $object)
+    {
+        pickWalk -d down;
+        setAttr($objOfList + "." + "overrideColor") 0;
+        setAttr($objOfList + "." + "overrideEnabled") 0;
+    }
+}
+
+showWindow attrChange;
+

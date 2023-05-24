@@ -1,0 +1,616 @@
+
+global proc del_hair_syst(){
+string $del_ctr[]=`ls -sl `;
+int $num_del_ctr=`size($del_ctr)`;
+for($pig=0;$pig<$num_del_ctr;$pig++){
+    
+string $find_sys_del[]=`listConnections ($del_ctr[$pig]+".mass")`;
+string $find_sys_s_del[]=`listRelatives -s $find_sys_del[0]`;
+string $find_foll_del[]=`listConnections ($find_sys_s_del[0]+".inputHair")`;
+string $find_foll_s_del[]=`listRelatives -s $find_foll_del[0]`;
+string $find_crv_del[]=`listConnections ($find_foll_s_del[0]+".outCurve")`;
+string $find_crv_s_del[]=`listRelatives -s $find_crv_del[0]`;
+string $find_ikh_del[]=`listConnections ($find_crv_s_del[0]+".worldSpace")`;
+string $find_joint_del[]=`listConnections ($find_ikh_del[0]+".startJoint")`;
+string $loc_del[]=`listRelatives -p $find_sys_del[0]`;
+
+select -add $find_joint_del;
+
+
+}
+
+
+select -d $del_ctr;
+string $temp_joint_del[]=`ls -sl`;;
+parent -w;
+SelectHierarchy;
+showHidden -a;
+
+for($pig2=0;$pig2<$num_del_ctr;$pig2++)
+{
+string $find_sys_del2[]=`listConnections ($del_ctr[$pig2]+".mass")`;
+string $find_sys_s_del2[]=`listRelatives -s $find_sys_del2[0]`;
+string $find_foll_del2[]=`listConnections ($find_sys_s_del2[0]+".inputHair")`;
+string $find_foll_s_del2[]=`listRelatives -s $find_foll_del2[0]`;
+string $find_crv_del2[]=`listConnections ($find_foll_s_del2[0]+".outCurve")`;
+string $find_crv_s_del2[]=`listRelatives -s $find_crv_del2[0]`;
+string $find_ikh_del2[]=`listConnections ($find_crv_s_del2[0]+".worldSpace")`;
+string $find_joint_del2[]=`listConnections ($find_ikh_del2[0]+".startJoint")`;
+string $loc_del2[]=`listRelatives -p $find_sys_del2[0]`;
+string $loc_del3[]=`listRelatives -p $loc_del2[0]`;
+
+if(`objExists $find_sys_del2[0]`)
+{delete $find_sys_del2[0];}
+if(`objExists $find_foll_del2[0]`)
+{delete $find_foll_del2[0];}
+if(`objExists $find_crv_del2[0]`)
+{delete $find_crv_del2[0];}
+if(`objExists $find_ikh_del2[0]`)
+{delete $find_ikh_del2[0];}
+if(`objExists $loc_del2[0]`)
+{delete $loc_del2[0];}
+if(`objExists $loc_del3[0]`)
+{delete $loc_del3[0];}
+
+
+//string $rename_del=`substring ($find_joint_del2[0]) 1 (size($find_joint_del2[0])-8)`;
+
+//rename $find_joint_del2[0] $rename_del;
+}
+select -r $temp_joint_del[0];
+}
+
+global proc bake_joint(){
+
+string $all_ctr[]=`ls -sl `;
+int $num_all_ctr=`size($all_ctr)`;
+for($pig=0;$pig<$num_all_ctr;$pig++){
+    
+string $find_sys_bake[]=`listConnections ($all_ctr[$pig]+".mass")`;
+string $find_sys_s_bake[]=`listRelatives -s $find_sys_bake[0]`;
+string $find_foll_bake[]=`listConnections ($find_sys_s_bake[0]+".inputHair")`;
+string $find_foll_s_bake[]=`listRelatives -s $find_foll_bake[0]`;
+string $find_crv_bake[]=`listConnections ($find_foll_s_bake[0]+".outCurve")`;
+string $find_crv_s_bake[]=`listRelatives -s $find_crv_bake[0]`;
+string $find_ikh_bake[]=`listConnections ($find_crv_s_bake[0]+".worldSpace")`;
+string $find_joint_bake[]=`listConnections ($find_ikh_bake[0]+".startJoint")`;
+
+
+
+select -add $find_joint_bake ;}
+select -d $all_ctr;
+
+
+ SelectHierarchy;       
+isolateSelect -state 1 modelPanel4;
+      
+ 
+      
+ 
+ BakeSimulation ;
+isolateSelect -state 0 modelPanel4;
+    select -cl;
+    
+print("===bake成功。==="+"\n");}
+
+     
+   
+global proc FY_air(){
+select -cl;
+Air;
+
+string $new_a[]=`ls -sl`;
+string $re_a=`rename ($new_a[0]+"_FY")`;
+
+addAttr -ln "mag_FY"  -at "enum" -en "-----:----:"  ("|"+$re_a);
+setAttr -e-channelBox true ("|"+$re_a+".mag_FY");
+setAttr -lock true ($re_a+".mag_FY");
+
+
+addAttr -ln "magnitude_FY"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".magnitude_FY");
+setAttr ($re_a+".magnitude_FY") 4;
+
+addAttr -ln "random_FY"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".random_FY");
+setAttr ($re_a+".random_FY") 0;
+
+addAttr -ln "frequency_FY"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".frequency_FY");
+setAttr ($re_a+".frequency_FY") 1;
+
+addAttr -ln "Dir_FY_x"  -at "enum" -en "-----:----:"  ("|"+$re_a);
+setAttr -e-channelBox true ("|"+$re_a+".Dir_FY_x");
+setAttr -lock true ($re_a+".Dir_FY_x");
+
+addAttr -ln "direction_FY_x"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".direction_FY_x");
+setAttr ($re_a+".direction_FY_x") 0;
+
+addAttr -ln "dir_rand_FY_x"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".dir_rand_FY_x");
+setAttr ($re_a+".dir_rand_FY_x") 0;
+
+addAttr -ln "dir_freq_FY_x"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".dir_freq_FY_x");
+setAttr ($re_a+".dir_freq_FY_x") 1;
+
+addAttr -ln "Dir_FY_y"  -at "enum" -en "-----:----:"  ("|"+$re_a);
+setAttr -e-channelBox true ("|"+$re_a+".Dir_FY_y");
+setAttr -lock true ($re_a+".Dir_FY_y");
+
+addAttr -ln "direction_FY_y"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".direction_FY_y");
+setAttr ($re_a+".direction_FY_y") 1;
+
+addAttr -ln "dir_rand_FY_y"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".dir_rand_FY_y");
+setAttr ($re_a+".dir_rand_FY_y") 0;
+
+addAttr -ln "dir_freq_FY_y"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".dir_freq_FY_y");
+setAttr ($re_a+".dir_freq_FY_y") 1;
+
+addAttr -ln "Dir_FY_z"  -at "enum" -en "-----:----:"  ("|"+$re_a);
+setAttr -e-channelBox true ("|"+$re_a+".Dir_FY_z");
+setAttr -lock true ($re_a+".Dir_FY_z");
+
+addAttr -ln "direction_FY_z"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".direction_FY_z");
+setAttr ($re_a+".direction_FY_z") 0;
+
+addAttr -ln "dir_rand_FY_z"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".dir_rand_FY_z");
+setAttr ($re_a+".dir_rand_FY_z") 0;
+
+addAttr -ln "dir_freq_FY_z"  -at double  ("|"+$re_a);
+setAttr -e-keyable true ("|"+$re_a+".dir_freq_FY_z");
+setAttr ($re_a+".dir_freq_FY_z") 1;
+
+
+
+
+expression -s ($re_a+".magnitude="+$re_a+".magnitude_FY+"+$re_a+".random_FY*noise(time*"+$re_a+".frequency_FY);")  
+-o $re_a -ae 1 -uc all ;
+
+expression -s ($re_a+".directionX="+$re_a+".direction_FY_x+"+$re_a+".dir_rand_FY_x*noise(time*"+$re_a+".dir_freq_FY_x);")  
+-o $re_a -ae 1 -uc all ;
+
+expression -s ($re_a+".directionY="+$re_a+".direction_FY_y+"+$re_a+".dir_rand_FY_y*noise(time*"+$re_a+".dir_freq_FY_y);")  
+-o $re_a -ae 1 -uc all ;
+
+expression -s ($re_a+".directionZ="+$re_a+".direction_FY_z+"+$re_a+".dir_rand_FY_z*noise(time*"+$re_a+".dir_freq_FY_z);")  
+-o $re_a -ae 1 -uc all ;
+
+setAttr -lock true ($re_a+".mag");
+setAttr -lock true ($re_a+".dx");
+setAttr -lock true ($re_a+".dy");
+setAttr -lock true ($re_a+".dz");
+
+}
+
+
+
+
+
+global proc FY_MakeJointChainDynamic(){
+
+
+SelectHierarchy;
+string $all_bone[]=`ls -type "joint" -sl`;
+int $num_bone=`size($all_bone)`;
+if($num_bone==0){warning("===请选择根骨骼。===\n");}else{
+string $n_crv=$all_bone[0]+"_crv";
+string $cv ="curve -d 1";
+
+for($a=0;$a<$num_bone;$a++){
+vector $pos_bone=`joint -q -p $all_bone[$a]`;
+
+$cv+=" -p "+($pos_bone.x)+" "+($pos_bone.y)+" "+($pos_bone.z)+" ";
+}
+
+eval $cv;
+rename $n_crv;
+
+makeCurvesDynamicHairs 1 0 1;
+//select $n_crv;
+string $temp_aaa[]=`listRelatives -p $n_crv`;
+//convertHairSelection "hairSystems";
+string $temp_bbb[]=`listConnections ($temp_aaa[0]+".outHair")`;
+string $hair_Syst=`rename $temp_bbb[0] ("hairsystem_"+$all_bone[0])`;
+
+string $foll_hair=`rename $temp_aaa[0] ("follicle_"+$all_bone[0])`;
+
+//string $temp_ccc[]=`listRelatives -p $temp_aaa[0]`;
+//PickWalkUp;
+string $hair_foll_grp[]=`listRelatives -p $foll_hair`;
+vector $pos_bone2=`joint -q -p $all_bone[0]`;
+
+string $loc_JNT[] =`spaceLocator -p 0 0 0 -n ("LOC_"+$all_bone[0])`;
+setAttr ($loc_JNT[0]+".tx") ($pos_bone2.x);
+setAttr ($loc_JNT[0]+".ty") ($pos_bone2.y);
+setAttr ($loc_JNT[0]+".tz") ($pos_bone2.z);
+select -r $all_bone[0];
+select -add $loc_JNT[0];
+orientConstraint -offset 0 0 0 -weight 1;
+ orientConstraint -remove;
+
+string $foll_s[]=`listRelatives -s $foll_hair`;
+string $hairsys_s[]=`listRelatives -s $hair_Syst`;
+setAttr ($foll_s[0]+".pointLock") 1;
+//setAttr ($foll_s[0]+".sampleDensity") 3;
+setAttr ($hairsys_s[0]+".stiffness") 0.001;
+setAttr ($foll_hair+".visibility") 0;
+setAttr ($hair_Syst+".visibility") 0;
+
+select -r $foll_hair;
+
+string $temp_crgp[]=`listRelatives -p $all_bone[0]`;
+if($temp_crgp[0]!=($all_bone[0]+"_grp")){
+select -add $all_bone[0];}
+else{select -add $temp_crgp[0];}
+select -add $hair_Syst;
+select -add ("LOC_"+$all_bone[0]);
+parent;
+select $hair_Syst;
+convertHairSelection "current";
+string $out_crv=`rename ("out_crv_"+$all_bone[0])`;
+PickWalkUp;
+string $out_crv_grp[]=`ls -sl`;
+parent -w $out_crv;
+delete $hair_foll_grp[0];
+delete $out_crv_grp[0];
+select -r $all_bone[0] ;
+
+
+
+
+select -add $all_bone[$num_bone-1];
+select -add $out_crv;
+ikHandle -sol ikSplineSolver -ccv false -ns 4;
+string $ikH_hair=`rename ("hair_IKH_"+$all_bone[0])`;
+setAttr ("hair_IKH_"+$all_bone[0]+".visibility") 0;
+setAttr ($out_crv+".visibility") 0;
+select -add ("LOC_"+$all_bone[0]);
+parent;
+
+string $ctrl_hair_s=`createNode "implicitSphere" `;
+select $ctrl_hair_s;
+PickWalkUp;
+string $ctrl_hair=`rename ("hairCtrl_"+$all_bone[0])`;
+float $bone_radi=`getAttr ($all_bone[0]+".radi")`;
+ setAttr ("LOC_"+$all_bone[0]+".localScaleX") ($bone_radi*1.5);
+  setAttr ("LOC_"+$all_bone[0]+".localScaleY") ($bone_radi*1.5);
+  setAttr ("LOC_"+$all_bone[0]+".localScaleZ") ($bone_radi*1.5);
+select -r $all_bone[$num_bone-1];
+select -add $ctrl_hair;
+parentConstraint -weight 1;
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".tx");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".ty");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".tz");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".rx");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".ry");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".rz");
+
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".tx");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".ty");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".tz");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".rx");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".ry");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".rz");
+
+addAttr -ln "active"  -at bool  ("|"+$ctrl_hair);
+setAttr -e-channelBox true ("|"+$ctrl_hair+".active");
+if(`checkBoxGrp -q -v1 sl_group`){
+addAttr -ln "tipPin"  -at bool  ("|"+$ctrl_hair);
+setAttr -e-channelBox true ("|"+$ctrl_hair+".tipPin");
+setAttr ($ctrl_hair+".tipPin") 1;
+}
+setAttr ($ctrl_hair+".active") 1;
+
+addAttr -ln "ctrl_size"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".ctrl_size");
+setAttr ($ctrl_hair+".ctrl_size") ($bone_radi*1.5);
+
+
+addAttr -ln "stiffness"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".stiffness");
+
+setAttr ($ctrl_hair+".stiffness") 0.001;
+
+addAttr -ln "lengthFlex"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".lengthFlex");
+setAttr ($ctrl_hair+".lengthFlex") 0;
+
+addAttr -ln "damping"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".damping");
+setAttr ($ctrl_hair+".damping") 0.05;
+
+addAttr -ln "drag"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".drag");
+setAttr ($ctrl_hair+".drag") 0;
+
+addAttr -ln "friction"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".friction");
+setAttr ($ctrl_hair+".friction") 0.5;
+
+addAttr -ln "mass"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".mass");
+setAttr ($ctrl_hair+".mass") 1;
+
+addAttr -ln "gravity"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".gravity");
+setAttr ($ctrl_hair+".gravity") 0.98;
+
+addAttr -ln "turbulenceCtrl"  -at bool  ("|"+$ctrl_hair);
+setAttr -e-channelBox true ("|"+$ctrl_hair+".turbulenceCtrl");
+setAttr ($ctrl_hair+".turbulenceCtrl") 0;
+
+addAttr -ln "strength"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".strength");
+setAttr ($ctrl_hair+".strength") 0;
+
+addAttr -ln "frequency"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".frequency");
+setAttr ($ctrl_hair+".frequency") 0.2;
+
+addAttr -ln "speed"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".speed");
+setAttr ($ctrl_hair+".speed") 0.2;
+
+addAttr -ln "start_frame"  -at double  ("|"+$ctrl_hair);
+setAttr -e-channelBox true ("|"+$ctrl_hair+".start_frame");
+setAttr ($ctrl_hair+".start_frame") 1;
+
+addAttr -ln "startCurveAttraction"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".startCurveAttraction");
+setAttr ($ctrl_hair+".startCurveAttraction") 0;
+
+addAttr -ln "colliderWidthOffset"  -at double  ("|"+$ctrl_hair);
+setAttr -e-keyable true ("|"+$ctrl_hair+".colliderWidthOffset");
+setAttr ($ctrl_hair+".colliderWidthOffset") 0;
+
+addAttr -ln "colliderOverSample"  -at double  ("|"+$ctrl_hair);
+setAttr -e-channelBox true ("|"+$ctrl_hair+".colliderOverSample");
+setAttr ($ctrl_hair+".colliderOverSample") 0;
+
+expression -s ($hairsys_s[0]+".simulationMethod="+$ctrl_hair+".active*3;") 
+-o $hairsys_s[0] -ae 1 -uc all ;
+connectAttr -f ($ctrl_hair+".active") ($ikH_hair+".ikBlend");
+connectAttr -f ($ctrl_hair+".colliderOverSample") ($hair_Syst+".collideOverSample");
+connectAttr -f ($ctrl_hair+".stiffness") ($hair_Syst+".stiffness");
+connectAttr -f ($ctrl_hair+".lengthFlex") ($hair_Syst+".lengthFlex");
+connectAttr -f ($ctrl_hair+".damping") ($hair_Syst+".damp");
+connectAttr -f ($ctrl_hair+".drag") ($hair_Syst+".drag");
+connectAttr -f ($ctrl_hair+".mass") ($hair_Syst+".mass");
+connectAttr -f ($ctrl_hair+".gravity") ($hair_Syst+".gravity");
+connectAttr -f ($ctrl_hair+".frequency") ($hair_Syst+".turbulenceFrequency");
+connectAttr -f ($ctrl_hair+".speed") ($hair_Syst+".turbulenceSpeed");
+connectAttr -f ($ctrl_hair+".startCurveAttraction") ($hair_Syst+".startCurveAttract");
+connectAttr -f ($ctrl_hair+".colliderWidthOffset") ($hair_Syst+".collideWidthOffset");
+connectAttr -f ($ctrl_hair+".friction") ($hair_Syst+".friction");
+connectAttr -f ($ctrl_hair+".start_frame") ($hair_Syst+".startFrame");
+
+//connectAttr -f ($ctrl_hair+".") ($hair_Syst+".");
+
+
+connectAttr -f ($ctrl_hair+".ctrl_size") ($ctrl_hair+".sx");
+connectAttr -f ($ctrl_hair+".ctrl_size") ($ctrl_hair+".sy");
+connectAttr -f ($ctrl_hair+".ctrl_size") ($ctrl_hair+".sz");
+
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".sx");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".sy");
+setAttr -lock true -keyable false -channelBox false ($ctrl_hair+".sz");
+
+
+
+if(`checkBoxGrp -q -v1 sl_group`){
+select -r ($out_crv+".cv["+($num_bone-1)+"]") ;
+createHairConstraint 0;
+string $tippin_s[]=`ls -sl`;
+
+connectAttr -f ($ctrl_hair+".tipPin") ($tippin_s[0]+".glueStrength");
+string $tippin=`PickWalkUp`;
+rename ("tipPin_"+$all_bone[0]);
+select -add ("LOC_"+$all_bone[0]);
+parent;
+
+
+}
+select -r $ctrl_hair;
+select -add ("LOC_"+$all_bone[0]);
+parent;
+select -r ("LOC_"+$all_bone[0]);
+group; xform -os -piv 0 0 0;
+rename ("LOC_"+$all_bone[0]+"_grp");
+select -r $out_crv;
+select -add ("LOC_"+$all_bone[0]+"_grp");
+parent;
+
+setAttr ($all_bone[$num_bone-1]+".visibility") 0;
+//select $all_bone[0];
+//rename ($all_bone[0]+"_skinJNT");
+select -r $ctrl_hair;
+}
+}
+
+/////////////////////
+
+
+global proc collideWithChain(){
+string $ctrl_new_2[]=`ls -sl`;
+int $num_c_obj=`size($ctrl_new_2)`;
+for($col=1;$col<$num_c_obj;$col++){
+string $find_sys_2[]=`listConnections ($ctrl_new_2[$col-1]+".mass")`;
+
+
+string $sys_h_s[]=`listRelatives -s $find_sys_2[0]`;
+string $col_s[]=`listRelatives -s $ctrl_new_2[$num_c_obj-1]`;
+connectAttr -f ($col_s[0]+".outPin[0]") ($sys_h_s[0]+".inputHairPin[0]");}
+print("===成功建立碰撞关系。===");
+}
+//////////////////////////////////
+global proc ceatecollSphere()
+{string $ctrl_new[]=`ls -sl`;
+
+
+
+string $find_sys[]=`listConnections ($ctrl_new[0]+".mass")`;
+//convertHairSelection "follicles";
+string $find_sys_s[]=`listRelatives -s $find_sys[0]`;
+string $find_foll[]=`listConnections ($find_sys_s[0]+".inputHair")`;
+select $find_foll[0];
+createHairConstraint 5;
+string $coll_sphere_s[]=`ls -sl`;
+string $coll_sphere=`PickWalkUp`;
+rename ("collSphere_"+$ctrl_new[0]);
+print("===成功生成一枚碰撞球球儿。===");
+}
+
+/////////////////////
+
+global proc FY_ConnectMayaFields(){
+string $ctrl_field[]=`ls -sl`;
+int $num_ctrl_field=`size($ctrl_field)`;
+for($shit=1;$shit<$num_ctrl_field;$shit++){
+ string $find_sys_3[]=`listConnections ($ctrl_field[$shit-1]+".mass")`;
+ 
+  
+ 
+   connectDynamic -f $ctrl_field[$num_ctrl_field-1] $find_sys_3[0]; 
+    
+}
+print("===成功建立动力学关系。===");
+}
+
+
+global proc soul2(){
+
+
+
+
+
+SelectHierarchy;
+
+string $skeleton_name[]=`ls -sl`;
+
+int $number_skeleton=`size($skeleton_name)`;
+
+ int $if_group= 1;
+
+
+
+for($aa=0;$aa<$number_skeleton-1;$aa++)
+{
+    
+circle -nr 1 0 0 -n ("con_crv_"+$skeleton_name[$aa]);
+select -r $skeleton_name[$aa];
+select -add ("con_crv_"+$skeleton_name[$aa]);
+    pointConstraint -offset 0 0 0 -weight 1;
+        orientConstraint -offset 0 0 0 -weight 1;
+        pointConstraint -remove;
+        orientConstraint -remove;
+        
+        
+string $circle_name_s[]=`listRelatives -s ("con_crv_"+$skeleton_name[$aa])`;
+
+
+
+parent -add -shape ($circle_name_s[0]) ($skeleton_name[$aa]);
+
+delete ("con_crv_"+$skeleton_name[$aa]);
+
+
+
+if($if_group==1){
+select -r $skeleton_name[$aa];
+
+group;xform -os -piv 0 0 0;
+ 
+rename ($skeleton_name[$aa]+"_grp");
+string $skeleton_name_grp[]=`ls -sl`;
+
+float $skeleton_tx=`getAttr ($skeleton_name[$aa]+".tx")`;
+float $skeleton_ty=`getAttr ($skeleton_name[$aa]+".ty")`;
+float $skeleton_tz=`getAttr ($skeleton_name[$aa]+".tz")`;
+
+float $skeleton_rx=`getAttr ($skeleton_name[$aa]+".rx")`;
+float $skeleton_ry=`getAttr ($skeleton_name[$aa]+".ry")`;
+float $skeleton_rz=`getAttr ($skeleton_name[$aa]+".rz")`;
+
+
+setAttr ($skeleton_name_grp[$aa]+".translateX") $skeleton_tx;
+setAttr ($skeleton_name_grp[$aa]+".translateY") $skeleton_ty;
+setAttr ($skeleton_name_grp[$aa]+".translateZ") $skeleton_tz;
+
+setAttr ($skeleton_name_grp[$aa]+".rotateX") $skeleton_rx;
+setAttr ($skeleton_name_grp[$aa]+".rotateY") $skeleton_ry;
+setAttr ($skeleton_name_grp[$aa]+".rotateZ") $skeleton_rz;
+
+
+setAttr ($skeleton_name[$aa]+".translateX") 0;
+setAttr ($skeleton_name[$aa]+".translateY") 0;
+setAttr ($skeleton_name[$aa]+".translateZ") 0;
+
+setAttr ($skeleton_name[$aa]+".rotateX") 0;
+setAttr ($skeleton_name[$aa]+".rotateY") 0;
+setAttr ($skeleton_name[$aa]+".rotateZ") 0;
+}
+
+DeleteHistory;
+
+
+
+}
+
+
+
+select $skeleton_name[0];
+
+
+
+
+
+}
+
+
+
+
+
+if(`window -ex FY_tool_3dy`) deleteUI FY_tool_3dy; 
+
+
+window -title "大肥羊牌贴心小工具" -sizeable 1 -tlb 0 FY_tool_3dy;
+rowColumnLayout -numberOfColumns 1 ;
+
+  text -label "===选择根骨骼(场景内骨骼请勿重名)===";
+  
+setParent ..; 
+ rowColumnLayout -numberOfColumns 2 -cw 1 200;
+  text -label "===选择根骨骼===";
+button -label "给骨骼添加曲线shape" -recomputeSize 1 -w 180 -command "soul2()";
+   checkBoxGrp -label "创建尾端约束 : " -v1 0 -w 180 sl_group;
+ button -label "生成动力学系统"  -w 120 -command "FY_MakeJointChainDynamic()";
+  
+
+
+
+ text -label "===选择控制球===";
+button -label "生成碰撞球球儿" -recomputeSize 1 -w 180 -command "ceatecollSphere()";
+
+  text -label "=选择控制球加选碰撞球(们)=";
+button -label "建立碰撞关系" -recomputeSize 1 -w 180 -command "collideWithChain()"; 
+  text -label "===创建增强版air场===";
+button -label "立即创建" -recomputeSize 1 -w 180 -command "FY_air()"; 
+text -label "===选择控制球加选动力场===";
+button -label "建立动力学关系" -recomputeSize 1 -w 180 -command "FY_ConnectMayaFields()"; 
+  text -label "===选择需要bake的控制球(们)===";
+button -label "全部bake" -recomputeSize 1 -w 180 -command "bake_joint()";  
+   
+    text -label "===选择需要删除动力学系统的控制球(们)===";
+button -label "全部删除" -recomputeSize 1 -w 180 -command "del_hair_syst()";  
+    text -label " ";  
+
+
+setParent ..;   
+showWindow FY_tool_3dy;

@@ -1,0 +1,15 @@
+<RCC>
+  <qresource prefix="btnicn">
+    <file>test.png</file>
+    <file>ball.png</file>
+    <file>cube.png</file>
+    <file>darkred.png</file>
+    <file>yellow.png</file>
+    <file>blue.png</file>
+    <file>darkblue.png</file>
+    <file>green.png</file>
+    <file>red.png</file>
+    <file>skyBlue.png</file>
+    <file>white.png</file>
+  </qresource>
+</RCC>

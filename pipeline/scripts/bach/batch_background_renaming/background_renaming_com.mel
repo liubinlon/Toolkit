@@ -1,0 +1,192 @@
+global proc asExportRenameToUnreal ()
+{
+int $spineNr,$numChar;
+string $side,$parent,$aboveTwistParent,$nextSegJoint,$lastTwoChar,$aa,$bb;
+string $as[]={"Root_M","Hip_R","Knee_R","Ankle_R","Toes_R","Scapula_R","Shoulder_R","Elbow_R","Wrist_R","Neck_M","Head_M"};
+string $bs[]={"pelvis","thigh_r","calf_r","foot_r","ball_r","clavicle_r","upperarm_r","lowerarm_r","hand_r","neck_01","head"};
+string $aFingers[]={"Index","Middle","Ring","Pinky","Thumb"};
+string $bFingers[]={"index","middle","ring","pinky","thumb"};
+string $twistLimbs[]={"thigh","calf","upperarm","lowerarm"};
+string $tempString[];
+
+//error checks
+if (!`objExists |Group`)
+	error ("Top node \"Group\" not found, No valid AdvancedSkeleton rig in the scene");
+if (`objExists |root`)
+	error ("|root already exists, already using Unreal Names");
+for ($i=0;$i<size($bs);$i++)
+	if (`objExists $bs[$i]`)
+		{
+		select $bs[$i];
+		error ("Selected object is named:\""+$bs[$i]+"\", which is a name required bu UnrealJoints, rename this object to use another name.");
+		}
+
+//Part joints
+for ($i=1;$i<10;$i++)
+	{
+	$as[size($as)]="HipPart"+$i+"_R";
+	$bs[size($bs)]="thigh_twist_"+`asDoPadd $i 2`+"_r";
+	$as[size($as)]="KneePart"+$i+"_R";
+	$bs[size($bs)]="calf_twist_"+`asDoPadd $i 2`+"_r";
+	$as[size($as)]="ShoulderPart"+$i+"_R";
+	$bs[size($bs)]="upperarm_twist_"+`asDoPadd $i 2`+"_r";
+	$as[size($as)]="ElbowPart"+$i+"_R";
+	$bs[size($bs)]="lowerarm_twist_"+`asDoPadd $i 2`+"_r";
+
+	$as[size($as)]="NeckPart"+$i+"_M";
+	$bs[size($bs)]="neck_"+`asDoPadd ($i+1) 2`;
+	}
+
+//Fingers
+for ($i=1;$i<4;$i++)
+	for ($y=0;$y<size($aFingers);$y++)
+		{
+		$as[size($as)]=$aFingers[$y]+"Finger"+$i+"_R";
+		$bs[size($bs)]=$bFingers[$y]+"_"+`asDoPadd $i 2`+"_r";
+		}
+
+//add Left
+for ($i=0;$i<size($as);$i++)
+	if (`gmatch $as[$i] "*_R"`)
+		{
+		$as[size($as)]=`substitute "_R" $as[$i] "_L"`;
+		$bs[size($bs)]=`substitute "_r" $bs[$i] "_l"`;
+		}
+
+if (!`objExists root`)
+	{
+	asCreateGameEngineRootMotion;
+	setAttr root.jointOrientX -90;
+	addAttr -k 0 -ln noRootMotionJointBeforeRename -at bool -dv 1 root;
+	}
+parent -w root;
+
+//Spine
+$tempString=`ls -l Chest_M`;
+tokenize $tempString[0] "|" $tempString;
+for ($y=0;$y<size($tempString);$y++)
+	{
+	if ($tempString[$y]=="Root_M")
+		{
+		$spineNr=1;
+		continue;
+		}
+	if ($spineNr==0)
+		continue;
+	if (!`attributeExists asName $tempString[$y]`)
+		addAttr -ln asName -dt "string" $tempString[$y];
+	setAttr -type "string" ($tempString[$y]+".asName") $tempString[$y];
+	rename $tempString[$y] ("spine_"+`asDoPadd $spineNr 2`);
+	$spineNr++;
+	}
+
+//rename known (from mannequinn) named joints
+for ($i=0;$i<size($as);$i++)
+	{
+	if (!`objExists $as[$i]`)
+		continue;
+	if (!`attributeExists asName $as[$i]`)
+		addAttr -ln asName -dt "string" $as[$i];
+	setAttr -type "string" ($as[$i]+".asName") $as[$i];
+	rename $as[$i] $bs[$i];
+	}
+
+//rename un-known (Not from mannequinn) named joints (just side-suffix rename)
+$tempString=`listRelatives -ad -type joint root`;
+for ($i=0;$i<size($tempString);$i++)
+	{
+	$aa=$tempString[$i];
+	$bb="";
+	$numChar=size($tempString[$i]);
+	$lastTwoChar=`substring $tempString[$i] ($numChar-1) $numChar`;
+	if ($lastTwoChar=="_R") $bb=`substring $tempString[$i] 1 ($numChar-2)`+"_r";
+	if ($lastTwoChar=="_L") $bb=`substring $tempString[$i] 1 ($numChar-2)`+"_l";
+	if ($lastTwoChar=="_M") $bb=`substring $tempString[$i] 1 ($numChar-2)`+"";
+	if ($bb=="")
+		continue;
+	if (!`attributeExists asName $aa`)
+		addAttr -ln asName -dt "string" $aa;
+	setAttr -type "string" ($aa+".asName") $aa;
+	rename $aa $bb;
+	}
+
+//change twist-joints-hierarchy
+for ($y=0;$y<size($twistLimbs);$y++)
+	{
+	for ($b=1;$b>-2;$b=$b-2)
+		{
+		if ($b==1)  $side="_r";
+		if ($b==-1) $side="_l";
+
+		for ($i=1;$i<10;$i++)
+			{
+			$twistJoint=$twistLimbs[$y]+"_twist_"+`asDoPadd $i 2`+$side;
+			if (!`objExists $twistJoint`)
+				continue;
+			$tempString=`listRelatives -p $twistJoint`;
+			$parent=$tempString[0];
+			if ($i==1)
+				{
+				$aboveTwistParent=$parent;
+				continue;
+				}
+
+			if (!`attributeExists asParent $twistJoint`)
+				addAttr -ln asParent -dt "string" $twistJoint;
+			setAttr -type "string" ($twistJoint+".asParent") $parent;
+			parent $twistJoint $aboveTwistParent;
+
+			$tempString=`listRelatives -c -type joint $twistJoint`;
+			if (!`gmatch $tempString[0] "*_twist_*"`)//next segment start
+				{
+				$nextSegJoint=$tempString[0];
+				if (!`attributeExists asParent $nextSegJoint`)
+					addAttr -ln asParent -dt "string" $nextSegJoint;
+				setAttr -type "string" ($nextSegJoint+".asParent") $twistJoint;
+				parent $nextSegJoint $aboveTwistParent;
+				}
+			}
+		}
+	}
+print "// Renamed to Unreal names.\n";
+}
+
+global proc asExportRenameRestore ()
+{
+string $asName,$asParent;
+string $tempString[];
+
+//error checks
+if (!`objExists |Group`)
+	error ("Top node \"Group\" not found, No valid AdvancedSkeleton rig in the scene");
+if (!`objExists |root`)
+	error ("|root does not exist, not currently using Unreal Names");
+
+parent root DeformationSystem;
+if (`attributeExists noRootMotionJointBeforeRename root`)
+	asDeleteGameEngineRootMotion;
+
+$tempString=`listRelatives -ad -type joint -f DeformationSystem`;
+//reParent
+for ($i=0;$i<size($tempString);$i++)
+	{
+	if (!`attributeExists asParent $tempString[$i]`)
+		continue;
+	$asParent=`getAttr ($tempString[$i]+".asParent")`;
+	parent $tempString[$i] $asParent;
+	}
+//reName
+$tempString=`listRelatives -ad -type joint -f DeformationSystem`;
+for ($i=0;$i<size($tempString);$i++)
+	{
+	if (!`attributeExists asName $tempString[$i]`)
+		continue;
+	$asName=`getAttr ($tempString[$i]+".asName")`;
+	rename $tempString[$i] $asName;
+	}
+
+parent Geometry Group;
+
+select -cl;
+print "// Renamed back to AdvancedSkeleton names.\n";
+}

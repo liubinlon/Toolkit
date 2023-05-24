@@ -1,0 +1,363 @@
+//MAYA软修改变形绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+///////////////////////////////////////
+global proc gtSoftDeformToolWin(){
+
+if(`window -ex gtSoftDeformToolWin`) deleteUI -window gtSoftDeformToolWin;
+window -wh 420 200 -t "老船角色绑定-☆-MAYA软修改变形绑定工具" gtSoftDeformToolWin;
+scrollLayout gtmainBSL;
+
+columnLayout -adj 1 -w 380 gtBSColumlayout;
+text -l "点击下方按钮↓↓↓↓↓" texta1;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1762\"";
+separator -style single  sep1;
+floatSliderGrp -l "控制器大小："  -f 1 -v 1 -min 0.01 -max 10  gtSoftDefConradius;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+textFieldGrp  -cw2 100 130 -l "全部变形模型" -tx "请载入全部变形模型" -ed 0 gtTextBSLSoft3;
+button -l "载入变形物体" -c "gtBSLoadSoftMesh" gtButBSC3;
+
+setParent..;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "选择模型顶点";
+
+button -l "软修改变形绑定" -c "gtSoftToolProc;" but3ab;
+setParent..;
+separator -style single  sep2;
+
+showWindow  gtSoftDeformToolWin;
+}
+///////////////////////
+global proc gtBSLoadSoftMesh(){
+string $sel[]=`ls -sl`;
+string $obj="";
+for($i=0;$i<size($sel);$i++){
+    $obj+=(" "+$sel[$i]);
+}
+textFieldGrp -e -tx ($obj) gtTextBSLSoft3;
+}
+////////////////////
+global proc gtSoftToolProc (){
+    string $sel[]=`ls -sl -fl`;
+    string $meshAll=`textFieldGrp -q -text  gtTextBSLSoft3`;
+    float $scl=`floatSliderGrp -q -v  gtSoftDefConradius`;
+
+    string $tm[];
+    int $t=`tokenize ($meshAll) " " $tm`;
+    
+    string $objName[];
+
+    for($i=0;$i<$t;$i++){
+       $objName[$i]=$tm[$i]; 
+    }
+    //print ($objName[1]);
+    string $mesh=($objName[0]);
+    
+    string $shap[]=`listRelatives -s  ($mesh)`;
+    string $nodeType=`nodeType $shap[0]`;
+    
+    if($nodeType=="mesh"||$nodeType=="nurbsSurface"){
+    
+    int $ex=`objExists ($mesh+"_SoftConGrp")`;
+if($ex==0){
+    select -cl;
+    group -empty -n ($mesh+"_SoftConGrp");
+    }
+    
+        int $ex=`objExists ($mesh+"_SoftModGrp")`;
+if($ex==0){
+    select -cl;
+    group -empty -n ($mesh+"_SoftModGrp");
+    setAttr ($mesh+"_SoftModGrp.visibility") 0;
+    setAttr -lock true ($mesh+"_SoftModGrp.v");
+    }
+    
+        int $ex=`objExists ($mesh+"_SoftCenterPivGrp")`;
+if($ex==0){
+    select -cl;
+    group -empty -n ($mesh+"_SoftCenterPivGrp");
+    select -cl;
+    joint -p 0 0 0 -n ($mesh+"_SoftCenterBn");
+    select -r ($mesh);
+    select -add ($mesh+"_SoftCenterBn");
+    delete`pointConstraint`;
+    select -r ($mesh+"_SoftCenterBn"); 
+    group -n ($mesh+"_SoftCenterBnGrp");   
+    select -add  ($mesh+"_SoftCenterPivGrp");
+    parent;
+   
+    select -r ($mesh);  
+    duplicate -rr; 
+    rename   ($mesh+"SoftPivMesh"); 
+    select -add  ($mesh+"_SoftCenterPivGrp");
+    parent;
+    select -r ($mesh+"_SoftCenterBn"); 
+    select -add  ($mesh+"SoftPivMesh"); 
+    newSkinCluster "-mi 3 -omi true -dr 3 -rui true";
+    spaceLocator -p 0 0 0 -n ($mesh+"SoftPivLoc");
+    group -n ($mesh+"SoftPivLocGrp");
+    select -r ($mesh);
+    select -add ($mesh+"SoftPivLocGrp");
+    delete`pointConstraint`;
+    select -r ($mesh+"SoftPivLoc");
+    select -add ($mesh+"_SoftCenterBnGrp");   
+    parentConstraint -mo;
+    scaleConstraint;
+    string $shap[]=`listRelatives -s ($mesh+"SoftPivLoc")`;
+    setAttr ($shap[0]+".visibility") 0;
+    setAttr -lock true ($shap[0]+".visibility");
+    
+    select -r ($mesh+"_SoftCenterPivGrp");  
+    select -add  ($mesh+"_SoftModGrp");
+    parent;
+    }    
+    
+        
+    for($i=0;$i<size($sel);$i++){
+    float $pos[]=`xform -q -ws -t -a ($sel[$i])`;
+    string $tm[];
+    int $t=`tokenize ($sel[$i]) "[" $tm`;
+    string $tmm=$tm[1];
+    string $ttmm[];
+    int $t=`tokenize ($tmm) "]" $ttmm`;
+    int $pointnum=($ttmm[0]);
+    int $num=$pointnum;
+
+    select -cl;
+    spaceLocator -p 0 0 0;
+    rename ($mesh+"_"+$num+"_loc");
+    select -r ($mesh+"_"+$num+"_loc"); 
+    setAttr -type float3 ($mesh+"_"+$num+"_loc.t")  $pos[0] $pos[1] $pos[2];
+		
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($mesh+"_"+$num+"Con"+$i);
+group -n ($mesh+"_"+$num+"ConGrp"+$i);
+group -n  ($mesh+"_"+$num+"ConGrpA"+$i);
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+select -r ($mesh+"_"+$num+"_loc"); 
+select -add ($mesh+"_"+$num+"ConGrpA"+$i);
+delete `parentConstraint`;
+select -r ($mesh+"_"+$num+"_loc");
+delete;
+
+string $shape[]=`listRelatives -s ($mesh+"_"+$num+"Con"+$i)`;
+setAttr ($shape[0]+".overrideEnabled") 1;
+setAttr ($shape[0]+".overrideColor") 22;
+select -r ($mesh+"_"+$num+"ConGrpA"+$i);
+select -add ($mesh+"_SoftConGrp");
+parent;
+
+select -r  ($mesh+"_"+$num+"Con"+$i);
+addAttr -ln "influenceRadius"  -at double  -k 1 -dv 2;
+
+addAttr -ln "showCenterPivLoc"  -at bool  -k 1;
+addAttr -ln "centerPivX"  -at double  -k 1 -dv 0;
+addAttr -ln "centerPivY"  -at double  -k 1 -dv 0;
+addAttr -ln "centerPivZ"  -at double  -k 1 -dv 0;
+
+ 
+select -r ($objName);
+$tempString=`softMod -falloffMode 1 -falloffAroundSelection 0`;
+
+string $softMod[]=`ls -sl`;
+rename ($mesh+"_"+$num+"SoftHandle"+$i);
+string $softDeform[]=`listConnections ($mesh+"_"+$num+"SoftHandle"+$i+".worldMatrix[0]")`;
+setAttr -type float3 ($softDeform[0]+".falloffCenter")  $pos[0] $pos[1] $pos[2];
+move -a $pos[0] $pos[1] $pos[2] ($mesh+"_"+$num+"SoftHandle"+$i+".scalePivot") ($mesh+"_"+$num+"SoftHandle"+$i+".rotatePivot") ;
+
+connectAttr -f ($mesh+"_"+$num+"Con"+$i+".translate") ($mesh+"_"+$num+"SoftHandle"+$i+".translate");
+connectAttr -f  ($mesh+"_"+$num+"Con"+$i+".rotate") ($mesh+"_"+$num+"SoftHandle"+$i+".rotate");
+connectAttr -f  ($mesh+"_"+$num+"Con"+$i+".scale") ($mesh+"_"+$num+"SoftHandle"+$i+".scale");
+connectAttr -f  ($mesh+"_"+$num+"Con"+$i+".influenceRadius") ($softDeform[0]+".falloffRadius");
+select -r ($mesh+"_"+$num+"SoftHandle"+$i);
+select -add ($mesh+"_SoftModGrp");
+parent;
+select -cl;
+group -empty -n ($softDeform[0]+"pos");
+select -add ($mesh+"_SoftModGrp");
+parent;
+
+select -r  ($mesh+"_"+$num+"Con"+$i);
+select -add ($softDeform[0]+"pos");
+pointConstraint;
+shadingNode -asUtility multiplyDivide -n ($mesh+"_"+$num+"Multiply"+$i);
+connectAttr -f ($mesh+"_"+$num+"Con"+$i+".translate") ($mesh+"_"+$num+"Multiply"+$i+".input1");
+setAttr -type float3 ($mesh+"_"+$num+"Multiply"+$i+".input2") -1 -1 -1;
+connectAttr -f ($mesh+"_"+$num+"Multiply"+$i+".output") ($mesh+"_"+$num+"ConGrp"+$i+".translate");
+
+
+if($nodeType=="mesh"||$nodeType=="nurbsSurface"){
+    
+select -r ($mesh+"_"+$num+"ConGrpA"+$i);
+string $selc[]=`ls -sl`;
+
+string $bigManM=$mesh;
+string $shape[]=`listRelatives -s $bigManM`;
+
+string $type=`objectType  $shape[0]`;
+if($type!="mesh"&&$type!="nurbsSurface")error "需要多边形或者曲面作为固定的面";
+
+int $exsit=`objExists ($bigManM+"follicleGrp")`;
+
+if($exsit==0){
+group -em -n ($bigManM+"follicleGrp");
+    select -r ($bigManM+"follicleGrp");  
+    select -add  ($mesh+"_SoftModGrp");
+    parent;
+}
+
+for($ii=0;$ii<size($selc);$ii++){
+spaceLocator -p 0 0 0 -n ($selc[$ii]+"Loc");
+
+group -n ($selc[$ii]+"LocGrp");
+
+select -r ($selc[$ii]);
+select -add ($selc[$ii]+"LocGrp");
+delete `parentConstraint`;
+select -r ($selc[$ii]+"Loc");
+select -add ($selc[$ii]);
+pointConstraint -mo;
+string $shap[]=`listRelatives -s ($selc[$ii]+"Loc")`;
+setAttr ($shap[0]+".localScaleZ") 0.01;
+setAttr ($shap[0]+".localScaleX") 0.01;
+setAttr ($shap[0]+".localScaleY") 0.01;
+
+float $pos[]=`xform -q -a -ws -t ($selc[$ii]+"Loc")`;
+string $type=`objectType  $shape[0]`;
+
+////////////////////////
+if($type=="mesh"){
+createNode closestPointOnMesh -n ($selc[$ii]+"cpom"+$ii);
+connectAttr -f ($bigManM+".outMesh") ($selc[$ii]+"cpom"+$ii+".inMesh");
+
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionX") $pos[0] ;
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionY") $pos[1] ;
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionZ") $pos[2] ;
+float $u=`getAttr ($selc[$ii]+"cpom"+$ii+".parameterU")`;
+float $v=`getAttr ($selc[$ii]+"cpom"+$ii+".parameterV")`;
+
+createNode follicle -n ($selc[$ii]+"follicleShape"+$ii);
+select -r ($selc[$ii]+"follicleShape"+$ii);
+pickWalk -d up;
+rename ($selc[$ii]+"follicle"+$ii);
+connectAttr -f ($bigManM+".outMesh") ($selc[$ii]+"follicleShape"+$ii+".inputMesh");
+connectAttr -f ($bigManM+".worldMatrix[0]") ($selc[$ii]+"follicleShape"+$ii+".inputWorldMatrix");
+
+connectAttr -f ($selc[$ii]+"follicleShape"+$ii+".outTranslate") ($selc[$ii] +"follicle"+$ii+".translate");
+connectAttr -f ($selc[$ii]+"follicleShape"+$ii+".outRotate") ($selc[$ii]+"follicle"+$ii+".rotate");
+
+setAttr  ($selc[$ii]+"follicleShape"+$ii+".parameterU") $u;
+setAttr  ($selc[$ii]+"follicleShape"+$ii+".parameterV") $v;
+
+select -r ($selc[$ii]+"follicle"+$ii);
+select -add ($bigManM+"follicleGrp");
+parent;
+select -r ($selc[$ii]+"cpom"+$ii);
+delete;
+}
+else
+{
+createNode closestPointOnSurface -n ($selc[$ii]+"cpom"+$ii);
+string $shape[]=`listRelatives -s $bigManM`;
+connectAttr -f ($shape[0]+".worldSpace") ($selc[$ii]+"cpom"+$ii+".inputSurface");
+
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionX") $pos[0] ;
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionY") $pos[1] ;
+setAttr ($selc[$ii]+"cpom"+$ii+".inPositionZ") $pos[2] ;
+float $u=`getAttr ($selc[$ii]+"cpom"+$ii+".parameterU")`;
+float $v=`getAttr ($selc[$ii]+"cpom"+$ii+".parameterV")`;
+
+createNode follicle -n ($selc[$ii]+"follicleShape"+$ii);
+select -r ($selc[$ii]+"follicleShape"+$ii);
+pickWalk -d up;
+rename ($selc[$ii]+"follicle"+$ii);
+connectAttr -f ($shape[0]+".local") ($selc[$ii]+"follicleShape"+$ii+".inputSurface");
+connectAttr -f ($shape[0]+".worldMatrix[0]") ($selc[$ii]+"follicleShape"+$ii+".inputWorldMatrix");
+
+connectAttr -f ($selc[$ii]+"follicleShape"+$ii+".outTranslate") ($selc[$ii] +"follicle"+$ii+".translate");
+connectAttr -f ($selc[$ii]+"follicleShape"+$ii+".outRotate") ($selc[$ii]+"follicle"+$ii+".rotate");
+
+setAttr  ($selc[$ii]+"follicleShape"+$ii+".parameterU") $u;
+setAttr  ($selc[$ii]+"follicleShape"+$ii+".parameterV") $v;
+
+select -r ($selc[$ii]+"follicle"+$ii);
+select -add ($bigManM+"follicleGrp");
+parent;
+select -r ($selc[$ii]+"cpom"+$ii);
+delete;
+        }
+    select -r ($selc[$ii]+"follicle"+$ii);
+    select -add ($selc[$ii]+"LocGrp");
+    delete `parentConstraint`;
+
+    select -r ($selc[$ii]+"LocGrp");
+    select -add ($selc[$ii]+"follicle"+$ii);
+    parent;
+    float $pos[]=`getAttr ($selc[$ii]+"follicle"+$ii+".translate")`;
+    move $pos[0] $pos[1] $pos[2]  ($selc[$ii]+".scalePivot")  ($selc[$ii]+".rotatePivot") ;       
+    }   
+}    
+    
+    spaceLocator -p 0 0 0 -n ($mesh+"_"+$num+"PivLoc"+$i);
+    select -r  ($mesh+"_"+$num+"Con"+$i);
+    select -add ($mesh+"_"+$num+"PivLoc"+$i);
+    delete`pointConstraint`;
+    select -r  ($mesh+"SoftPivMesh"); 
+    select -add ($mesh+"_"+$num+"PivLoc"+$i);
+    geometryConstraint -weight 1;
+    select -r ($mesh+"_"+$num+"PivLoc"+$i);
+    group -n  ($mesh+"_"+$num+"PivLocGrp"+$i);  
+    connectAttr -f ($mesh+"_"+$num+"PivLoc"+$i+".translate")($softDeform[0]+".falloffCenter") ;
+    select -r ($mesh+"_"+$num+"PivLocGrp"+$i);  
+    select -add  ($mesh+"_SoftModGrp");
+    parent;
+    
+    spaceLocator -p 0 0 0 -n ($mesh+"_"+$num+"PivLocCon"+$i);
+    group -n ($mesh+"_"+$num+"PivLocConGrpA"+$i);
+    group -n ($mesh+"_"+$num+"PivLocConGrp"+$i);
+    
+    select -r  ($mesh+"_"+$num+"Con"+$i);
+    select -add ($mesh+"_"+$num+"PivLocConGrp"+$i);
+    delete`pointConstraint`;
+    select -r  ($mesh+"SoftPivMesh"); 
+    select -add ($mesh+"_"+$num+"PivLocConGrp"+$i);
+    delete`normalConstraint -weight 1 -aimVector 1 0 0 -upVector 0 1 0 -worldUpType "vector" -worldUpVector 0 1 0`;
+    select -r ($mesh+"_"+$num+"PivLocCon"+$i);
+    select -add ($mesh+"_"+$num+"PivLoc"+$i);
+    pointConstraint;
+    select -r ($mesh+"_"+$num+"PivLocConGrp"+$i);
+    select -add  ($mesh+"SoftPivLoc");
+    parent;
+    connectAttr -f  ($mesh+"_"+$num+"Con"+$i+".centerPivX") ($mesh+"_"+$num+"PivLocConGrpA"+$i+".tx");
+    connectAttr -f  ($mesh+"_"+$num+"Con"+$i+".centerPivY") ($mesh+"_"+$num+"PivLocConGrpA"+$i+".ty");
+    connectAttr -f  ($mesh+"_"+$num+"Con"+$i+".centerPivZ") ($mesh+"_"+$num+"PivLocConGrpA"+$i+".tz");
+    connectAttr -f  ($mesh+"_"+$num+"Con"+$i+".showCenterPivLoc") ($mesh+"_"+$num+"PivLocCon"+$i+".v"); 
+    setAttr -lock true ($mesh+"_"+$num+"PivLocCon"+$i+".rx");
+    setAttr -lock true ($mesh+"_"+$num+"PivLocCon"+$i+".ry");
+    setAttr -lock true ($mesh+"_"+$num+"PivLocCon"+$i+".rz");
+    setAttr -lock true ($mesh+"_"+$num+"PivLocCon"+$i+".sx");
+    setAttr -lock true ($mesh+"_"+$num+"PivLocCon"+$i+".sy");
+    setAttr -lock true ($mesh+"_"+$num+"PivLocCon"+$i+".sz");
+    setAttr -lock true ($mesh+"_"+$num+"PivLocCon"+$i+".v");  
+    }
+    }else{
+        error "请选择多边形或者曲面模型的点元素";
+    }
+}
+//////////////////////
+gtSoftDeformToolWin;
+/////////////////2017-3-1

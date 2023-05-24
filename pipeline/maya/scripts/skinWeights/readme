@@ -1,0 +1,31 @@
+ 
+## Export skin weights to disk
+
+import maya.cmds as mc
+import sys 
+
+path = '/ibrix3/WHD/editorial/reference/Department_Ref/Rigging/luzy/script/autoMatchJointPosition/skinWeights/'
+if path not in sys.path:
+    sys.path.append(path)
+import loadSkinWeights
+reload(loadSkinWeights)
+
+loadSkinWeights.storeSkinWeight()
+
+###############################################################################################################
+###############################################################################################################
+
+
+## Import skin weights 
+
+import maya.cmds as mc
+import sys 
+
+path = '/ibrix3/WHD/editorial/reference/Department_Ref/Rigging/luzy/script/autoMatchJointPosition/skinWeights/'
+if path not in sys.path:
+    sys.path.append(path)
+    
+import loadSkinWeights
+reload(loadSkinWeights)
+
+loadSkinWeights.writeSkinWeight()

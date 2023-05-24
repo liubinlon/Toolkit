@@ -1,0 +1,76 @@
+//模型顶点烘焙关键帧动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtbakepolygonAnimWin(){
+
+if(`window -ex gtbakepolygonAnimWin`) deleteUI  -window gtbakepolygonAnimWin;
+window -wh 400 200 -title "老船动画吧-模型顶点烘焙关键帧动画工具" gtbakepolygonAnimWin;
+columnLayout -adj 1   mainColumnL;
+text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 45  -c "showHelp -a \"http://www.animate8.com/archives/1706\"";
+text -l "注意：该动画工具是为模型顶点烘焙关键帧\n模型顶点较多时，烘焙时间会比较长";
+
+    intFieldGrp -l "开始帧"   -v1 1  gtStartFploy;
+    intFieldGrp -l "结束帧"   -v1 24  gtEndFploy;
+
+	button  -l "烘焙模型顶点关键帧" -c "gtbakepolygon" gtIntsecoundBnBut;
+separator -style double;	
+showWindow gtbakepolygonAnimWin;
+}
+
+global proc gtbakepolygon(){
+    int $start=`intFieldGrp -q -v1 gtStartFploy`;
+    int $end=`intFieldGrp -q -v1 gtEndFploy`;
+    
+    string $sel[]=`ls -sl`;
+    int $ex=`objExists ($sel[0]+"bakedMeshGrp")`;
+    if($ex==0){
+        group -empty -n ($sel[0]+"bakedMeshGrp");
+    }
+    for($i=0;$i<size($sel);$i++){
+    select -r ($sel[$i]);
+    duplicate -rr;
+    rename ($sel[$i]+"bakedMesh");
+    
+     string $UnlockAttributes[] = {".tx",".ty",".tz",".rx",".ry",".rz",".sx",".sy",".sz"};
+		for ($ii = 0; $ii < 9; $ii++)
+		{
+	     setAttr -l 0 ($sel[$i]+"bakedMesh" + $UnlockAttributes[$ii]);
+	         }
+	 select -add ($sel[0]+"bakedMeshGrp");
+	 parent;
+	 }
+	 global string $gMainProgressBar;
+
+	 for($ii=$start;$ii<($end+1);$ii++){
+               currentTime -e $ii;
+
+	         for($i=0;$i<size($sel);$i++){
+	             select -r ($sel[$i]+".vtx[0:999999]");
+	             string $vex[]=`ls -sl -fl`;
+	             progressBar -e -st ("烘焙模型顶点："+$sel[$i]+"模型-第："+$ii+"帧") -bp -ii 1 -min 0 -max `size($vex)` $gMainProgressBar;
+
+	             for($j=0;$j<size($vex);$j++){
+	                if (`progressBar -q -ic $gMainProgressBar`)
+            		break;
+                	progressBar -e -s 1 $gMainProgressBar;
+	                 //select -r ($sel[$i]+".vtx["+$j+"]");
+	                 float $pos[]=`xform -q -ws -t -a ($sel[$i]+".vtx["+$j+"]")`;
+	                 select -r ($sel[$i]+".vtx["+$j+"]");
+	                 xform -ws -a -t $pos[0] $pos[1] $pos[2] ($sel[$i]+"bakedMesh.vtx["+$j+"]"); 
+	                 }  
+	              select -r  ($sel[$i]+"bakedMesh.vtx[0:999999]");
+	              SetKey;                        
+                progressBar -e -ep $gMainProgressBar;
+	      }	     
+	 } 	
+}
+//////////////////////////
+gtbakepolygonAnimWin;
+///////////////////////////2016-10-30    

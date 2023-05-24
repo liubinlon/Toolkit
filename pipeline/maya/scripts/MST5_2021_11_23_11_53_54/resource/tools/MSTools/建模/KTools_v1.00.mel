@@ -1,0 +1,1129 @@
+/*********************************
+
+KTools - booleans workflow script. 
+
+Script by: Klaudio Ladavac
+Email: klaudio2u@gmail.com
+
+IMPORTANT: Script is provided as is and keep in mind it is personal project to learn MEL scripting 
+           in the first place so it is definitly not most elagant code.  
+           Please don't share it around for free or change the script yourself.
+           If you are familiar with MEL scripting and you see where it can be improved/changed 
+           please contant me on my email above! Thanks! ;)
+
+**********************************/
+if(`window -ex "t_ktools"`){deleteUI "t_ktools";}
+string $KTools = `window -t "KTools" -tlb 1 -s 0 -te 250 "t_ktools"`;
+columnLayout -adj 1;
+
+//   BOOLEANS - section    //////////////////////////////////////////////////////////////////
+text -label "> Booleans" -al "left" -h 15 -font "smallPlainLabelFont" -backgroundColor 0.23 0.23 0.23;
+
+// ...........................................................................................
+
+rowLayout;
+  iconTextButton -image1 "kTools_icons/K_Boolean_DIF.png" -command "Difference_D";  // Difference 
+     global proc Difference_D() { 
+        polyCBoolOp -op 2 -ch 1 -preserveColor 1 -classification 1; 
+        rename polyCBoolOp1 Boolean_dif; 
+        polySoftEdge -angle 45;
+               int $inViewPref_D = `optionVar -q inViewMessageEnable`;
+               optionVar -iv inViewMessageEnable false;
+        toggleSelMode;
+        toggleSelMode; 
+               optionVar -iv inViewMessageEnable $inViewPref_D;
+        DeleteHistory;
+     } 
+setParent ..;	
+
+// ...........................................................................................
+
+rowLayout -numberOfColumns 2;
+    iconTextButton -image1 "kTools_icons/K_DIFFBox.png" -command "DifBox" kBox;   // DIF Box 
+        popupMenu -parent kBox; 
+            menuItem  -label "DIF Box > Edit Mode" -image "kTools_icons/K_DIFFBox_edit.png" -command "DifBoxEdit";  // DIF Box > Edit Mode 
+	    
+
+   global proc DifBox() { 
+            polyCBoolOp -op 2 -ch 1 -preserveColor 1 -classification 1;
+            sets -e -forceElement initialShadingGroup;
+            rename MAINObject_Bool;
+            polySoftEdge -angle 50;
+            select -r "transform*";
+                string $cmd_DB = "import maya.cmds as mc;sel_obj = mc.ls(sl=True);mc.select(sel_obj[:-1], tgl=True)";
+                python($cmd_DB);
+            
+                string $allObjs_DB[] = `ls -sl`;
+                for($x=0;$x<size($allObjs_DB);$x++) {
+                rename $allObjs_DB[$x] ("temp_transfrom" + $x);
+                }
+                
+            select "transform*";
+            select -tgl -vis "transform*";
+            
+            string $selected_DB[] = `ls -sl -dag -leaf`;
+                    for ($each_DB in $selected_DB)
+                    {
+                        setAttr ($each_DB +".intermediateObject") 0 ;
+                        setAttr ($each_DB +".overrideEnabled") 1 ;
+                        setAttr ($each_DB +".overrideLevelOfDetail") 1 ;  
+                    }
+    
+            showHidden -a;
+            rename polyCBoolOp1 Boolean_difbox;
+            parent -w;
+            sets -e -forceElement initialShadingGroup;
+                 int $inViewPref_Dbox = `optionVar -q inViewMessageEnable`;
+                 optionVar -iv inViewMessageEnable false;
+            doGroup 0 1 1;
+                 optionVar -iv inViewMessageEnable $inViewPref_Dbox;
+            source cleanUpScene.mel;
+            deleteEmptyGroups();
+            select -cl;
+} 
+
+
+global proc DifBoxEdit() { 
+        polyCBoolOp -op 2 -ch 1 -preserveColor 1 -classification 1;
+        sets -e -forceElement initialShadingGroup;
+        rename MAINObject_Bool;
+        polySoftEdge -angle 50;
+        select -r "transform*";
+            string $cmd_DBE = "import maya.cmds as mc;sel_obj = mc.ls(sl=True);mc.select(sel_obj[:-1], tgl=True)";
+            python($cmd_DBE);
+        
+        string $allObjs_DBE[] = `ls -sl`;
+        for($x=0;$x<size($allObjs_DBE);$x++) {
+        rename $allObjs_DBE[$x] ("temp_transfrom" + $x);
+        }
+        
+        select -r "transform*";
+        select -tgl -vis "transform*";
+        
+            string $selected_DBE[] = `ls -sl -dag -leaf`;
+            for ($each_DBE in $selected_DBE)
+            {
+                setAttr ($each_DBE +".intermediateObject") 0;
+                setAttr ($each_DBE +".overrideEnabled") 1;
+                setAttr ($each_DBE +".overrideShading") 0;
+            }
+        
+        showHidden -a;
+        rename polyCBoolOp1 Boolean_difbox;
+        parent -w;
+        CenterPivot;
+              int $inViewPref_DboxE = `optionVar -q inViewMessageEnable`;
+              optionVar -iv inViewMessageEnable false;
+        doGroup 0 1 1;
+              optionVar -iv inViewMessageEnable $inViewPref_DboxE;
+        source cleanUpScene.mel;
+        deleteEmptyGroups();
+        select -cl;
+          
+} 
+
+// ...........................................................................................
+
+iconTextButton -image1 "kTools_icons/K_DIFFBox_clear.png" -command "ClearBox";   // CLEAR BOX
+global proc ClearBox() { 
+    string $ObjectNoCheck_CB[] = `ls -sl`;                          // check number of seleced objects
+       if ( size($ObjectNoCheck_CB) == 0 ) {
+           inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> Select MAIN object only!" ) -fade -pos midCenterTop -fontSize 9;
+           print "INFO -- Select MAIN object only!  - Nothing is selected so ClearBox doesn't know what to clear. Select boolean result!"; 
+       }  
+        
+       if ( size($ObjectNoCheck_CB)  == 1) {
+              if(gmatch($ObjectNoCheck_CB[0], "MAINObject_Bool*")){
+                    rename polySurface;                           // Script part
+                    DeleteHistory;
+                    sets -e -forceElement initialShadingGroup;
+                    select -cl;
+                    DeleteHistory;
+                    select -r "transform*";
+                    doDelete;
+                    source cleanUpScene.mel;
+                    deleteEmptyGroups();
+                }
+                else {
+                  inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> Select MAIN object only!" ) -fade -pos midCenterTop -fontSize 9;
+                  print "INFO -- Select MAIN object only! - You have selected wrong object. Select correct one!";   
+                }
+       }
+       
+       if ( size($ObjectNoCheck_CB) >= 2 ) {
+           inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> Select MAIN object only!" ) -fade -pos midCenterTop -fontSize 9; 
+           print "INFO -- Select MAIN object only!  - You have selected 2 or more objects. Make sure to select only correct one!"; 
+       }
+                 
+} 
+
+setParent ..;		
+			
+// ...........................................................................................
+	
+rowLayout;
+    iconTextButton -image1 "kTools_icons/K_BooleanDIF_INT2.png"  -command "BooleanDIF_INT" kDifInt;           // DIF + INT button
+      popupMenu -parent kDifInt; 
+        menuItem -label "Quick Slicer" -image "kTools_icons/K_QuickSlicer.png" -command "BooleanDIF_INT_2";   // Quick Slicer menu
+        menuItem -divider true;
+        menuItem -label "ReBool" -image "kTools_icons/K_ReBool.png" -command "ReBool";                        // ReBool button menu
+setParent ..;	
+
+global proc BooleanDIF_INT() {
+     string $ObjectNoCheck_DI[] = `ls -sl`;                          // check number of seleced objects
+       if ( size($ObjectNoCheck_DI) == 0 ) {
+           inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> At least 2 object need to be selected!" ) -fade -pos midCenterTop -fontSize 9;
+           print "INFO -- No objects selected! Select first the main object then object(s) that will cut into the main one!"; 
+       
+       } 
+       if ( size($ObjectNoCheck_DI) == 1 ) { 
+           inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> At least 2 object need to be selected!" ) -fade -pos midCenterTop -fontSize 9;
+           print "INFO -- Select at least 2 objects! First the main object then object(s) that will cut into the main one!"; 
+       } 
+       if ( size($ObjectNoCheck_DI) >= 2 ) {                                                             
+            DeleteHistory;
+            polyCBoolOp -op 3 -ch 1 -preserveColor 1 -classification 1;
+            rename polyCBoolOp1 Boolean_dif_int;
+            polySoftEdge -angle 40;
+            duplicate -rr;
+            pickWalk -d left;
+            setAttr "Boolean_dif_int.operation" 2;
+            polySoftEdge -angle 40;
+            DeleteHistory;
+            source cleanUpScene.mel;
+            deleteEmptyGroups();
+            select -cl;
+        }
+}
+
+global proc ReBool(){
+    string $ObjectNoCheck_RB[] = `ls -sl`;  // check for selected objects
+       if ( size($ObjectNoCheck_RB) == 0 ) {
+           inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> Select MAIN object only!" ) -fade -pos midCenterTop -fontSize 9;
+           print "INFO -- Select MAIN object only!  - Nothing is selected so ReBool doesn't know what you want to do. Select boolean result!";
+       }  
+       
+       if ( size($ObjectNoCheck_RB)  == 1) {
+       if(gmatch($ObjectNoCheck_RB[0], "MAINObject_Bool*")){       
+                    string $nodes_RBa[] = `ls -sl`;
+                    for ($node_RBa in $nodes_RBa)
+                    {
+                        select -r "Boolean_difbox*";
+                        string $cmd_RB1 = "import maya.cmds as mc;sel_obj = mc.ls(sl=True);mc.select(sel_obj[:-1], tgl=True)";
+                        python($cmd_RB1);
+                            string $objs_RBa[] = `ls -sl -fl`;
+                            for($i=0;$i<size($objs_RBa);$i++)
+                            {
+                            string $shape_RBa[] = `listRelatives -s $objs_RBa[$i]`;
+                            setAttr ($shape_RBa[0]+".operation") 3 ;
+                            }
+                    }
+               
+                select -r "MAINObject_Bool*";
+                string $polyMeshes_RB[] = `filterExpand -sm 12`;
+                select -r $polyMeshes_RB;
+               
+                polySoftEdge -angle 40;
+                duplicate -rr;
+                rename polySurface; 
+                    string $nodes_RBb[] = `ls -sl`;
+                    for ($node_RBb in $nodes_RBb)
+                    {
+                        select -r "Boolean_difbox*";
+                        string $cmd_RB2 = "import maya.cmds as mc;sel_obj = mc.ls(sl=True);mc.select(sel_obj[:-1], tgl=True)";
+                        python($cmd_RB2);
+                            string $objs_RBb[] = `ls -sl -fl`;
+                            for($i=0;$i<size($objs_RBb);$i++)
+                            {
+                            string $shape_RBb[] = `listRelatives -s $objs_RBb[$i]`;
+                            setAttr ($shape_RBb[0]+".operation") 2 ;
+                            }
+                    }
+       }
+
+                else {
+                  inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> Select MAIN object only!" ) -fade -pos midCenterTop -fontSize 9;
+                  print "INFO -- Select MAIN object only!  - You have selected wrong object. Select correct one - boolean result!";   
+                }
+       }
+       
+       if ( size($ObjectNoCheck_RB) >= 2 ) {
+           inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> Select MAIN object only!" ) -fade -pos midCenterTop -fontSize 9;
+           print "INFO -- Select MAIN object only!  - You have selected 2 or more objects. Make sure to select only correct one - boolean result only!";  
+       }                
+}
+ 
+ 
+//   EDGE SELECT - section    //////////////////////////////////////////////////////////////////
+separator -height 10 -style "none";
+text -label "> Edge Select" -al "left" -h 15 -font "smallPlainLabelFont" -backgroundColor 0.23 0.23 0.23 ;
+
+// ...........................................................................................
+
+rowLayout -numberOfColumns 2;  
+   iconTextButton -image1 "kTools_icons/K_UseConstraints_HardEdges2.png" -command "HardEdges" ConstHE;         // Hard Edges 
+   iconTextButton -image1 "kTools_icons/K_HE_edit_menu.png" EditHE;                                            // Hard Edges
+setParent ..;    
+ 
+       global proc HardEdges() {                  
+                if (size(`filterExpand -sm 31`)){  // VERTEX selection check
+                       inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> Please select Faces or Edges!" ) -fade -pos midCenterTop -fontSize 9;
+                       print "INFO -- Please select Faces or Edges!";}
+                
+                if (size(`filterExpand -sm 34`)){  // FACES selection check
+                            ConvertSelectionToEdges;
+                            polySelectConstraint -t 0x8000;
+                            resetPolySelectConstraint;
+                            polySelectConstraint -m 2 -sm 1;
+                            resetPolySelectConstraint; 
+                            polySelectConstraint -t 0x8000; 
+                            resetPolySelectConstraint;
+                            setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+                }
+
+                if (size(`filterExpand -sm 32`)){   // EDGES selection check
+                            ConvertSelectionToEdges;
+                            polySelectConstraint -t 0x8000;
+                            resetPolySelectConstraint;
+                            polySelectConstraint -m 2 -sm 1;
+                            resetPolySelectConstraint; 
+                            polySelectConstraint -t 0x8000; 
+                            resetPolySelectConstraint;
+                            setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+                }
+         }
+
+popupMenu -parent EditHE;
+        menuItem - label " Standard Edges " -image "kTools_icons/K_HE_edit_SE.png" -command "StandardEdgesD";   // Standard Edges
+        menuItem - label " Hard/Soft Edges " -image "kTools_icons/K_HE_edit_HSE.png" -command "HardSoftD";      // Hard / Soft Edges
+        menuItem -divider true -dividerLabel "Select";
+        menuItem - label " Hard Edges (object) " -image "kTools_icons/K_HE_edit_menuO.png" -command "HE_edit_menuO";      // Hard Edges (OBJECT) window
+        menuItem - label " Hard Edges (component) " -image "kTools_icons/K_HE_edit_menuC.png" -command "HE_edit_menuC";   // Hard Edges (COMP) window
+setParent ..;
+          
+popupMenu -parent ConstHE;
+       menuItem - label " Hard Edges marquee " -image "kTools_icons/K_SS_ToInnerHE.png" -command "HEmarquee";             // Hard Edges marqee
+           global proc HEmarquee() { polySelectConstraint -t 0x8000; resetPolySelectConstraint; polySelectConstraint -m 2 -sm 1; inViewMessage -amg ("Hard Edges -- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165; }
+       menuItem -divider true;
+       menuItem  -label " DISABLE " -image "kTools_icons/K_SS_DeleteSets.png" -command "resetHE";                          // HE DISABLE
+           global proc resetHE() { resetPolySelectConstraint; polySelectConstraint -t 0x8000; resetPolySelectConstraint; inViewMessage -amg ("Hard Edges -- <span style=\"color:#ff5d5d;\"> OFF </span>") -fade -pos midCenterBot -fontSize 8 -frameOffset 165;}        
+setParent ..;
+
+// ...........................................................................................
+
+rowLayout;
+    iconTextButton -image1 "kTools_icons/K_UseConstrains_Dissolve2.png" -command "DisolveEdges";            // Dissolve Edges 
+        global proc DisolveEdges() {
+                if (size(`filterExpand -sm 31`)){  // VERTEX selection check
+                       inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> Please select Edges!" ) -fade -pos midCenterTop -fontSize 9;
+                       print "INFO -- Please select Edges!";}
+                
+                if (size(`filterExpand -sm 34`)){  // FACES selection check
+                       inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> Please select Edges!" ) -fade -pos midCenterTop -fontSize 9;
+                       print "INFO -- Please select Edges!";}
+
+                if (size(`filterExpand -sm 32`)){   // EDGES selection check
+                        polySelectConstraint -t 0x8000;
+                        resetPolySelectConstraint;
+                        polySelectConstraint -m 2 -a on -ab 0 0;
+                        resetPolySelectConstraint; 
+                        polySelectConstraint -t 0x8000; 
+                        resetPolySelectConstraint;
+                        setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+                }                
+
+            } 
+            
+       popupMenu ;
+        radioMenuItemCollection;
+            menuItem - label " Dissolve Edges marquee " -image "kTools_icons/K_SS_ToInnerHE.png" -command "DEmarquee"; 
+                global proc DEmarquee() { polySelectConstraint -t 0x8000; resetPolySelectConstraint; polySelectConstraint -m 2 -a on -ab 0 0; inViewMessage -amg ("Dissolve Edges -- 0 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;}
+            menuItem -divider true -dividerLabel "Max Angle";
+            menuItem -radioButton off -label "1 degree" -command "DisolveEdges1"; global proc DisolveEdges1() { polySelectConstraint -m 2 -a on -ab 0 1; inViewMessage -amg ("Dissolve Edges -- 1 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;};
+            menuItem -radioButton off -label "2 degree" -command "DisolveEdges2"; global proc DisolveEdges2() { polySelectConstraint -m 2 -a on -ab 0 2; inViewMessage -amg ("Dissolve Edges -- 2 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;};
+            menuItem -radioButton off -label "3 degree" -command "DisolveEdges3"; global proc DisolveEdges3() { polySelectConstraint -m 2 -a on -ab 0 3; inViewMessage -amg ("Dissolve Edges -- 3 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;};
+            menuItem -radioButton off -label "4 degree" -command "DisolveEdges4"; global proc DisolveEdges4() { polySelectConstraint -m 2 -a on -ab 0 4; inViewMessage -amg ("Dissolve Edges -- 4 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;}; 
+            menuItem -radioButton off -label "5 degree" -command "DisolveEdges5"; global proc DisolveEdges5() { polySelectConstraint -m 2 -a on -ab 0 5; inViewMessage -amg ("Dissolve Edges -- 5 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;};
+            menuItem -radioButton off -label "6 degree" -command "DisolveEdges6"; global proc DisolveEdges6() { polySelectConstraint -m 2 -a on -ab 0 6; inViewMessage -amg ("Dissolve Edges -- 6 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;};
+            menuItem -radioButton off -label "7 degree" -command "DisolveEdges7"; global proc DisolveEdges7() { polySelectConstraint -m 2 -a on -ab 0 7; inViewMessage -amg ("Dissolve Edges -- 7 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;};
+            menuItem -radioButton off -label "8 degree" -command "DisolveEdges8"; global proc DisolveEdges8() { polySelectConstraint -m 2 -a on -ab 0 8; inViewMessage -amg ("Dissolve Edges -- 8 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;};
+            menuItem -radioButton off -label "9 degree" -command "DisolveEdges9"; global proc DisolveEdges9() { polySelectConstraint -m 2 -a on -ab 0 9; inViewMessage -amg ("Dissolve Edges -- 9 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;};
+            menuItem -radioButton off -label "10 degree" -command "DisolveEdges10"; global proc DisolveEdges10() { polySelectConstraint -m 2 -a on -ab 0 10; inViewMessage -amg ("Dissolve Edges -- 10 ?-- <span style=\"color:#bfff00;\"> ON </span>") -pos midCenterBot -fontSize 8 -frameOffset 165;};
+            menuItem -divider true;
+            menuItem  -label " DISABLE " -image "kTools_icons/K_SS_DeleteSets.png" -command "resetDE"; 
+               global proc resetDE() { resetPolySelectConstraint; polySelectConstraint -t 0x8000; resetPolySelectConstraint; inViewMessage -amg ("Dissolve Edges -- <span style=\"color:#ff5d5d;\"> OFF </span>") -fade -pos midCenterBot -fontSize 8 -frameOffset 165;}
+
+setParent ..;
+
+// ...........................................................................................
+
+rowLayout;
+   iconTextButton -image1 "kTools_icons/K_SS_SelectionSets.png" -al "center" K_SSets;            // Selection Sets
+          popupMenu  -parent K_SSets;
+           menuItem  -label " Create Sets" -image "kTools_icons/K_SS_CreateSets.png" -command "saveSL";
+           menuItem -divider true -dividerLabel "Convert Selection";
+           menuItem  -label " To Edges" -image "kTools_icons/K_SS_ToEdges.png" -command "ToEdges"; 
+           menuItem  -label " To Inner Hard Edges" -image "kTools_icons/K_SS_ToInnerHE.png" -command "ToInnerHE";
+           menuItem  -label " To Perimeter" -image "kTools_icons/K_SS_ToPerimeter.png" -command "ToPerimeter";
+           menuItem  -label " To Faces" -image "kTools_icons/K_SS_ToFaces.png" -command "ToFaces";
+           menuItem -divider true;  
+           menuItem  -label " Delete Sets" -image "kTools_icons/K_SS_DeleteSets.png" -command "DELSets";      
+           
+setParent ..;
+
+
+
+//   MOVE OBJ / COMP - section    //////////////////////////////////////////////////////////////////
+separator -height 10 -style "none";
+text -label "> Move Obj / Comp" -al "left" -h 15 -font "smallPlainLabelFont" -backgroundColor 0.23 0.23 0.23 ;
+
+// ...........................................................................................
+
+rowLayout -numberOfColumns 3;                                             
+     iconTextButton -image1 "kTools_icons/K_FlipWorldX.png" -command "move1";       // Move X, Y, Z
+     iconTextButton -image1 "kTools_icons/K_FlipWorldY.png" -command "move2";
+     iconTextButton -image1 "kTools_icons/K_FlipWorldZ.png" -command "move3";
+    
+setParent ..;
+
+global proc move1() { move -a -moveX 0; setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";}
+global proc move2() { move -a -moveY 0; setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";}
+global proc move3() { move -a -moveZ 0; setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";}
+
+// ...........................................................................................
+
+rowLayout;
+iconTextButton -image1 "kTools_icons/K_BakePivot.png" -command "BakePivot";         // Bake Pivot
+     global proc BakePivot() {  
+    DeleteHistory;     
+    CenterPivot;
+{
+    string $allObjs_BP1[] = `ls -sl`;
+    for($x=0;$x<size($allObjs_BP1);$x++) {
+    rename $allObjs_BP1[$x] ("polyPivotBakeTEMP" + $x);
+    }
+        
+        string $selection[] = `ls -sl`;
+        int $size = size($selection);
+        int $i;
+        for ($i = 0; $i < size($selection); $i++){
+             string $zeroLoc[] = `spaceLocator`;
+             string $loc[] = `spaceLocator`;
+             string $ptCon[] = `pointConstraint $selection[$i] $loc`;
+             string $orCon[] = `orientConstraint $selection[$i] $loc`;
+             
+             float $tran[] = `xform -q -t -ws $loc`;
+             float $rot[] = `xform -q -ro -ws $loc`;
+        
+             delete $ptCon;
+             delete $orCon;
+            
+             string $ptConZero[] = `pointConstraint $zeroLoc $selection[$i]`;
+             string $orConZero[] = `orientConstraint $zeroLoc $selection[$i]`;
+             delete $ptConZero;
+             delete $orConZero;
+             
+             makeIdentity -apply true -t 1 -r 1 $selection[$i];
+            
+             setAttr ($selection[$i] + ".translate") $tran[0] $tran[1] $tran[2];
+             setAttr ($selection[$i] + ".rotate") $rot[0] $rot[1] $rot[2];
+            
+             delete $zeroLoc;
+             delete $loc;
+             }
+}
+    select "polyPivotBakeTEMP*";
+    DeleteHistory;
+    pickWalk -d up;
+    string $allObjs_BP2[] = `ls -sl`;
+    for($x=0;$x<size($allObjs_BP2);$x++) {
+    rename $allObjs_BP2[$x] ("polyMesh" + $x);
+    }
+} 
+setParent ..;
+
+// ...........................................................................................
+
+rowLayout;
+iconTextButton -image1 "kTools_icons/K_MakeGroup.png" -command "MGbutton";                  //  Make Group
+  global proc MGbutton() {
+       string $grouping = `window -title "Group Selected Objects" -tlb 1 -s 0 -te 450 myGrouping`;
+columnLayout -adjustableColumn true -columnOffset left -50;
+textFieldButtonGrp 
+    -label "Group Name > " 
+    -text "" -buttonLabel "Make Group" 
+    -bc "MakeGroup" 
+  snTF;
+
+showWindow myGrouping;
+  }
+setParent ..;
+
+// ...........................................................................................
+
+separator -height 5 -style "none";
+text -label "> Flip / Mirror" -al "left" -h 15 -font "smallPlainLabelFont" -backgroundColor 0.23 0.23 0.23 ;
+ 
+                                                     // Flip / Mirror (Copy/Instance) Object
+columnLayout ;
+optionMenu -w 112 FlipMirror;
+menuItem -label "  Flip - World" ;
+menuItem -label " Mirror - as Copy" ;
+setParent ..;
+
+//Button to run command 
+rowLayout -numberOfColumns 3;
+     iconTextButton -image1 "kTools_icons/K_ObjectMoveX.png" -command "buttonCmdX" xAxisButton;
+     iconTextButton -image1 "kTools_icons/K_ObjectMoveY.png" -command "buttonCmdY" yAxisButton;
+     iconTextButton -image1 "kTools_icons/K_ObjectMoveZ.png" -command "buttonCmdZ" zAxisButton;
+              popupMenu -parent xAxisButton; 
+              menuItem  -label "Flip - Local" -image "kTools_icons/K_ObjectMoveX_menu.png" -command "L_FlipX";
+              menuItem -divider true -dividerLabel "Mirror";
+              menuItem  -label "Mirror as Instance" -image "kTools_icons/K_instanceX_menu.png" -command "InstanceX"; 
+              menuItem -divider true;
+              menuItem  -label " Instance To Obj " -command "InstanceToObj2";
+              menuItem  -label " Instance To Obj + Group " -command "InstanceToObj1"; 
+         popupMenu -parent yAxisButton;
+              menuItem  -label "Flip - Local" -image "kTools_icons/K_ObjectMoveY_menu.png" -command "L_FlipY";
+              menuItem -divider true -dividerLabel "Mirror";
+              menuItem  -label "Mirror as Instance" -image "kTools_icons/K_instanceY_menu.png" -command "InstanceY"; 
+              menuItem -divider true;
+              menuItem  -label " Instance To Obj " -command "InstanceToObj2";
+              menuItem  -label " Instance To Obj + Group " -command "InstanceToObj1"; 
+         popupMenu -parent zAxisButton;
+              menuItem  -label "Flip - Local" -image "kTools_icons/K_ObjectMoveZ_menu.png" -command "L_FlipZ";
+              menuItem -divider true -dividerLabel "Mirror";
+              menuItem  -label "Mirror as Instance" -image "kTools_icons/K_instanceZ_menu.png" -command "InstanceZ"; 
+              menuItem -divider true;
+              menuItem  -label " Instance To Obj " -command "InstanceToObj2";
+              menuItem  -label " Instance To Obj + Group " -command "InstanceToObj1"; 
+setParent ..;
+
+global proc buttonCmdX() {
+    string $currentSel_X = `optionMenu -q -v FlipMirror`;
+    switch ($currentSel_X) {
+     case "  Flip - World":            // Flip X
+    
+        DeleteHistory;
+        makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1;
+        CenterPivot;
+        string $objectWx[] = `ls -sl`;
+        for ($currentWx in $objectWx)
+        {
+    	   setAttr ($currentWx + ".scaleX") -1;
+        }
+        makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1;
+        setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+     break;
+    
+     case " Mirror - as Copy":         //Mirror X
+        
+        int $inViewPref_x = `optionVar -q inViewMessageEnable`;
+        optionVar -iv inViewMessageEnable false;
+        doGroup 0 1 1;
+            string $allObjsX[] = `ls -sl`;
+            for($x=0;$x<size($allObjsX);$x++) {
+            rename $allObjsX[$x] ("group_tempppTk" + $x);
+            }
+        duplicate -rr; scale -r -1 1 1;
+        select "group_tempppTk*";
+        ungroup;
+        optionVar -iv inViewMessageEnable $inViewPref_x;
+        CenterPivot;
+        DeleteHistory;
+        makeIdentity -apply true -t 0 -r 1 -s 1 -n 0 -pn 1;
+        setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+     break;
+    }
+}
+
+global proc buttonCmdY() {
+    string $currentSel_Y = `optionMenu -q -v FlipMirror`;
+    switch ($currentSel_Y) {
+     case "  Flip - World":            // Flip Y
+    
+        DeleteHistory;
+        makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1;
+        CenterPivot;   
+        string $objectWy[] = `ls -sl`;
+        for ($currentWy in $objectWy)
+        {
+    	   setAttr ($currentWy + ".scaleY") -1;
+        }
+        makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1;
+        setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+    
+     break;
+    
+     case " Mirror - as Copy":         //Mirror Y
+     
+        int $inViewPref_y = `optionVar -q inViewMessageEnable`;
+        optionVar -iv inViewMessageEnable false;
+        doGroup 0 1 1;
+            string $allObjsY[] = `ls -sl`;
+            for($x=0;$x<size($allObjsY);$x++) {
+            rename $allObjsY[$x] ("group_tempppTk" + $x);
+            }
+        duplicate -rr; scale -r 1 -1 1;
+        select "group_tempppTk*";
+        ungroup;
+        optionVar -iv inViewMessageEnable $inViewPref_y;
+        CenterPivot;
+        DeleteHistory;
+        makeIdentity -apply true -t 0 -r 1 -s 1 -n 0 -pn 1;
+        setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+     break;
+    }
+}
+
+global proc buttonCmdZ() {
+    string $currentSel_Z = `optionMenu -q -v FlipMirror`;
+    switch ($currentSel_Z) {
+     case "  Flip - World":            // Flip Z
+    
+       DeleteHistory;
+       makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1;
+       CenterPivot;
+       string $objectWz[] = `ls -sl`;
+       for ($currentWz in $objectWz)
+       {
+    	  setAttr ($currentWz + ".scaleZ") -1;
+       }
+       makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1;
+       setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+     break;
+    
+     case " Mirror - as Copy":         //Mirror Z
+     
+        int $inViewPref_z = `optionVar -q inViewMessageEnable`;
+        optionVar -iv inViewMessageEnable false;
+        doGroup 0 1 1;
+            string $allObjsZ[] = `ls -sl`;
+            for($x=0;$x<size($allObjsZ);$x++) {
+            rename $allObjsZ[$x] ("group_tempppTk" + $x);
+            }
+        duplicate -rr; scale -r 1 1 -1;
+        select "group_tempppTk*";
+        ungroup;
+        optionVar -iv inViewMessageEnable $inViewPref_z;
+        CenterPivot;
+        DeleteHistory;
+        makeIdentity -apply true -t 0 -r 1 -s 1 -n 0 -pn 1;
+        setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+     break;
+    }
+} 
+
+global proc L_FlipX() {             // Flip - Local X
+    DeleteHistory;
+    CenterPivot;
+{
+    string $objectLx[] = `ls -sl`;
+    for ($currentLx in $objectLx)
+    {
+	   $scale1 = getAttr ($currentLx + ".scaleX");
+	   $scaleX = $scale1 * -1;
+	   setAttr ($currentLx + ".scaleX") $scaleX;
+    }
+}
+    makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 -pn 1;
+    setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+}
+
+global proc L_FlipY() {           // Flip - Local Y
+    DeleteHistory;
+    CenterPivot;
+{
+    string $objectLy[] = `ls -sl`;
+    for ($currentLy in $objectLy)
+    {
+	   $scale2 = getAttr ($currentLy + ".scaleY");
+	   $scaleY = $scale2 * -1;
+	   setAttr ($currentLy + ".scaleY") $scaleY;
+    }
+}
+    makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 -pn 1;
+    setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+}
+
+global proc L_FlipZ() {           // Flip - Local Z
+    DeleteHistory;
+    CenterPivot;
+{
+    string $objectLz[] = `ls -sl`;
+    for ($currentLz in $objectLz)
+    {
+	   $scale3 = getAttr ($currentLz + ".scaleZ");
+	   $scaleZ = $scale3 * -1;
+	   setAttr ($currentLz + ".scaleZ") $scaleZ;
+    }
+}
+    makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 -pn 1;
+    setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+}	
+
+global proc InstanceX() {           // Instnce X
+       int $inViewPref_Ix = `optionVar -q inViewMessageEnable`;
+       optionVar -iv inViewMessageEnable false;
+    doGroup 1 1 1;
+    string $allObjs_X1[] = `ls -sl`;
+    for($x=0;$x<size($allObjs_X1);$x++) {
+    rename $allObjs_X1[$x] ("poly_orgTEMP" + $x);
+    }
+    instance; scale -r -1 1 1;
+    string $allObjs_X2[] = `ls -sl`;
+    for($x=0;$x<size($allObjs_X2);$x++) {
+    rename $allObjs_X2[$x] ("poly_instanceTEMP" + $x);
+    }
+       optionVar -iv inViewMessageEnable $inViewPref_Ix;
+       setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+} 
+
+global proc InstanceY() {           // Instnce Y
+       int $inViewPref_Iy = `optionVar -q inViewMessageEnable`;
+       optionVar -iv inViewMessageEnable false;
+    doGroup 1 1 1;
+    string $allObjs_Y1[] = `ls -sl`;
+    for($x=0;$x<size($allObjs_Y1);$x++) {
+    rename $allObjs_Y1[$x] ("poly_orgTEMP" + $x);
+    }
+    instance; scale -r 1 -1 1;
+    string $allObjs_Y2[] = `ls -sl`;
+    for($x=0;$x<size($allObjs_Y2);$x++) {
+    rename $allObjs_Y2[$x] ("poly_instanceTEMP" + $x);
+    }
+       optionVar -iv inViewMessageEnable $inViewPref_Iy;
+       setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+}
+
+global proc InstanceZ() {           // Instnce X
+        int $inViewPref_Iz = `optionVar -q inViewMessageEnable`;
+        optionVar -iv inViewMessageEnable false;
+    doGroup 1 1 1;
+    string $allObjs_Z1[] = `ls -sl`;
+    for($x=0;$x<size($allObjs_Z1);$x++) {
+    rename $allObjs_Z1[$x] ("poly_orgTEMP" + $x);
+    }
+    instance; scale -r 1 1 -1;
+    string $allObjs_Z2[] = `ls -sl`;
+    for($x=0;$x<size($allObjs_Z2);$x++) {
+    rename $allObjs_Z2[$x] ("poly_instanceTEMP" + $x);
+    }
+       optionVar -iv inViewMessageEnable $inViewPref_Iz;
+       setFocus "MayaWindow|formLayout1|viewPanes|modelPanel4";
+} 
+
+global proc InstanceToObj1() {                // Instance to Obj convert + Make Group
+    source cleanUpScene.mel;
+    deleteEmptyGroups();
+    select "poly_instanceTEMP*";
+    ConvertInstanceToObject;
+    select "poly_instanceTEMP*" "poly_orgTEMP*";
+    ungroup;
+    makeIdentity -apply true -t 0 -r 1 -s 1 -n 0 -pn 1;
+    
+        string $grouping = `window -title "Group Selected Objects" -tlb 1 -s 0 -te 450 myGrouping`;
+        
+        columnLayout -adjustableColumn true -columnOffset left -50;
+        textFieldButtonGrp 
+            -label "Group Name > " 
+            -text "" -buttonLabel "Make Group" 
+            -bc "MakeGroup" 
+          snTF;
+        
+        showWindow myGrouping;
+
+}
+
+global proc MakeGroup() {
+        int $inViewPref_MG = `optionVar -q inViewMessageEnable`;
+        optionVar -iv inViewMessageEnable false;
+    doGroup 0 1 1;
+       string $allObjs_MG[] = `ls -sl`;
+            for($x=0;$x<size($allObjs_MG);$x++) {
+            rename $allObjs_MG[$x] ("GroupName_TEMP" + $x);
+            }
+            
+    string $selected_MG = `textFieldGrp -query -text snTF`;
+    rename $selected_MG;
+         optionVar -iv inViewMessageEnable $inViewPref_MG;
+    CenterPivot;   
+    source cleanUpScene.mel;
+    deleteEmptyGroups();
+    deleteUI myGrouping;
+    }
+
+global proc InstanceToObj2() {                // Instance to Obj convert
+    source cleanUpScene.mel;
+    deleteEmptyGroups();
+    select "poly_instanceTEMP*";
+    ConvertInstanceToObject;
+    select "poly_instanceTEMP*" "poly_orgTEMP*";
+    ungroup;
+    makeIdentity -apply true -t 0 -r 1 -s 1 -n 0 -pn 1; 
+}
+
+
+
+////////////////////////////////////////////////////
+ // Selection Sets
+////////////////////////////////////////////////////
+global proc saveSL(){
+        string $allObjs_SS[] = `ls -sl`;
+        for($x=0;$x<size($allObjs_SS);$x++) {
+        rename $allObjs_SS[$x] ("polyObjSel" + $x); }
+    
+    select -r "polyObjSel0";
+    rename "polyObj_Main";
+    select -r "polyObjSel*";
+    pickWalk -d up;
+    
+
+        string $selObjects_SS[] = `ls -sl`;
+        for ($selection_SS in $selObjects_SS)
+        {
+        select $selection_SS;
+        ConvertSelectionToFaces;
+        string $nameOfSet = "BoolSet" +$selection_SS;
+        sets -name $nameOfSet;
+        select -cl;
+        }
+    
+    select -cl;
+    inViewMessage -amg ("Selection Sets - <span style=\"color:#bfff00;\"> Saved </span> ") -pos botCenter -fontSize 8;
+    select -r "polyObjSel*";
+    pickWalk -d up;
+    select -addFirst "polyObj_Main*";
+}  
+
+ // To Edges
+    global proc ToEdges(){
+    setSelectMode components Components; 
+    selectType -smp 0 -sme 0 -smf 1 -smu 0 -pv 0 -pe 0 -pf 1 -puv 0;
+    select -r -noExpand "BoolSet*";
+    ConvertSelectionToContainedEdges;
+    }
+    
+ // To Inner Hard Edges
+    global proc ToInnerHE(){
+    setSelectMode components Components; 
+    selectType -smp 0 -sme 0 -smf 1 -smu 0 -pv 0 -pe 0 -pf 1 -puv 0;
+    select -r -noExpand "BoolSet*";
+    ConvertSelectionToContainedEdges;
+    polySelectConstraint -t 0x8000;
+    resetPolySelectConstraint;
+    polySelectConstraint -m 2 -sm 1;
+    resetPolySelectConstraint;
+    }
+
+ // To Edge Perimiter
+    global proc ToPerimeter() {
+    setSelectMode components Components; 
+    selectType -smp 0 -sme 0 -smf 1 -smu 0 -pv 0 -pe 0 -pf 1 -puv 0;
+    select -r -noExpand "BoolSet*";
+    ConvertSelectionToEdgePerimeter;
+    }
+    
+ // To Faces
+    global proc ToFaces() {
+    setSelectMode components Components; 
+    selectType -smp 0 -sme 0 -smf 1 -smu 0 -pv 0 -pe 0 -pf 1 -puv 0;
+    select -r "BoolSet*";
+    ConvertSelectionToContainedEdges;
+    ConvertSelectionToFaces;
+    }
+
+ // Delete Sets
+    global proc DELSets() {
+    select -noExpand "BoolSet*" ;
+    doDelete;
+    inViewMessage -amg ("Selection Sets - <span style=\"color:#ff5d5d;\"> Deleted </span>") -fade -pos botCenter -fontSize 8;
+    }
+    
+   
+////////////////////////////////////////////////////
+ // HE_Edit_Object mode                              
+////////////////////////////////////////////////////
+global proc HE_edit_menuO() {
+    polySoftEdge -angle 40 -ch 1;
+    
+            int $inViewPref_HE_o = `optionVar -q inViewMessageEnable`;
+            optionVar -iv inViewMessageEnable false;
+            
+    toggleSelMode;
+    toggleSelMode;
+    
+             optionVar -iv inViewMessageEnable $inViewPref_HE_o;
+    
+    TogglePolyDisplayHardEdgesColor;
+    
+    
+                window -title "Set Normal Angle" -tlb 1 -s 1 -te 300 HE_Edit_Object;  
+                string $hist_HE_o[] = `listHistory -levels 1`;
+                    columnLayout -adjustableColumn true  -columnOffset "left" -100;
+                    separator -h 5 -style "none";
+                    attrFieldSliderGrp -min 0 -max 100 -at ($hist_HE_o[1]+".angle");  
+                    setParent ..;
+                
+                rowColumnLayout;
+                separator -h 8 -style "none";
+                setParent ..;
+                
+                rowColumnLayout -numberOfRows 1 -columnOffset 1 "left" 120 -columnSpacing 1 3;
+                		iconTextButton -image1 "kTools_icons/K_HEResetClose.png" -command "HEResetClose";
+                		iconTextButton -image1 "kTools_icons/K_HESelectClose.png" -command "HESelectClose";
+                setParent ..;
+                
+                showWindow HE_Edit_Object;
+}
+
+global proc HEResetClose() {
+    int $StandardEdges[] = `polyOptions -q -np -ae`;
+    if ($StandardEdges[0] == 0) {
+        polyOptions -np -se;
+        TogglePolyDisplayLimitToSelected;
+        TogglePolyDisplaySoftEdges;
+        TogglePolyDisplayLimitToSelected;
+        rename "polyMesh"; 
+        evalDeferred "deleteUI -window HE_Edit_Object";
+    }
+    if ($StandardEdges[0] == 1) {
+        polyOptions -np -ae;
+        TogglePolyDisplayLimitToSelected;
+        TogglePolyDisplayEdges;
+        TogglePolyDisplayLimitToSelected;
+        rename "polyMesh"; 
+        evalDeferred "deleteUI -window HE_Edit_Object";
+    }   
+}
+
+global proc HESelectClose() {
+    int $StandardEdges[] = `polyOptions -q -np -ae`;
+    if ($StandardEdges[0] == 0) {
+        polyOptions -np -se;
+        TogglePolyDisplayLimitToSelected;
+        TogglePolyDisplaySoftEdges;
+        TogglePolyDisplayLimitToSelected;
+        rename "polyMesh"; 
+        setSelectMode components Components; selectType -smp 0 -sme 1 -smf 0 -smu 0 -pv 0 -pe 1 -pf 0 -puv 0;
+        SelectAll;
+        polySelectConstraint -t 0x8000;
+        resetPolySelectConstraint;
+        polySelectConstraint -m 2 -sm 1;
+        resetPolySelectConstraint;
+        evalDeferred "deleteUI -window HE_Edit_Object";
+    }
+    if ($StandardEdges[0] == 1) {
+        polyOptions -np -ae;
+        TogglePolyDisplayLimitToSelected;
+        TogglePolyDisplayEdges;
+        TogglePolyDisplayLimitToSelected;
+        PolyDisplayReset; 
+        rename "polyMesh"; 
+        setSelectMode components Components; selectType -smp 0 -sme 1 -smf 0 -smu 0 -pv 0 -pe 1 -pf 0 -puv 0;
+        SelectAll;
+        polySelectConstraint -t 0x8000;
+        resetPolySelectConstraint;
+        polySelectConstraint -m 2 -sm 1;
+        resetPolySelectConstraint;
+        evalDeferred "deleteUI -window HE_Edit_Object";
+    }    
+}
+
+ 
+ 
+ ////////////////////////////////////////////////////
+ // HE_Edit_Component mode
+////////////////////////////////////////////////////
+global proc HE_edit_menuC() {
+    global string $HSsave[];
+    $HSsave = `filterExpand -sm 34`; 
+    polySoftEdge -angle 40 -ch 1;
+    
+            int $inViewPref_HE_c = `optionVar -q inViewMessageEnable`;
+            optionVar -iv inViewMessageEnable false;
+     
+           
+    string $HEls[] = `ls -hilite`;
+    select -cl;
+    select -r $HEls;     
+    
+             optionVar -iv inViewMessageEnable $inViewPref_HE_c;
+             
+    TogglePolyDisplayHardEdgesColor;
+    
+            window -title "Set Normal Angle" -tlb 1 -s 1 -te 300 HE_Edit_C;  
+            string $histi[] = `listHistory -levels 1`;
+                columnLayout -adjustableColumn true  -columnOffset "left" -100;
+                separator -h 3 -style "none";
+                attrFieldSliderGrp -min 0 -max 100 -at ($histi[1]+".angle");
+                setParent ..;
+                
+            rowColumnLayout;
+            separator;
+            setParent ..;
+            
+            rowColumnLayout -numberOfRows 1 -columnOffset 1 "left" 120 -columnSpacing 1 3;
+            		iconTextButton -image1 "kTools_icons/K_HEResetClose.png" -command "HE_C_ResetClose";
+            		iconTextButton -image1 "kTools_icons/K_HESelectClose.png" -command "HE_C_SelectClose($HSsave)";
+            setParent ..;
+            
+            showWindow HE_Edit_C;
+}
+
+global proc HE_C_ResetClose() {
+    int $StandardEdges[] = `polyOptions -q -np -ae`;
+    if ($StandardEdges[0] == 0) {
+        polyOptions -np -se;
+        TogglePolyDisplayLimitToSelected;
+        TogglePolyDisplaySoftEdges;
+        TogglePolyDisplayLimitToSelected;
+        rename "polyMesh"; 
+        evalDeferred "deleteUI -window HE_Edit_C";
+    }
+    if ($StandardEdges[0] == 1) {
+        polyOptions -np -ae;
+        TogglePolyDisplayLimitToSelected;
+        TogglePolyDisplayEdges;
+        TogglePolyDisplayLimitToSelected;
+        rename "polyMesh"; 
+        evalDeferred "deleteUI -window HE_Edit_C";
+    }   
+}
+ 
+global proc HE_C_SelectClose(string $HSsave[]) {
+    int $StandardEdges[] = `polyOptions -q -np -ae`;
+    if ($StandardEdges[0] == 0) {
+        polyOptions -np -se;
+        TogglePolyDisplayLimitToSelected;
+        TogglePolyDisplaySoftEdges;
+        TogglePolyDisplayLimitToSelected;
+        setSelectMode components Components; selectType -smp 0 -sme 0 -smf 1 -smu 0 -pv 0 -pe 0 -pf 1 -puv 0;
+        select -r $HSsave;
+        ConvertSelectionToEdges;
+        polySelectConstraint -t 0x8000;
+        resetPolySelectConstraint;
+        polySelectConstraint -m 2 -sm 1;
+        resetPolySelectConstraint;
+        evalDeferred "deleteUI -window HE_Edit_C";
+    }
+    if ($StandardEdges[0] == 1) {
+        polyOptions -np -ae;
+        TogglePolyDisplayLimitToSelected;
+        TogglePolyDisplayEdges;
+        TogglePolyDisplayLimitToSelected;
+        PolyDisplayReset; 
+        setSelectMode components Components; selectType -smp 0 -sme 0 -smf 1 -smu 0 -pv 0 -pe 0 -pf 1 -puv 0;
+        select -r $HSsave;
+        ConvertSelectionToEdges;
+        polySelectConstraint -t 0x8000;
+        resetPolySelectConstraint;
+        polySelectConstraint -m 2 -sm 1;
+        resetPolySelectConstraint;
+        evalDeferred "deleteUI -window HE_Edit_C";
+    }    
+}
+
+
+ ////////////////////////////////////////////////////
+ // Standard - Hard/Soft Edges Display 
+////////////////////////////////////////////////////
+global proc StandardEdgesD(){
+    polyOptions -np -ae;
+    TogglePolyDisplayLimitToSelected;
+    TogglePolyDisplayEdges;
+    TogglePolyDisplayLimitToSelected;
+}
+
+global proc HardSoftD() {
+    polyOptions -np -se;
+    TogglePolyDisplayLimitToSelected;
+    TogglePolyDisplaySoftEdges;
+    TogglePolyDisplayLimitToSelected;
+}
+
+
+ ////////////////////////////////////////////////////
+ // DIFF + INT _2 ...copy slicing object(s) > Quick Slicer
+////////////////////////////////////////////////////
+global proc BooleanDIF_INT_2() {
+  string $objectCheck[] = `ls -sl`;   // object selection check
+     if ( size($objectCheck) == 0 ) {
+         inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> No objects selected!" ) -fade -pos midCenterTop -fontSize 9;
+         print "INFO -- No object selected! Select first the main object then object(s) that will cut into the main one!"; 
+     }
+     
+     if ( size($objectCheck) == 1 ) {
+         inViewMessage -amg ("<span style=\"color:#ff5d5d;\"> INFO: </span> Selected only one object! Select at least 2!" ) -fade -pos midCenterTop -fontSize 9;
+         print "INFO -- Selected only one object! Select first the main object then object(s) that will cut into the main one!";
+     }
+     
+     if ( size($objectCheck) >= 2 ) {
+         searchReplaceNames "BoolMainOBJs" "polySurface" "all";
+         searchReplaceNames "WaiterOBJ" "polySurface" "all";
+         
+             string $allObjs_QS1[] = `ls -sl`;
+             for($x=0;$x<size($allObjs_QS1);$x++) {
+             rename $allObjs_QS1[$x] ("BoolMainOBJs" + $x); }
+            
+                int $inViewPref_QS = `optionVar -q inViewMessageEnable`;      // DO
+                optionVar -iv inViewMessageEnable false; 
+ 
+                string $cmd_QS1 = "import maya.cmds as mc;sel_obj = mc.ls(sl=True);mc.select(sel_obj[:1], tgl=True)";
+                python($cmd_QS1);  
+        
+                duplicate -rr;
+                    string $allObjs_QS2[] = `ls -sl`;
+                    for($x=0;$x<size($allObjs_QS2);$x++) {
+                    rename $allObjs_QS2[$x] ("WaiterOBJ" + $x); }
+                HideSelectedObjects;
+        
+                select "BoolMainOBJs*";
+                string $cmd_QS2 = "import maya.cmds as mc;sel_obj = mc.ls(sl=True);mc.select(sel_obj[:1], tgl=True)";
+                python($cmd_QS2);
+                select -af "BoolMainOBJs0";
+                
+                        polyCBoolOp -op 2 -ch 1 -classification 1;
+                        polySoftEdge -angle 52;
+                        rename polyCBoolOp1 Boolean;
+                        source cleanUpScene.mel;
+                        deleteEmptyGroups();
+                
+                
+                rename "BoolMeshMain";            // CL_unHide
+                setAttr "Boolean.operation" 3;    
+                select -r "BoolMeshMain";
+                polySoftEdge -angle 40;
+                duplicate -rr; 
+                rename "BoolCutMesh";
+        
+                setAttr "Boolean.operation" 2;
+                   
+                        select -r "BoolMeshMain";
+                        DeleteHistory;
+                        select -cl;
+                        DeleteHistory;
+                        doDelete;
+                        source cleanUpScene.mel;
+                        deleteEmptyGroups();
+                
+                select -r "BoolMeshMain" "BoolCutMesh";
+                pickWalk -d up;
+                    string $allObjs_QS3[] = `ls -sl`;
+                    for($x=0;$x<size($allObjs_QS3);$x++) {
+                    rename $allObjs_QS3[$x] ("polySurface" + $x); }
+                select "WaiterOBJ*";
+                pickWalk -d up;
+                showHidden -a;
+                MoveTool; 
+                
+                    optionVar -iv inViewMessageEnable $inViewPref_QS;
+                    
+                source cleanUpScene.mel;
+                deleteEmptyGroups();
+
+      }
+   
+}
+
+showWindow "t_ktools";

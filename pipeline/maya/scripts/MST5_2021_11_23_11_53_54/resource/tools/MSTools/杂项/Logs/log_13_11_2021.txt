@@ -1,0 +1,1455 @@
+► Title - 
+	Impossible to get the icon.
+▬ Message - 
+	GDI+ 中发生一般性错误。
+○ Type - 
+	System.Runtime.InteropServices.ExternalException
+♦ Date/Hour - 
+	2021/11/13 11:55:23
+▲ Source - 
+	System.Drawing
+▼ TargetSite - 
+	System.Drawing.Bitmap FromHbitmap(IntPtr, IntPtr)
+♠ StackTrace - 
+   在 System.Drawing.Image.FromHbitmap(IntPtr hbitmap, IntPtr hpalette)
+   在 System.Drawing.Image.FromHbitmap(IntPtr hbitmap)
+   在 System.Drawing.Icon.BmpFrame()
+   在 System.Drawing.Icon.ToBitmap()
+   在 ScreenToGif.Capture.CaptureCursor.CaptureImageCursor(Point& point)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	MILERR_WIN32ERROR (异常来自 HRESULT:0x88980003)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void Render(IntPtr, Channel, System.Windows.Media.Visual, Int32, Int32, Double, Double, System.Windows.Media.Matrix, System.Windows.Rect)
+♠ StackTrace - 
+   在 System.Windows.Media.Renderer.Render(IntPtr pRenderTarget, Channel channel, Visual visual, Int32 width, Int32 height, Double dpiX, Double dpiY, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual)
+   在 MS.Internal.AppModel.IconHelper.GenerateBitmapSource(ImageSource img, Size renderSize)
+   在 MS.Internal.AppModel.IconHelper.CreateIconHandleFromImageSource(ImageSource image, Size size)
+   在 System.Windows.Window.UpdateTaskbarThumbButtons()
+   在 System.Windows.Window.ApplyTaskbarItemInfo()
+   在 System.Windows.Window.WindowFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 System.Windows.Interop.HwndSource.PublicHooksFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	MILERR_WIN32ERROR (异常来自 HRESULT:0x88980003)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void Render(IntPtr, Channel, System.Windows.Media.Visual, Int32, Int32, Double, Double, System.Windows.Media.Matrix, System.Windows.Rect)
+♠ StackTrace - 
+   在 System.Windows.Media.Renderer.Render(IntPtr pRenderTarget, Channel channel, Visual visual, Int32 width, Int32 height, Double dpiX, Double dpiY, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual)
+   在 MS.Internal.AppModel.IconHelper.GenerateBitmapSource(ImageSource img, Size renderSize)
+   在 MS.Internal.AppModel.IconHelper.CreateIconHandleFromImageSource(ImageSource image, Size size)
+   在 System.Windows.Window.UpdateTaskbarThumbButtons()
+   在 System.Windows.Window.OnTaskbarItemInfoSubPropertyChanged(Object sender, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Shell.TaskbarItemInfo.NotifyDependencyPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Shell.TaskbarItemInfo.<>c.<.cctor>b__33_8(DependencyObject d, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.InvalidateSubProperty(DependencyProperty dp)
+   在 System.Windows.Freezable.GetChangeHandlersAndInvalidateSubProperties(EventStorage& calledHandlers)
+   在 System.Windows.Freezable.GetChangeHandlersAndInvalidateSubProperties(EventStorage& calledHandlers)
+   在 System.Windows.Freezable.FireChanged()
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)
+   在 System.Windows.DependencyObject.CoerceValue(DependencyProperty dp)
+   在 System.Windows.Shell.ThumbButtonInfo.<>c.<.cctor>b__58_4(DependencyObject d, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)
+   在 System.Windows.DependencyObject.SetValueCommon(DependencyProperty dp, Object value, PropertyMetadata metadata, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType, Boolean isInternal)
+   在 System.Windows.DependencyObject.SetValue(DependencyProperty dp, Object value)
+   在 System.Windows.Shell.ThumbButtonInfo.UpdateCanExecute()
+   在 System.Windows.Shell.ThumbButtonInfo.OnCanExecuteChanged(Object sender, EventArgs e)
+   在 System.Windows.Input.CanExecuteChangedEventManager.HandlerSink.OnCanExecuteChanged(Object sender, EventArgs e)
+   在 System.Windows.WeakEventManager.ListenerList.DeliverEvent(Listener& listener, Object sender, EventArgs args, Type managerType)
+   在 System.Windows.WeakEventManager.ListenerList.DeliverEvent(Object sender, EventArgs args, Type managerType)
+   在 System.Windows.WeakEventManager.DeliverEvent(Object sender, EventArgs args)
+   在 System.Windows.Input.CommandManager.RequerySuggestedEventManager.OnRequerySuggested(Object sender, EventArgs args)
+   在 System.Windows.Input.CommandManager.RaiseRequerySuggested(Object obj)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	MILERR_WIN32ERROR (异常来自 HRESULT:0x88980003)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void Render(IntPtr, Channel, System.Windows.Media.Visual, Int32, Int32, Double, Double, System.Windows.Media.Matrix, System.Windows.Rect)
+♠ StackTrace - 
+   在 System.Windows.Media.Renderer.Render(IntPtr pRenderTarget, Channel channel, Visual visual, Int32 width, Int32 height, Double dpiX, Double dpiY, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual)
+   在 MS.Internal.AppModel.IconHelper.GenerateBitmapSource(ImageSource img, Size renderSize)
+   在 MS.Internal.AppModel.IconHelper.CreateIconHandleFromImageSource(ImageSource image, Size size)
+   在 System.Windows.Window.UpdateTaskbarThumbButtons()
+   在 System.Windows.Window.OnTaskbarItemInfoSubPropertyChanged(Object sender, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Shell.TaskbarItemInfo.NotifyDependencyPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Shell.TaskbarItemInfo.<>c.<.cctor>b__33_8(DependencyObject d, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.InvalidateSubProperty(DependencyProperty dp)
+   在 System.Windows.Freezable.GetChangeHandlersAndInvalidateSubProperties(EventStorage& calledHandlers)
+   在 System.Windows.Freezable.GetChangeHandlersAndInvalidateSubProperties(EventStorage& calledHandlers)
+   在 System.Windows.Freezable.FireChanged()
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)
+   在 System.Windows.DependencyObject.CoerceValue(DependencyProperty dp)
+   在 System.Windows.Shell.ThumbButtonInfo.<>c.<.cctor>b__58_4(DependencyObject d, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)
+   在 System.Windows.DependencyObject.SetValueCommon(DependencyProperty dp, Object value, PropertyMetadata metadata, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType, Boolean isInternal)
+   在 System.Windows.DependencyObject.SetValue(DependencyProperty dp, Object value)
+   在 System.Windows.Shell.ThumbButtonInfo.UpdateCanExecute()
+   在 System.Windows.Shell.ThumbButtonInfo.OnCanExecuteChanged(Object sender, EventArgs e)
+   在 System.Windows.Input.CanExecuteChangedEventManager.HandlerSink.OnCanExecuteChanged(Object sender, EventArgs e)
+   在 System.Windows.WeakEventManager.ListenerList.DeliverEvent(Listener& listener, Object sender, EventArgs args, Type managerType)
+   在 System.Windows.WeakEventManager.ListenerList.DeliverEvent(Object sender, EventArgs args, Type managerType)
+   在 System.Windows.WeakEventManager.DeliverEvent(Object sender, EventArgs args)
+   在 System.Windows.Input.CommandManager.RequerySuggestedEventManager.OnRequerySuggested(Object sender, EventArgs args)
+   在 System.Windows.Input.CommandManager.RaiseRequerySuggested(Object obj)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	MILERR_WIN32ERROR (异常来自 HRESULT:0x88980003)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void Render(IntPtr, Channel, System.Windows.Media.Visual, Int32, Int32, Double, Double, System.Windows.Media.Matrix, System.Windows.Rect)
+♠ StackTrace - 
+   在 System.Windows.Media.Renderer.Render(IntPtr pRenderTarget, Channel channel, Visual visual, Int32 width, Int32 height, Double dpiX, Double dpiY, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual)
+   在 MS.Internal.AppModel.IconHelper.GenerateBitmapSource(ImageSource img, Size renderSize)
+   在 MS.Internal.AppModel.IconHelper.CreateIconHandleFromImageSource(ImageSource image, Size size)
+   在 System.Windows.Window.UpdateTaskbarThumbButtons()
+   在 System.Windows.Window.OnTaskbarItemInfoSubPropertyChanged(Object sender, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Shell.TaskbarItemInfo.NotifyDependencyPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Shell.TaskbarItemInfo.<>c.<.cctor>b__33_8(DependencyObject d, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.InvalidateSubProperty(DependencyProperty dp)
+   在 System.Windows.Freezable.GetChangeHandlersAndInvalidateSubProperties(EventStorage& calledHandlers)
+   在 System.Windows.Freezable.GetChangeHandlersAndInvalidateSubProperties(EventStorage& calledHandlers)
+   在 System.Windows.Freezable.FireChanged()
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)
+   在 System.Windows.DependencyObject.SetValueCommon(DependencyProperty dp, Object value, PropertyMetadata metadata, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType, Boolean isInternal)
+   在 System.Windows.DependencyObject.SetValue(DependencyProperty dp, Object value)
+   在 System.Windows.Shell.ThumbButtonInfo.UpdateCanExecute()
+   在 System.Windows.Shell.ThumbButtonInfo.OnCanExecuteChanged(Object sender, EventArgs e)
+   在 System.Windows.Input.CanExecuteChangedEventManager.HandlerSink.OnCanExecuteChanged(Object sender, EventArgs e)
+   在 System.Windows.WeakEventManager.ListenerList.DeliverEvent(Listener& listener, Object sender, EventArgs args, Type managerType)
+   在 System.Windows.WeakEventManager.ListenerList.DeliverEvent(Object sender, EventArgs args, Type managerType)
+   在 System.Windows.WeakEventManager.DeliverEvent(Object sender, EventArgs args)
+   在 System.Windows.Input.CommandManager.RequerySuggestedEventManager.OnRequerySuggested(Object sender, EventArgs args)
+   在 System.Windows.Input.CommandManager.RaiseRequerySuggested(Object obj)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	MILERR_WIN32ERROR (异常来自 HRESULT:0x88980003)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void Render(IntPtr, Channel, System.Windows.Media.Visual, Int32, Int32, Double, Double, System.Windows.Media.Matrix, System.Windows.Rect)
+♠ StackTrace - 
+   在 System.Windows.Media.Renderer.Render(IntPtr pRenderTarget, Channel channel, Visual visual, Int32 width, Int32 height, Double dpiX, Double dpiY, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual)
+   在 MS.Internal.AppModel.IconHelper.GenerateBitmapSource(ImageSource img, Size renderSize)
+   在 MS.Internal.AppModel.IconHelper.CreateIconHandleFromImageSource(ImageSource image, Size size)
+   在 System.Windows.Window.UpdateTaskbarThumbButtons()
+   在 System.Windows.Window.OnTaskbarItemInfoSubPropertyChanged(Object sender, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Shell.TaskbarItemInfo.NotifyDependencyPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Shell.TaskbarItemInfo.<>c.<.cctor>b__33_8(DependencyObject d, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.InvalidateSubProperty(DependencyProperty dp)
+   在 System.Windows.Freezable.GetChangeHandlersAndInvalidateSubProperties(EventStorage& calledHandlers)
+   在 System.Windows.Freezable.GetChangeHandlersAndInvalidateSubProperties(EventStorage& calledHandlers)
+   在 System.Windows.Freezable.FireChanged()
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)
+   在 System.Windows.DependencyObject.CoerceValue(DependencyProperty dp)
+   在 System.Windows.Shell.ThumbButtonInfo.<>c.<.cctor>b__58_4(DependencyObject d, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)
+   在 System.Windows.DependencyObject.SetValueCommon(DependencyProperty dp, Object value, PropertyMetadata metadata, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType, Boolean isInternal)
+   在 System.Windows.DependencyObject.SetValue(DependencyProperty dp, Object value)
+   在 System.Windows.Shell.ThumbButtonInfo.UpdateCanExecute()
+   在 System.Windows.Shell.ThumbButtonInfo.OnCanExecuteChanged(Object sender, EventArgs e)
+   在 System.Windows.Input.CanExecuteChangedEventManager.HandlerSink.OnCanExecuteChanged(Object sender, EventArgs e)
+   在 System.Windows.WeakEventManager.ListenerList.DeliverEvent(Listener& listener, Object sender, EventArgs args, Type managerType)
+   在 System.Windows.WeakEventManager.ListenerList.DeliverEvent(Object sender, EventArgs args, Type managerType)
+   在 System.Windows.WeakEventManager.DeliverEvent(Object sender, EventArgs args)
+   在 System.Windows.Input.CommandManager.RequerySuggestedEventManager.OnRequerySuggested(Object sender, EventArgs args)
+   在 System.Windows.Input.CommandManager.RaiseRequerySuggested(Object obj)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	MILERR_WIN32ERROR (异常来自 HRESULT:0x88980003)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void Render(IntPtr, Channel, System.Windows.Media.Visual, Int32, Int32, Double, Double, System.Windows.Media.Matrix, System.Windows.Rect)
+♠ StackTrace - 
+   在 System.Windows.Media.Renderer.Render(IntPtr pRenderTarget, Channel channel, Visual visual, Int32 width, Int32 height, Double dpiX, Double dpiY, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual, Matrix worldTransform, Rect windowClip)
+   在 System.Windows.Media.Imaging.BitmapVisualManager.Render(Visual visual)
+   在 MS.Internal.AppModel.IconHelper.GenerateBitmapSource(ImageSource img, Size renderSize)
+   在 MS.Internal.AppModel.IconHelper.CreateIconHandleFromImageSource(ImageSource image, Size size)
+   在 System.Windows.Window.UpdateTaskbarThumbButtons()
+   在 System.Windows.Window.OnTaskbarItemInfoSubPropertyChanged(Object sender, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Shell.TaskbarItemInfo.NotifyDependencyPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Shell.TaskbarItemInfo.<>c.<.cctor>b__33_8(DependencyObject d, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.InvalidateSubProperty(DependencyProperty dp)
+   在 System.Windows.Freezable.GetChangeHandlersAndInvalidateSubProperties(EventStorage& calledHandlers)
+   在 System.Windows.Freezable.GetChangeHandlersAndInvalidateSubProperties(EventStorage& calledHandlers)
+   在 System.Windows.Freezable.FireChanged()
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)
+   在 System.Windows.DependencyObject.CoerceValue(DependencyProperty dp)
+   在 System.Windows.Shell.ThumbButtonInfo.<>c.<.cctor>b__58_4(DependencyObject d, DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.Freezable.OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+   在 System.Windows.DependencyObject.NotifyPropertyChange(DependencyPropertyChangedEventArgs args)
+   在 System.Windows.DependencyObject.UpdateEffectiveValue(EntryIndex entryIndex, DependencyProperty dp, PropertyMetadata metadata, EffectiveValueEntry oldEntry, EffectiveValueEntry& newEntry, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType)
+   在 System.Windows.DependencyObject.SetValueCommon(DependencyProperty dp, Object value, PropertyMetadata metadata, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType, Boolean isInternal)
+   在 System.Windows.DependencyObject.SetValue(DependencyProperty dp, Object value)
+   在 System.Windows.Shell.ThumbButtonInfo.UpdateCanExecute()
+   在 System.Windows.Shell.ThumbButtonInfo.OnCanExecuteChanged(Object sender, EventArgs e)
+   在 System.Windows.Input.CanExecuteChangedEventManager.HandlerSink.OnCanExecuteChanged(Object sender, EventArgs e)
+   在 System.Windows.WeakEventManager.ListenerList.DeliverEvent(Listener& listener, Object sender, EventArgs args, Type managerType)
+   在 System.Windows.WeakEventManager.ListenerList.DeliverEvent(Object sender, EventArgs args, Type managerType)
+   在 System.Windows.WeakEventManager.DeliverEvent(Object sender, EventArgs args)
+   在 System.Windows.Input.CommandManager.RequerySuggestedEventManager.OnRequerySuggested(Object sender, EventArgs args)
+   在 System.Windows.Input.CommandManager.RaiseRequerySuggested(Object obj)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+
+► Title - 
+	On Dispacher Unhandled Exception - Unknow
+▬ Message - 
+	UCEERR_RENDERTHREADFAILURE (异常来自 HRESULT:0x88980406)
+○ Type - 
+	System.Runtime.InteropServices.COMException
+♦ Date/Hour - 
+	2021/11/13 11:55:49
+▲ Source - 
+	PresentationCore
+▼ TargetSite - 
+	Void SyncFlush()
+♠ StackTrace - 
+   在 System.Windows.Media.Composition.DUCE.Channel.SyncFlush()
+   在 System.Windows.Interop.HwndTarget.UpdateWindowSettings(Boolean enableRenderTarget, Nullable`1 channelSet)
+   在 System.Windows.Interop.HwndTarget.UpdateWindowPos(IntPtr lParam)
+   在 System.Windows.Interop.HwndTarget.HandleMessage(WindowMessage msg, IntPtr wparam, IntPtr lparam)
+   在 System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   在 MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   在 System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   在 System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+----------------------------------
+

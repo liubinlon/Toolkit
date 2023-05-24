@@ -1,0 +1,62 @@
+//批量锁定/解锁物体绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtLockAndUnlockObjWin(){
+   if(`window -ex gtLockAndUnlockObjWin`) deleteUI -window gtLockAndUnlockObjWin;
+    window -wh 400 200 -t "老船角色绑定-☆-批量锁定/解锁物体绑定工具!" gtLockAndUnlockObjWin;
+    columnLayout -adj 1 mainColumnattr;
+text -l "点击下方按钮↓↓↓↓↓" texta1;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1766\"";
+
+    formLayout  gtCOTAF;
+     
+    text -l "锁定或者解除节点锁定" tgtextTempB;
+    checkBox -l "节点锁定"  gtLoarSkinObjB;
+     radioButtonGrp  -l "方式" -nrb  2 -la2 "选择的物体" "所有子层级"  -select 1 gtlockStyle;
+
+    button -l "编辑节点锁定"   -c "gtLockNodeProc" but4;
+    
+     
+    formLayout -e
+    
+    -af tgtextTempB left 5 -af tgtextTempB top 5  -ap tgtextTempB right 0 50
+    -ac gtLoarSkinObjB left 5 tgtextTempB -af gtLoarSkinObjB top 5  -af gtLoarSkinObjB right 5
+    -af gtlockStyle left 5 -ac gtlockStyle top 5 tgtextTempB  -af gtlockStyle right 10
+    -af but4 left 5  -ac but4 top 5 gtlockStyle -af but4 right 5 
+     
+    gtCOTAF;     
+    showWindow gtLockAndUnlockObjWin;   
+}
+/////////////////////////
+global proc gtLockNodeProc(){
+    int $state=`checkBox -q -v gtLoarSkinObjB`;
+    int $style=`radioButtonGrp -q -sl gtlockStyle`;
+
+    string $sel[]=`ls -sl`;
+
+for($i=0;$i<size($sel);$i++){
+select -r ($sel[$i]);
+lockNode  -lock $state;  
+    if($style==2){   
+    string $childs[]=`listRelatives -c -ad -fullPath ($sel[$i])`;
+    for($ii=0;$ii<size($childs);$ii++){
+        select -r ($childs[$ii]);
+        lockNode  -lock $state; 
+            }
+       }
+   }  
+   select -cl;
+   if($style==2&&$state==1)  print "选择的物体及其子物体都已经被锁定，不能被删除"; 
+   if($style==1&&$state==1)  print "选择的物体已经被锁定，不能被删除"; 
+   if($style==2&&$state==0)  print "选择的物体及其子物体都已经被解除锁定"; 
+   if($style==1&&$state==0)  print "选择的物体已经被解除删除"; 
+}
+/////////////////////////
+gtLockAndUnlockObjWin;
+////////////////////////2016-10-30

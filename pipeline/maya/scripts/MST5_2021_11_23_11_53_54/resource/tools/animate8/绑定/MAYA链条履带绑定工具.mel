@@ -1,0 +1,630 @@
+//MAYA链条履带自动滚动绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+///////////////////////////////////////
+global proc gtMakeViechleChainWin(){
+
+if(`window -ex gtMakeViechleChainWin`) deleteUI -window gtMakeViechleChainWin;
+window -wh 420 300 -t "老船角色绑定-☆-MAYA链条履带自动滚动绑定工具!!!"  gtMakeViechleChainWin;
+scrollLayout gtmainBSL;
+
+columnLayout -adj 1 -w 380 gtBSColumlayout;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1119\"";
+separator -style single  sep1a;
+
+columnLayout -adj 1 gtBSColumlayoutA;
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+text -l "按顺序选择链节物体" ;
+button -l "创建链条闭合曲线" -c "gtMakeChainProcB" gtButBSBa1;
+setParent..;
+separator -style single  sep1Ba;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+textFieldGrp  -cw2 100 130 -l "链条曲线：" -tx "载入链条曲线" -ed 0 gtTextChainCurve;
+button -l "载入链条曲线" -c "gtMakeChainLoadCurve" gtButBSB1;
+setParent..;
+floatSliderGrp -l "链节间距" -f 1 -min -100  -max 100 -step 0.001 -v 0 gtMakeChainDisF;
+rowColumnLayout -nc 2 -cw 1 190 -cw 2 190;
+button -l "创建履带配套齿轮绑定" -c "gtVehicleGearRollProcA;" but3a;
+button -l "创建链条履带" -c "gtMakeChainProc;" but3b;
+setParent..;
+separator -style single  sep1a;
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+textFieldGrp  -cw2 100 130 -l "存储链节名称：" -tx "" -ed 0 gtTextChainMesh;
+button -l "载入链节物体" -c "gtMakeChainLoadMesh;" but3B;
+setParent..;
+rowColumnLayout -nc 3 -cw 1 100 -cw 2 140 -cw 3 140;
+text -l "";
+checkBox -l "使用约束" -v 0  gtMakeChainP;
+button -l "完成链条履带绑定" -c "gtMakeChainProcA;" but3B;
+setParent..;
+separator -style single ;
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "选择链节物体-坐标在自身中心" ;
+button -l "创建履带绑定单关节" -c "gtMakebindBnProc" ;
+setParent..;
+
+frameLayout -cl 1 -cll 1 -l "创建常规齿轮绑定" -lv 1  gtframeGearA;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+textFieldGrp  -cw2 100 130 -l "主动齿轮模型：" -tx "" -ed 0 gtTextGearMesh;
+button -l "载入主动齿轮模型" -c "gtMakeChainLoadGearM;";
+textFieldGrp  -cw2 100 130 -l "主动控制物体：" -tx "" -ed 0 gtTextGearBnCon;
+button -l "载入主动控制物体" -c "gtMakeChainLoadGearBn;";
+
+setParent..;
+radioButtonGrp -en 1  -l "轴向:" -nrb  3 -la3 "rx" "ry" "rz" -cw4 95  90 90 90  -select 1 gtGearAxisRad;
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "选择全部需要制作齿轮滚动的模型";
+button -l "创建齿轮滚动绑定" -c "gtVehicleGearRollProcB;";
+setParent..;
+
+showWindow  gtMakeViechleChainWin;
+}
+///////////////////
+global proc gtMakeChainLoadGearM(){
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+if($size>1) error "只能选择一个齿轮模型";
+textFieldGrp -e -tx ($sel[0]) gtTextGearMesh;
+}
+////////////////////////
+global proc gtMakeChainLoadGearBn(){
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+if($size>1) error "只能选择一个齿轮控制物体";
+textFieldGrp -e -tx ($sel[0]) gtTextGearBnCon;
+}
+///////////////////////////////
+global proc gtMakeChainLoadCurve(){
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+if($size>1) error "只能选择一个曲线";
+textFieldGrp -e -tx ($sel[0]) gtTextChainCurve;
+}
+///////////////////////////
+global proc gtMakeChainLoadMesh(){
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+string $nam="";
+for($i=0;$i<size($sel);$i++){
+     $nam+=($sel[$i]+" ");
+    }
+textFieldGrp -e -tx $nam gtTextChainMesh;
+}
+
+/////////////////////////////////
+global proc gtMakeChainProc (){
+    string $curve=`textFieldGrp -q -tx gtTextChainCurve`;
+    float $distance=`floatSliderGrp -q -v gtMakeChainDisF`;
+	string $selection[] = `ls -sl`;
+    int $size=size($selection);
+    int $fit=1;
+    if($size>1)$fit=0;
+	
+	string $cInfo;
+	float $curveLength;
+
+	string $pathCurve =$curve;
+	$cInfo = `arclen -ch 1 $pathCurve`;
+	$curveLength = `getAttr ($cInfo+".arcLength")`;
+	
+	float $objLength = 0;
+
+		$xF = `xform -q -boundingBox $selection[0]`;
+		$objLength += $xF[2] - $xF[5];	
+	$objLength = abs($objLength)+$distance; 
+	
+	select -r $curve;
+	duplicate -rr -n ($curve+"aim");
+	scale 1.2 1.2 1.2;
+    makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+	if (!`attributeExists "roll" ($curve+"aim")`){
+	    select -r ($curve+"aim");
+		addAttr -at "float" -ln "roll" -keyable true ($curve+"aim");
+        addAttr -ln "autoRoll"  -at bool  -dv 1 -k 1;
+        addAttr -ln "reverse"  -at bool  -dv 0 -k 1;
+
+        addAttr -ln "prePosx"  -at double;
+        addAttr -ln "prePosy"  -at double;
+        addAttr -ln "prePosz"  -at double;
+        addAttr -ln "dis"  -at double;
+        addAttr -ln "length"  -at double -dv $curveLength;
+        addAttr -ln "centerPos"  -at double -dv 1000000;
+        addAttr -ln "disRoll"  -at double;
+        connectAttr -f ($cInfo+".arcLength") ($curve+"aim.length");       
+ 
+        setAttr -l true ($curve+"aim.length");
+	}
+
+  select -cl;
+  group -empty -n ($curve+"newPos");
+  select -cl;
+  group -empty -n ($curve+"prePos"); 
+  
+  select -cl;
+  group -empty -n ($curve+"prePosA"); 
+  select -r ($curve+"prePos");
+  select -add ($curve+"prePosA");
+  delete`pointConstraint`;
+  
+  select -r ($curve+"prePosA"); 
+  select -add ($curve+"prePos");
+  parent;
+  
+  select -r ($curve+"newPos");
+  select -add ($curve+"prePos"); 
+  group -n ($curve+"prePosGrp"); 
+  select -r ($curve+"prePosGrp"); 
+  group -n  ($curve+"NotMoveGrp");  
+
+  select -r ($curve+"aim");
+  select -add ($curve+"newPos");
+  pointConstraint;
+  select -r ($curve+"aim");
+  select -add ($curve+"prePos");
+  delete`pointConstraint`;
+  
+  select -r ($curve+"aim");
+  select -add ($curve+"prePos");
+  orientConstraint -mo;
+  
+  select -r ($curve+"prePosA");
+  makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+  select -r ($curve+"newPos"); 
+  select -add ($curve+"prePosA");
+  pointConstraint;
+   
+  string $expString="float $centerP="+$curve+"aim.centerPos;\n";
+         $expString+="float $roll="+$curve+"aim.roll/100.0;\n";
+         $expString+=$curve+"aim.disRoll =$roll+$centerP+"+$curve+"aim.dis/"+$curve+"aim.length\n";	    
+	    expression -s $expString -n ($curve+"DisExp");
+  
+  
+   string $exp="";
+    $exp+="float $roll=";
+    $exp+=$curve+"aim.roll;\n";
+    $exp+="float $autoRoll=";    
+    $exp+=$curve+"aim.autoRoll;\n";
+    $exp+="float $prePosx=";     
+    $exp+=$curve+"aim.prePosx;\n";
+    $exp+="float $prePosy=";        
+    $exp+=$curve+"aim.prePosy;\n";
+    $exp+="float $prePosz=";        
+    $exp+=$curve+"aim.prePosz;\n\n";
+    $exp+="float $reverse=";        
+    $exp+=$curve+"aim.reverse;\n\n"; 
+   // $exp+="float $scl=";        
+   // $exp+=$curve+"aim.sz;\n\n";     
+    $exp+="int $dirA=1;\n";
+    $exp+="if($reverse==1)\n";
+    $exp+="$dirA=-1;\n";
+      
+    $exp+=$curve+"prePos.tx=$prePosx;\n";
+    $exp+=$curve+"prePos.ty=$prePosy;\n";
+    $exp+=$curve+"prePos.tz=$prePosz;\n";
+    
+    $exp+="float $nowPosx=";
+    $exp+=$curve+"newPos.tx;\n";
+    $exp+="float $nowPosy=";
+    $exp+=$curve+"newPos.ty;\n";    
+    $exp+="float $nowPosz=";
+    $exp+=$curve+"newPos.tz;\n\n";    
+                            
+    $exp+="float $disP=mag(<<$nowPosx,$nowPosy,$nowPosz>>-<<$prePosx,$prePosy,$prePosz>>);\n";
+    $exp+="float $curDis="+$curve+"aim.dis;\n\n";
+    
+    $exp+="float $dirPreZ=";
+    $exp+=($curve+"prePosA")+".translateZ;\n";
+    $exp+="int $dir=0;\n";
+    $exp+="if($dirPreZ<0)\n";
+    $exp+="$dir=-1;\n";
+    $exp+="else if($dirPreZ>0)\n";
+    $exp+="$dir=1;\n";
+    $exp+=$curve+"aim.dis=$disP*$dir*$dirA*$autoRoll+$curDis;\n";
+   
+    $exp+=$curve+"aim.prePosx=$nowPosx;\n";
+    $exp+=$curve+"aim.prePosy=$nowPosy;\n";
+    $exp+=$curve+"aim.prePosz=$nowPosz;\n";
+  
+expression -s ($exp)  -o ($curve) -ae 1 -uc all -n ($curve+"exp");  
+
+	string $shap[]=`listRelatives -s ($curve+"aim")`;
+    setAttr ($shap[0]+".overrideEnabled") 1;
+    setAttr ($shap[0]+".overrideColor") 22;
+	
+	//print($objLength);
+	int $maxCount;
+	if ($fit){
+		$maxCount = $curveLength / $objLength;
+	}else{
+		$maxCount = $size;
+	}
+	//print ( $maxCount);
+	$cPieces = `group -empty -name ($curve+"chainPieces")`;
+	$cLoc = `group -empty -name ($curve+"chainLocGrp")`;
+	setAttr ($cLoc+".visibility") 0;
+    setAttr -lock true ($cLoc+".v");
+    select -r ($cLoc);
+    select -add $cPieces;
+    parent;
+    $cMesh = `group -empty -name ($curve+"chainMeshGrp")`;
+    select -r ($cMesh);
+    select -add $cPieces;
+    parent;
+    
+    if($fit==1){
+    setAttr ($curve+".visibility") 0;
+    setAttr -lock true ($curve+".visibility");
+	int $i;
+	for ($i=0;$i<$maxCount; $i++){
+		
+		string $curPoly[] = `duplicate $selection[0]`;
+		spaceLocator -p 0 0 0 -n ($curPoly[0]+"loc"+$i);
+		parent $curPoly  $cMesh;
+		parent  ($curPoly[0]+"loc"+$i) $cLoc;
+		
+		select -r ($curPoly[0]+"loc"+$i) ($curve+"aim");
+		$LocPath = `pathAnimation -fractionMode true -follow true -followAxis z -upAxis y -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank false`;
+				
+		string $input[]=`listConnections -s 1 -d 0 ($LocPath+".uValue")`;
+		select -r $input[0];
+		delete; 
+
+		select -r $curPoly $curve;
+		$mPath = `pathAnimation -fractionMode true -follow true -followAxis z -upAxis y -worldUpType "object" -worldUpObject ($curPoly[0]+"loc"+$i) -inverseUp false -inverseFront false -bank false`;
+			
+		string $input[]=`listConnections -s 1 -d 0 ($mPath+".uValue")`;
+		select -r $input[0];
+		delete; 
+		
+    	select -r ($curve+"aim");
+	    select -add ($curPoly[0]);
+	    scaleConstraint;
+	    ////////////////////////////
+   		float $offSet = ($i+0.000) / $maxCount;
+   		
+		string $expString="float $centerP="+$curve+"aim.centerPos;\n";
+               $expString+="float $roll="+$curve+"aim.roll/100.0;\n";
+               $expString+=$mPath+".uValue = ("+$offSet+"+$roll+$centerP+"+$curve+"aim.dis/"+$curve+"aim.length)%1\n";
+	    
+	    expression -s $expString -n ($cMesh+"Exp");
+		connectAttr -f  ($mPath+".uValue")  ($LocPath+".uValue");		
+    	}	
+	select $cPieces;
+	}
+	
+	if($fit==0){	    
+    select -r  $selection;
+    
+    string $sel[]=`ls -sl`;
+
+for($i=0;$i<size($sel);$i++){
+		spaceLocator -p 0 0 0 -n ($sel[$i]+"loc");
+		parent  ($sel[$i]+"loc") $cLoc;
+		
+		select -r ($sel[$i]+"loc") ($curve+"aim");
+		$LocPath = `pathAnimation -fractionMode true -follow true -followAxis z -upAxis y -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank false`;
+		
+		string $input[]=`listConnections -s 1 -d 0 ($LocPath+".uValue")`;
+		select -r $input[0];
+		delete; 
+		spaceLocator -p 0 0 0 -n ($sel[$i]+"parentLoc");
+        addAttr -ln "offsetA"  -at double -k 1 -dv 0 ($sel[$i]+"parentLoc");
+        parent  ($sel[$i]+"parentLoc") $cMesh;
+
+		select -r ($sel[$i]+"parentLoc") $curve;
+		$mPath = `pathAnimation -fractionMode true -follow true -followAxis z -upAxis y -worldUpType "object" -worldUpObject ($sel[$i]+"loc") -inverseUp false -inverseFront false -bank false`;
+		
+		string $input[]=`listConnections -s 1 -d 0 ($mPath+".uValue")`;
+		select -r $input[0];
+		delete; 	
+		
+		select -r ($curve+"aim");
+	    select -add ($sel[$i]+"parentLoc");
+	    scaleConstraint;
+	    	
+		float $offSet = ($i+0.000) / $maxCount;
+				string $expString="float $centerP="+$curve+"aim.centerPos;\n";
+               $expString+="float $roll="+$curve+"aim.roll/100.0;\n";
+               $expString+=$mPath+".uValue = ("+$sel[$i]+"parentLoc.offsetA/100.0+"+$offSet+"+$roll+$centerP+"+$curve+"aim.dis/"+$curve+"aim.length)%1\n";
+               
+		expression -s $expString -n ($cMesh+"Exp");
+		connectAttr -f  ($mPath+".uValue")  ($LocPath+".uValue");	
+	}
+	float $posA[]=`xform -q -ws -t -a ($sel[0]+"parentLoc")`;
+	float $posB[]=`xform -q -ws -t -a ($sel[1]+"parentLoc")`;
+	float $disScl=mag(<<$posA[0],$posA[1],$posA[2]>>-<<$posB[0],$posB[1],$posB[2]>>);
+	for($i=0;$i<size($sel);$i++){
+	    string $shap[]=`listRelatives -s ($sel[$i]+"parentLoc")`;
+	    setAttr ($shap[0]+".localScaleY") ($disScl*0.75);
+	    setAttr ($shap[0]+".localScaleX") ($disScl*0.75);
+	    setAttr ($shap[0]+".localScaleZ") ($disScl*0.75);
+	    }
+	    select -r  $selection;
+	    gtMakeChainLoadMesh;
+    }
+    
+    select -r $curve;
+	select -add ($curve+"aim");
+	parent;
+	cycleCheck -e off;
+	int $ex=`objExists ("gtCheckEScriptJobA")`;
+	if($ex==0){
+	scriptNode  -beforeScript  "//请不要删除此脚本节点\ncycleCheck -e off;" -n ("gtCheckEScriptJobA");
+    setAttr ("gtCheckEScriptJobA.scriptType") 1;
+    }
+    select -r ($curve+"aim");
+}
+//////////////////////////////
+global proc gtMakeChainProcA (){
+    int $ps=`checkBox -q -v gtMakeChainP`;
+    string $curve=`textFieldGrp -q -tx gtTextChainCurve`;
+    string $con=`textFieldGrp -q -tx gtTextChainMesh`;
+    setAttr ($curve+".visibility") 0;
+    setAttr -lock true ($curve+".visibility");
+
+    string $sel[]=`ls -sl`;
+    string $conB[];
+    if(size($con)>0){
+       string $ttm[];
+       int $t=`tokenize ($con) " " $ttm`;
+       for($j=0;$j<$t;$j++){
+          $conB[$j]=$ttm[$j]; 
+       }
+       select -r ($conB);
+    }
+    
+    string $conA[]=`ls -sl`; 
+    int $size=size($conA);
+    if($size==0)error "请选择全部链节物体";
+    string $sel[]=`ls -sl`;
+    //select -r $conA;
+    string $loc[]=`listRelatives -c  ($curve+"chainMeshGrp")`;
+    
+    for($i=0;$i<size($loc);$i++){
+        float $d=1100;
+        float $posA[]=`xform -q -ws -t -a $loc[$i]`;  
+            string $shap[]=`listRelatives -s $loc[$i]`;
+	    setAttr ($shap[0]+".v") 0;
+        setAttr -l true  ($shap[0]+".v");
+          string $conp[];
+            for($j=0;$j<size($loc);$j++){
+                spaceLocator -p 0 0 0 -n ($conA[$j]+"tempLoc");
+                select -r $conA[$j];
+                select -add ($conA[$j]+"tempLoc");
+                delete`pointConstraint`;
+                float $posB[]=`xform -q -ws -t -a ($conA[$j]+"tempLoc")`;
+                delete ($conA[$j]+"tempLoc");
+                float $dist=mag(<<$posA[0],$posA[1],$posA[2]>>-<<$posB[0],$posB[1],$posB[2]>>);
+                if($dist<$d){$d=$dist;$conp[0]=$conA[$j];}
+            }
+        if($ps==0){
+            delete`pointConstraint $loc[$i] ($conp[0])` ;
+            
+            select -r ($conp[0]);
+            select -add $loc[$i];
+            parent;
+        }else{
+            delete`pointConstraint $loc[$i] ($conp[0])` ;
+            select -r $loc[$i]; 
+            select -add ($conp[0]);
+            parentConstraint -mo;
+            scaleConstraint;          
+        }
+    }  
+    select ($sel);     
+}
+/////////////////////////////////
+global proc gtMakeChainProcB (){
+    string $meshes[]=`ls -sl`;
+  int $ex=`objExists ($meshes[0]+"PathCurve")`;
+  if($ex==1)error ("路径曲线："+($meshes[0]+"PathCurve")+"已经存在，请将该曲线名称修改为其它名称，或者删除");
+    string $curv="curve -d 3 ";
+    for($i=0;$i<size($meshes);$i++){
+         spaceLocator -p 0 0 0 -n ($meshes[$i]+"tempLoc");
+                delete`pointConstraint $meshes[$i] ($meshes[$i]+"tempLoc")`;
+                float $posB[]=`xform -q -ws -t -a ($meshes[$i]+"tempLoc")`;
+                delete ($meshes[$i]+"tempLoc");
+          $curv+="-p "+$posB[0]+" "+$posB[1]+" "+$posB[2]+" ";    
+        }
+    
+    $curv+=" -n "+$meshes[0]+"temp";
+    eval ($curv);
+    rename ($meshes[0]+"PathCurve");
+    closeCurve -ch 0 -ps 1 -rpo 1 -bb 0.5 -bki 0 -p 0.1 ($meshes[0]+"PathCurve");
+    rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s (size($meshes)) -d 3 -tol 0.01 ($meshes[0]+"PathCurve");
+    string $shap[]=`listRelatives -s ($meshes[0]+"PathCurve")`;
+    rename ($shap[0]) ($meshes[0]+"PathCurveShape");
+    textFieldGrp -e -tx ($meshes[0]+"PathCurve") gtTextChainCurve;
+    select -r ($meshes[0]+"PathCurve");
+    CenterPivot;
+    }   
+///////////////    
+global proc gtVehicleGearRollProcA(){
+string $curve=`textFieldGrp -q -tx gtTextChainCurve`;
+//string $con=("w_con");
+string $sel[]=`ls -sl`;
+
+for($i=0;$i<size($sel);$i++){
+select -r ($sel[$i]);
+CenterPivot;
+}
+int $ex=`objExists ($curve+".disRoll")`;
+if($ex==0)error "轮胎/履带曲线没有距离及长度属性";
+
+int $rootBn=`objExists ($curve+"gearRollRootBn")`;
+if($rootBn==0){
+    select -cl;
+    joint -p 0 0 0 -n ($curve+"gearRollRootBn");
+    group -n ($curve+"gearRollRootBnGrp");
+    select -r $curve;
+    select -add ($curve+"gearRollRootBnGrp");
+    parentConstraint -mo;
+    scaleConstraint;
+    select $sel;
+    select -add ($curve+"gearRollRootBn");
+    delete `pointConstraint`;       
+}
+
+for($i=0;$i<size($sel);$i++){
+select -r ($sel[$i]);
+int $ex=`objExists ($sel[$i]+".reverse")`;
+if($ex==0){
+addAttr -ln "reverse"  -at bool -k 1 -dv 1;
+}
+
+CenterPivot;
+float $bbmin[]=`getAttr ($sel[$i]+".boundingBoxMin")`;
+float $bbmax[]=`getAttr ($sel[$i]+".boundingBoxMax")`;
+float $ydis=($bbmax[1]-$bbmin[1]);
+float $circle=3.14*$ydis;
+select -cl ;
+joint -p 0 0 0 -n  ($sel[$i]+"RollBn");
+select -r ($sel[$i]);
+select -add ($sel[$i]+"RollBn");
+delete `pointConstraint`;
+select -r ($sel[$i]+"RollBn");
+select -add ($curve+"gearRollRootBn");
+parent;
+
+string $expString ="";  
+        $expString+="float $reverse=";        
+        $expString+=$sel[$i]+".reverse;\n"; 
+        $expString+="int $dirA=1;\n";
+        $expString+="if($reverse==1)\n";
+        $expString+="$dirA=-1;\n"; 
+                                     
+		$expString +=($sel[$i]+"RollBn.rx =(");
+		$expString +=($curve+".disRoll*(");
+		$expString +=($curve+".length/"+$circle); 
+		//if($ex==1)$expString +=($conAll+".sy*");              
+	    $expString +=("))*-360*$dirA;\n");  		                		          
+		expression -s $expString  -ae 1 -uc all -n ($sel[$i]+"_rollExp");
+		select -r ($sel[$i]);
+        select -add ($sel[$i]+"RollBn");
+		SmoothBindSkin;
+    }
+select -r ($curve);
+}
+///////////////////////////////////
+global proc gtVehicleGearRollProcB(){
+    string $gearM=`textFieldGrp -q -tx gtTextGearMesh`;
+    string $gearBn=`textFieldGrp -q -tx gtTextGearBnCon`;
+    int $Axis=`radioButtonGrp -q  -select  gtGearAxisRad`;
+    
+    string $rotA="rx";
+    if($Axis==2)$rotA="ry";
+    if($Axis==3)$rotA="rz";    
+    //string $con=("w_con");
+string $sel[]=`ls -sl`;
+for($i=0;$i<size($sel);$i++){
+select -r ($sel[$i]);
+CenterPivot;
+}
+////////////////
+int $rootBn=`objExists ($gearM+"gearRollRootBn")`;
+if($rootBn==0){
+    select -cl;
+    joint -p 0 0 0 -n ($gearM+"gearRollRootBn");
+    group -n ($gearM+"gearRollRootBnGrp");
+
+    select $sel;
+    select -add ($gearM+"gearRollRootBn");
+    delete `pointConstraint`;       
+}
+/////////////
+float $bbmin[]=`getAttr ($gearM+".boundingBoxMin")`;
+float $bbmax[]=`getAttr ($gearM+".boundingBoxMax")`;
+
+float $ydis=($bbmax[1]-$bbmin[1]);
+if($Axis==2)$ydis=($bbmax[0]-$bbmin[0]);
+
+float $gearCircle=3.14*$ydis;
+
+for($i=0;$i<size($sel);$i++){
+select -r ($sel[$i]);
+int $ex=`objExists ($sel[$i]+".reverse")`;
+if($ex==0){
+addAttr -ln "reverse"  -at bool -k 1 -dv 1;
+}
+
+CenterPivot;
+float $bbmin[]=`getAttr ($sel[$i]+".boundingBoxMin")`;
+float $bbmax[]=`getAttr ($sel[$i]+".boundingBoxMax")`;
+float $ydis=($bbmax[1]-$bbmin[1]);
+if($Axis==2)$ydis=($bbmax[0]-$bbmin[0]);
+
+float $circle=3.14*$ydis;
+select -cl ;
+joint -p 0 0 0 -n  ($sel[$i]+"RollBn");
+select -r ($sel[$i]);
+select -add ($sel[$i]+"RollBn");
+delete `pointConstraint`;
+select -r ($sel[$i]+"RollBn");
+select -add ($gearM+"gearRollRootBn");
+parent;
+string $expString ="";     
+        $expString+="float $reverse=";        
+        $expString+=$sel[$i]+".reverse;\n"; 
+        $expString+="int $dirA=1;\n";
+        $expString+="if($reverse==1)\n";
+        $expString+="$dirA=-1;\n";                          
+		$expString +=($sel[$i]+"RollBn."+$rotA+" =(");
+		$expString +=($gearBn+"."+$rotA+"*(");
+		$expString +=($gearCircle+"/"+$circle); 
+		//if($ex==1)$expString +=($conAll+".sy*");              
+	    $expString +=("))*$dirA;\n"); 		                		          
+		expression -s $expString  -ae 1 -uc all -n ($sel[$i]+"_rollExp");
+		select -r ($sel[$i]);
+        select -add ($sel[$i]+"RollBn");
+		SmoothBindSkin;
+    }
+select -r ($sel);
+}
+///////////////////
+global proc gtMakebindBnProc(){
+    string $sel[]=`ls -sl`;
+    int $ex=`objExists ($sel[0]+"BindSBnGrp")`;
+    if($ex==0){
+        select -cl;
+        joint -p 0 0 0 -n ($sel[0]+"RootSBn") ;
+        select -r ($sel);
+        select -add ($sel[0]+"RootSBn") ;
+        pointConstraint;
+        scaleConstraint;
+        select -r ($sel[0]+"RootSBn") ;
+        group -n ($sel[0]+"BindSBnGrp");
+    }    
+    for($i=0;$i<size($sel);$i++){
+      select -cl ;
+      int $ex=`objExists ($sel[$i]+"BindSBn")`;
+      if($ex==0){      
+      joint -p 0 0 0 -n ($sel[$i]+"BindSBn") ;
+      select -r ($sel[$i]);
+      select -add ($sel[$i]+"BindSBn") ;
+      parentConstraint;
+      scaleConstraint;
+      select -r ($sel[$i]+"BindSBn") ;
+      select -add ($sel[0]+"RootSBn") ;
+      parent; 
+      }else{
+          print ($sel[$i]+"BindSBn：已经存在");
+      }
+    }
+}
+////////////////////
+gtMakeViechleChainWin;
+///////////////////////////2017-6-24-630

@@ -1,0 +1,398 @@
+//______________________________________//
+//        by劲爆羊   2015.5.14           //
+// http://blog.sina.com.cn/u/1142154637 //
+//______________________________________//
+
+if(`window -ex JBY_SEC`){deleteUI JBY_SEC;}
+window -title "SECtrl v1.1 for maya2014" JBY_SEC;
+columnLayout -w 300;
+
+frameLayout -w 300 -h 75 -label "第一步 : 选定目标模型并载入" ;
+
+rowColumnLayout -nc 3 -cw 1 7 -cw 2 180 -cw 3 100;
+text -l " ";
+text -l " ";
+text -l " ";
+text -l " ";
+textField -fn "smallObliqueLabelFont" -tx "尚未选定目标模型" -ed 0 target_mod; 
+button -l "载入所选模型" -c "set_the_mod()";
+setParent ..;
+
+setParent ..;
+
+frameLayout -w 300 -h 75 -label "第二步 : 建立Locator" ;
+
+
+scrollField -bgc 0.3 0.3 0.3 -w 100 -wordWrap 1
+            -text "自行按需求建立一个或多个Locator，放置在目标模型的相应位置。" -editable 0 ;
+
+setParent ..;
+
+
+frameLayout -w 300 -label "第三步 : 选定所有 Locator 并载入" ;
+
+rowColumnLayout -nc 3 -cw 1 7 -cw 2 180 ;
+text -l " ";
+text -l " ";
+text -l " ";
+text -l " ";
+textScrollList -en 0 -fn "smallObliqueLabelFont" -append "尚未选定Locator" the_list_locator;
+columnLayout;
+button -w 100 -l "载入所选Locator" -c "set_the_locators()";
+scrollField -h 220 -w 100 -wordWrap 1
+            -text "**注意**：\n请保证所有Locator不重名！\n请保证所有Locator不重名！\n请保证所有Locator不重名！\n**重要的事情说三遍！**" -en 0 -editable 0 ;
+
+setParent ..;
+setParent ..;
+setParent ..;
+
+frameLayout -w 300 -h 120 -label "第四步 : 设置参数" ;
+
+
+
+
+rowColumnLayout -nc 4 ;
+
+    radioCollection if_mirror;
+    text -h 30 -l "         是否需要镜像          ";
+    radioButton -sl -label "无" None_mi;
+    text -l "";
+    text -l "";
+    text -l "";
+
+    radioButton -label "X 轴" X_mi;
+    radioButton -label "Y 轴" Y_mi;
+    radioButton -label "Z 轴" Z_mi;
+    text -l "";
+    text -l "";
+    text -l "";
+    text -l "";
+    iconTextRadioCollection  which_color;
+    rowColumnLayout -nc 2 -cw 1 12 -cw 2 100 ;
+    text -l "";
+    text -l "         控制器的颜色          ";
+    text -l "" -h 8;
+    scrollLayout -bgc 1 0 0 -h 8 color_ctr;
+    
+    setParent ..;
+    setParent ..;
+    iconTextRadioButton -cc "change_color_ctr()" -bgc 0.8 0 0   -sl -st "textOnly" -l " " R_color;
+    iconTextRadioButton -cc "change_color_ctr()" -bgc 0.8 0.8 0 -st "textOnly" -l " " Y_color;
+    iconTextRadioButton -cc "change_color_ctr()" -bgc 0 0 0.8   -st "textOnly" -l " " B_color;       
+    text -l "";
+    
+setParent ..;
+setParent ..;
+
+
+frameLayout -w 300 -h 200 -label "第五步 : 生成次级控制器" ;
+
+
+scrollField -bgc 0.3 0.3 0.3 -w 100 -wordWrap 1
+            -text "将会在每个Locator的位置生成默认权重的次级控制器，请自行调整权重，如需重做请Ctrl+Z。\n另附本工具的原理：\n1、原模型将会被自动隐藏，并生成一个新的模型.\n2、采用毛囊的方式来吸附模型.\n3、采用parentInverseMatrix连接到相对应的skinCluster的bindPreMatrix来消除二次位移." -editable 0 ;
+rowColumnLayout -nc 3 -cw 1 80 -cw 2 20 -cw 3 60 ;
+progressBar -vis 0
+   
+    -isInterruptable true
+    -status "生成中 ..."
+    -maxValue 100
+    PROC_JBY;
+text -l "";
+
+button -w 100 -l "生成次级控制器" -c "start_JBY()";
+text -l "";
+text -l "";
+setParent ..;
+setParent ..;
+
+setParent ..;
+showWindow JBY_SEC;
+
+
+////////////////////////
+
+global proc set_the_mod()
+{
+    string $get_mod[] =`ls -sl`;
+    if(size($get_mod)==1)
+     {
+         string $temp_shape[] = `listRelatives -s $get_mod[0]`;
+         if(`nodeType $temp_shape[0]` == "mesh"||`nodeType $temp_shape[0]` == "nurbsSurface")
+         {
+         textField -e -fn "boldLabelFont" -tx $get_mod[0]  target_mod;
+         } 
+     }
+     else{warning "*请选择一个模型！*\n";}
+    
+    
+}
+
+global proc set_the_locators()
+{
+    string $get_locators[] =`ls -sl`;
+    string $all_locators_string = "";
+    
+    for($i=0;$i<size($get_locators);$i++)
+     {
+         string $temp_shape[] = `listRelatives -s $get_locators[$i]`;
+         if(`nodeType $temp_shape[0]` == "locator")
+         {
+         $all_locators_string += " -append "+$get_locators[$i];
+         } 
+     }
+    if(size($all_locators_string) != 0)
+    {
+    textScrollList -e -ra the_list_locator;
+    eval("textScrollList -e -fn \"boldLabelFont\" "+$all_locators_string+" the_list_locator");
+    }
+}
+////////////////////////////////
+global proc change_color_ctr()
+{
+    string $get_color_ui = `iconTextRadioCollection -q -sl which_color`;
+    if($get_color_ui == "R_color")
+    {
+        scrollLayout -e -bgc 1 0 0 color_ctr;
+    }
+    if($get_color_ui == "Y_color")
+    {
+        scrollLayout -e -bgc 1 1 0 color_ctr;
+    }
+    if($get_color_ui == "B_color")
+    {
+        scrollLayout -e -bgc 0 0 1 color_ctr;
+    }        
+}
+///////////////////////////////
+global proc start_JBY()
+{
+string $getTheMesh_T = `textField -q -tx target_mod`;
+string $getTheLocators[] = `textScrollList -q -ai the_list_locator`;
+if($getTheMesh_T!="尚未选定目标模型"&&$getTheLocators[0]!="尚未选定Locator")
+{
+string $sys_JBY = `createNode  "transform" -n ($getTheMesh_T+"_SEC_system")`;
+string $getTheMeshShape[] = `listRelatives -s $getTheMesh_T`;
+progressBar -e -vis 1 PROC_JBY; 
+
+
+string $getNewCPOM = `createNode "closestPointOnMesh"`;
+
+connectAttr -f ($getTheMeshShape[0]+".outMesh") ($getNewCPOM+".inMesh");
+
+string $get_copy[] = `duplicate $getTheMesh_T`;
+string $get_name_copy = `rename $get_copy[0] ($getTheMesh_T+"_copy_JBY")`;
+
+select -cl;
+string $theZeroJNT = `joint -p 0 0 0 -rad 0.5 -n ($getTheMesh_T+"_zero_JNT")`;
+
+blendShape -n "FI_BQ" -w 0 1 $getTheMesh_T $get_name_copy ;
+
+string $get_skinCL[] = `skinCluster -nw 1 -mi 1 -tsb $theZeroJNT $get_name_copy`; 
+
+
+string $if_mir = `radioCollection -q -sl if_mirror`;
+string $need_mir[];
+clear $need_mir;
+if ($if_mir == "X_mi") 
+    {
+          
+       for($iii=0;$iii<size($getTheLocators);$iii++)
+       {
+          float $check_mir[] = `xform -q -ws -t $getTheLocators[$iii]`;
+          if ($check_mir[0] != 0)
+          {
+             string $temp_mir[] = `spaceLocator -p 0 0 0 `;
+             setAttr ($temp_mir[0]+".translate") (-1*$check_mir[0]) $check_mir[1] $check_mir[2];
+             $need_mir[size($need_mir)] = $temp_mir[0];
+          }
+       }
+       $getTheLocators = stringArrayCatenate($getTheLocators,$need_mir);
+    } 
+if ($if_mir == "Y_mi") 
+    {
+          
+       for($iii=0;$iii<size($getTheLocators);$iii++)
+       {
+          float $check_mir[] = `xform -q -ws -t $getTheLocators[$iii]`;
+          if ($check_mir[1] != 0)
+          {
+             string $temp_mir[] = `spaceLocator -p 0 0 0 `;
+             setAttr ($temp_mir[0]+".translate") $check_mir[0] (-1*$check_mir[1]) $check_mir[2];
+             $need_mir[size($need_mir)] = $temp_mir[0];
+          }
+       }
+       $getTheLocators = stringArrayCatenate($getTheLocators,$need_mir);
+    } 
+if ($if_mir == "Z_mi") 
+    {
+          
+       for($iii=0;$iii<size($getTheLocators);$iii++)
+       {
+          float $check_mir[] = `xform -q -ws -t $getTheLocators[$iii]`;
+          if ($check_mir[2] != 0)
+          {
+             string $temp_mir[] = `spaceLocator -p 0 0 0 `;
+             setAttr ($temp_mir[0]+".translate") $check_mir[0] $check_mir[1] (-1*$check_mir[2]);
+             $need_mir[size($need_mir)] = $temp_mir[0];
+          }
+       }
+       $getTheLocators = stringArrayCatenate($getTheLocators,$need_mir);
+    }     
+        
+for($i=0;$i<size($getTheLocators);$i++)
+{
+   float $pr_JBY = ($i+1)*100/size($getTheLocators); 
+   
+   setAttr ($getTheLocators[$i]+".visibility") 0;
+   
+   string $getNewFolShape = `createNode "follicle"`; 
+   
+   setAttr ($getNewFolShape+".simulationMethod") 0;
+
+   setAttr ($getNewFolShape+".degree") 1;
+
+   setAttr ($getNewFolShape+".sampleDensity") 0;
+   
+   setAttr ($getNewFolShape+".template") 1;
+   
+   string $getTheFolold[] = `listRelatives -p $getNewFolShape`;
+   
+   string $getTheFol_new = `rename $getTheFolold[0] ("fol_JBY_"+($i+1))`;
+   
+   string $getNewFolShape_new[] = `listRelatives -s $getTheFol_new`;
+   
+   connectAttr -f ($getTheMeshShape[0]+".outMesh") ($getNewFolShape_new[0]+".inputMesh");
+
+   connectAttr -f ($getTheMeshShape[0]+".worldMatrix[0]") ($getNewFolShape_new[0]+".inputWorldMatrix");
+
+   connectAttr -f ($getNewFolShape_new[0]+".outTranslate") ($getTheFol_new+".translate");
+
+   connectAttr -f ($getNewFolShape_new[0]+".outRotate") ($getTheFol_new+".rotate");
+   
+   float $getPos_loc[] = `xform -q -ws -t $getTheLocators[$i]`;
+   
+   setAttr ($getNewCPOM+".inPosition") $getPos_loc[0] $getPos_loc[1] $getPos_loc[2];
+   
+   float $getU = `getAttr ($getNewCPOM+".parameterU")`;
+   float $getV = `getAttr ($getNewCPOM+".parameterV")`;
+
+   setAttr ($getNewFolShape_new[0]+".parameterU") $getU; 
+   setAttr ($getNewFolShape_new[0]+".parameterV") $getV; 
+   
+ 
+
+    
+   
+   
+   select -cl;
+   
+   string $theSecJNT = `joint -p 0 0 0 -rad 0.5 -n ($getTheMesh_T+"_sec_JNT_"+($i+1))`;
+   string $theSecGRP = `group -n ($theSecJNT+"_grp")`;
+        
+   float $get_pos_fol[] =`xform -q -ws -t $getTheFol_new`;
+   float $get_rot_fol[] =`xform -q -ws -ro $getTheFol_new`;
+        
+   setAttr ($theSecGRP+".translate") $get_pos_fol[0] $get_pos_fol[1] $get_pos_fol[2];
+   setAttr ($theSecGRP+".rotate") $get_rot_fol[0] $get_rot_fol[1] $get_rot_fol[2];
+        
+   parent $theSecGRP $getTheFol_new;
+ 
+   
+   
+   skinCluster -e   -dr 10 -ps 5 -ns 10 -ai $theSecJNT $get_skinCL[0];
+   
+   string $get_attr[] = `listConnections -p 1 ($theSecJNT+".worldMatrix")`;
+   string $get_sc[] = `listConnections  ($theSecJNT+".worldMatrix")`;
+ 
+   string $get_index = `match  "[[0-9]+]" $get_attr[0]`;
+   string $get_int = `substring $get_index 2 (size($get_index)-1)`;   
+   connectAttr -f ($theSecJNT+".parentInverseMatrix") ($get_sc[0]+".bindPreMatrix["+$get_int+"]");
+   
+   setAttr ($getTheMesh_T+".visibility") 0;
+   
+     string $con_sph_makeNBS = `createNode "makeNurbSphere" -n ($getTheMesh_T+"_"+$getTheLocators[$i]+"_sec_NBS")`;
+
+    string $con_sph_makeCTRL_shape = `createNode "nurbsSurface" -n ($getTheMesh_T+"_"+$getTheLocators[$i]+"_sec_CTRL_shape")`;
+    
+    connectAttr -f ($con_sph_makeNBS+".outputSurface") ($con_sph_makeCTRL_shape+".create");
+    
+    string $con_sph_makeCtrl[] = `listRelatives -p $con_sph_makeCTRL_shape`;
+    
+    string $con_sph_makeCTRL = `rename $con_sph_makeCtrl[0] ($getTheMesh_T+"_"+$getTheLocators[$i]+"_sec_CTRL")`;
+    
+    setAttr ($con_sph_makeCTRL_shape+".castsShadows") 0;
+    setAttr ($con_sph_makeCTRL_shape+".receiveShadows") 0;
+    setAttr ($con_sph_makeCTRL_shape+".motionBlur") 0;
+    setAttr ($con_sph_makeCTRL_shape+".primaryVisibility") 0;
+    setAttr ($con_sph_makeCTRL_shape+".smoothShading") 0;
+    setAttr ($con_sph_makeCTRL_shape+".visibleInReflections") 0;
+    setAttr ($con_sph_makeCTRL_shape+".visibleInRefractions") 0;
+    setAttr ($con_sph_makeCTRL_shape+".doubleSided") 0;
+    
+    
+    string $the_string="";
+    for ($i3=0;$i3<200;$i3++)
+    {
+    float $abcd123[] = unit(sphrand(1))*0.9;
+    
+    $the_string+=(" -p "+$abcd123[0]+" "+$abcd123[1]+" "+$abcd123[2]+" -p 0 0 0");
+    }
+    string $bbb = ("curve -d 1 "+$the_string);
+    string $get_newshape = eval($bbb);
+    string $get_newshape_s[] = `listRelatives -s $get_newshape`;
+
+    parent -add -shape $get_newshape_s[0] $con_sph_makeCTRL;
+    delete $get_newshape;
+    
+   
+    
+    select -r $con_sph_makeCTRL;
+    DeleteHistory; 
+    string $temp_cnm[] = `listRelatives -s $con_sph_makeCTRL`;
+    string $get_color = `iconTextRadioCollection -q -sl which_color`;
+    int $final_color;
+    if($get_color == "R_color")
+    {
+        $final_color = 13;
+    }
+    if($get_color == "Y_color")
+    {
+        $final_color = 17;
+    }
+    if($get_color == "B_color")
+    {
+        $final_color = 6;
+    }
+    for ($one_cnm in $temp_cnm)
+    {
+    setAttr ($one_cnm+".overrideEnabled") 1;
+    setAttr ($one_cnm + ".overrideColor") $final_color;
+    }
+    string $theCTR_grp = `group -n ($con_sph_makeCTRL+"_GRP")`;
+    setAttr ($theCTR_grp+".rotate") $get_rot_fol[0] $get_rot_fol[1] $get_rot_fol[2];
+    setAttr ($theCTR_grp+".translate") $getPos_loc[0] $getPos_loc[1] $getPos_loc[2];
+    move -a $get_pos_fol[0] $get_pos_fol[1] $get_pos_fol[2] ($con_sph_makeCTRL+".scalePivot") ($con_sph_makeCTRL+".rotatePivot");
+    parentConstraint -mo -weight 1 $con_sph_makeCTRL $theSecJNT;
+    scaleConstraint -mo -weight 1 $con_sph_makeCTRL $theSecJNT;
+    
+    parent $theCTR_grp $getTheFol_new;
+    parent $getTheFol_new $sys_JBY;
+    
+    progressBar -e -pr $pr_JBY PROC_JBY;
+    parent $getTheLocators[$i] $sys_JBY;
+    
+}
+select -cl;
+setAttr ($theZeroJNT+".visibility") 0;
+parent $theZeroJNT $sys_JBY;
+delete $getNewCPOM;
+progressBar -e -vis 0 PROC_JBY; 
+
+confirmDialog -title "搞定"  -message ("原模型已被隐藏，新生成的模型为 \n"+$get_name_copy+" 。")
+    -button "Yes"  -defaultButton "Yes"
+    -cancelButton "Yes" ;
+
+
+}
+
+}

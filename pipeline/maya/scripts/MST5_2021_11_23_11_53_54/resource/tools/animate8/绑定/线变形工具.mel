@@ -1,0 +1,272 @@
+//老船线变形绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+/////////////////////////////
+global proc gtBSLoadWireMesh(){
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+if($size>1) error "只能选择一个模型";
+textFieldGrp -e -tx ($sel[0]) gtTextBSLW3;
+}
+//////////////////////////////////
+global proc gtCurveWireDeform(){
+string $currentMesh=`textFieldGrp -q -text  gtTextBSLW3`;
+string $sel[]=`ls -sl`;
+select -r ($sel);
+string $conName[]=`gtCurveClusterCon`;
+select -r ($conName);
+pickWalk -d up;
+
+scale -r 2 2 2;
+int $ex=`objExists ($sel[0]+"baseWireGrp")`;
+if($ex==0){
+    select -cl;
+    group -empty -n ($sel[0]+"baseWireGrp");
+    setAttr ($sel[0]+"baseWireGrp.visibility") 0;
+    setAttr -lock true ($sel[0]+"baseWireGrp.v");
+    }
+int $ex=`objExists ($sel[0]+"deformCurveGrp")`;
+if($ex==0){
+    select -cl;
+    group -empty -n ($sel[0]+"deformCurveGrp");
+    setAttr ($sel[0]+"deformCurveGrp.visibility") 0;
+    setAttr -lock true ($sel[0]+"deformCurveGrp.v");
+    }
+for($i=0;$i<size($sel);$i++){
+   string $wired[]=` wire -gw false -en 1.000000 -ce 0.000000 -li 0.000000 -w ($sel[$i]) $currentMesh`;
+   connectAttr -f ($conName[$i]+".distance") ($wired[0]+".dropoffDistance[0]");
+    string $base[]=`listConnections -s 1 -d 0 ($wired[0]+".baseWire[0]")`;
+       select -r ($base[0]);
+       select -add ($sel[0]+"baseWireGrp");
+       parent;
+       select -r ($sel[$i]);
+       select -add ($sel[0]+"deformCurveGrp");
+       parent;  
+    }
+}
+//////////////////////////////////////
+global proc gtWireWeightPaint (){
+    string $sel[]=`ls -sl`;
+    string $mesh=`textFieldGrp -q -text  gtTextBSLW3`;
+    string $clusA[]=`listConnections -s 0 -d 1 ($sel[0]+".distance")`;
+    select -cl;
+    string  $clusterSets[]=`listConnections ($clusA[0]+".message")`;
+
+    string $currentMembers[]=`sets -q ($clusterSets[0])`;
+
+		select ($mesh+".vtx[0:999999]");
+		select -d $currentMembers;
+		string $vex[]=`ls -sl`;
+		if(size($vex)>0){
+		sets -add ($clusterSets[0]) `ls -sl`;
+		percent -v 0 $clusA[0] `ls -sl`;
+		}
+    artAttrToolScript 4 "wire";
+eval ("artSetToolAndSelectAttr( \"artAttrCtx\", \"cluster."+$clusA[0]+".weights\")");
+select $mesh;
+evalEcho ("artSetToolAndSelectAttr( \"artAttrCtx\", \"cluster."+$clusA[0]+".weights\")");
+}
+///////////////////////////////////////
+global proc gtWireDeformToolWin(){
+
+if(`window -ex gtWireDeformToolWin`) deleteUI -window gtWireDeformToolWin;
+window -wh 420 300 -t "老船角色绑定-☆-老船变形绑定工具!!!"  gtWireDeformToolWin;
+scrollLayout gtmainBSL;
+
+columnLayout -adj 1 -w 420 gtBSColumlayout;
+text -l "老船绑定工具-老船动画吧：http://www.animate8.com/" -h 25;
+button -l "打开工具视频网页链接！" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1780\"";
+separator -style single  sep1a;
+frameLayout -cl 0 -cll 1 -l "线变形绑定" -lv 1  gtframeBSLD;
+columnLayout -adj 1 gtBSColumlayoutC;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+textFieldGrp  -cw2 100 130 -l "变形模型" -tx "请载入变形模型" -ed 0 gtTextBSLW3;
+button -l "载入变形模型" -c "gtBSLoadWireMesh" gtButBSC3;
+
+setParent..;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "选择选择所有曲线";
+
+button -l "创建线变形绑定" -c "gtCurveWireDeform;" but3a;
+
+setParent..;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "选择线变形控制器——红色控制器";
+
+button -l "绘制线变形权重" -c "gtWireWeightPaint;" but3ab;
+
+setParent..;
+setParent..;
+setParent..;
+separator -style single  sepAa;
+showWindow  gtWireDeformToolWin;
+}
+/////////////////////////////
+
+global proc string[] gtCurveClusterCon(){
+    string $sel[]=`ls -sl`;
+    string $conName[];
+for($ii=0;$ii<size($sel);$ii++){
+select -r ($sel[$ii]);
+string $curve[]=`ls -sl`;
+select -r ($curve[0]+".cv[0:1000]") ;
+string $points[]=`ls -sl`;
+string $tm[];
+int $t=`tokenize ($points[0]) ":" $tm`;
+string $gtmm=$tm[1];
+string $gttm[];
+int $t=`tokenize ($gtmm) "]" $gttm`;
+int $pointnum=($gttm[0]);
+int $num=$pointnum+1;
+
+select -r ($curve[0]);
+duplicate -rr;
+rename ($curve[0]+"temp");
+float $pos[]=`xform  -q -t -ws -a ($curve[0]+".cv[0]")`;
+select -cl;
+joint -p $pos[0] $pos[1] $pos[2] -n ($curve[0]+"tempBn0");
+
+for($i=1;$i<($num);$i++){
+    int $j=$i-1;
+select -r ($curve[0]+"temp.cv["+$i+"]");
+newCluster " -envelope 1";
+rename ($curve[0]+"cluster"+$j);
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc"+$j);
+select -r ($curve[0]+"cluster"+$j);
+select -add ($curve[0]+"loc"+$j);
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster"+$j);
+select -add ($curve[0]+"loc"+$j);
+parent;
+float $pos[]=`getAttr ($curve[0]+"loc"+$j+".translate")`;
+select -r ($curve[0]+"tempBn"+($j));
+joint -p $pos[0] $pos[1] $pos[2] -n ($curve[0]+"tempBn"+$i);
+select -r ($curve[0]+"loc"+$j);
+delete;
+}
+
+select -r ($curve[0]+"tempBn0");
+joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+
+select -r ($curve[0]+"temp");
+delete;
+
+select -r ($curve[0]+"tempBn"+($num-2));
+select -add ($curve[0]+"tempBn"+($num-1));
+delete`orientConstraint`;
+select -r ($curve[0]+"tempBn"+($num-1));
+makeIdentity -apply true -t 0 -r 1 -s 0 -n 0;    
+
+for($i=0;$i<($num);$i++){
+    int $j=$i;
+select -r ($curve[0]+".cv["+$i+"]");
+newCluster " -envelope 1";
+rename ($curve[0]+"cluster"+$i);
+spaceLocator -p 0 0 0;
+rename ($curve[0]+"loc"+$i);
+select -r ($curve[0]+"tempBn"+$i);
+select -add ($curve[0]+"loc"+$i);
+delete `parentConstraint`;
+select -r ($curve[0]+"cluster"+$i);
+select -add ($curve[0]+"loc"+$i);
+parent;
+}
+
+select -r ($curve[0]+"tempBn0");
+delete;
+
+select -cl;
+for($i=0;$i<($num);$i++){
+select -add ($curve[0]+"loc"+$i);
+}
+
+string $locsel[]=`ls -sl`;
+select -cl;
+
+for($i=0;$i<size($locsel);$i++){
+    float $p[]=`getAttr  ($locsel[$i]+".translate")`;
+joint -p  ($p[0])  ($p[1]) ($p[2]) -n ($curve[0]+"bn"+$i);  
+}
+
+select -r ($curve[0]+"bn0"); 
+joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+
+//////////////
+select -r ($curve[0]+"bn"+($num-2)); 
+select -add ($curve[0]+"bn"+($num-1)); 
+delete `orientConstraint`;
+select -r ($curve[0]+"bn"+($num-1)); 
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+float $dis=`getAttr ($curve[0]+"bn1.tx")`; 
+float $scl=$dis*0.2;
+float $distance=$dis*1.5;
+
+int $ex=`objExists ($sel[0]+"ConAllGrp")`;
+if($ex==0){
+    select -cl;
+    group -empty -n ($sel[0]+"ConAllGrp");
+    }
+    
+for($i=0;$i<($num);$i++){
+
+curve -d 1 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p 
+-0.5 0.5 -0.5 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 
+-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 
+-k 15 -n ($curve[0]+"Con"+$i);
+group -n ($curve[0]+"ConGrp"+$i);
+group -n ($curve[0]+"ConGrpA"+$i);
+
+scale -r ($scl) ($scl) ($scl);
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+select -r ($curve[0]+"bn"+$i); 
+select -add ($curve[0]+"ConGrpA"+$i);
+delete `parentConstraint`;
+select -r ($curve[0]+"loc"+$i);
+select -add ($curve[0]+"Con"+$i);
+parent;
+
+setAttr ($curve[0]+"loc"+$i+".visibility") 0;
+setAttr -lock true ($curve[0]+"loc"+$i+".v");
+
+setAttr -lock true ($curve[0]+"Con"+$i+".rx");
+setAttr -lock true ($curve[0]+"Con"+$i+".ry");
+setAttr -lock true ($curve[0]+"Con"+$i+".rz");
+setAttr -lock true ($curve[0]+"Con"+$i+".sx");
+setAttr -lock true ($curve[0]+"Con"+$i+".sy");
+setAttr -lock true ($curve[0]+"Con"+$i+".sz");
+setAttr -lock true ($curve[0]+"Con"+$i+".v");
+
+string $shape[]=`listRelatives -s ($curve[0]+"Con"+$i)`;
+setAttr ($shape[0]+".overrideEnabled") 1;
+setAttr ($shape[0]+".overrideColor") 22;
+select -r ($curve[0]+"ConGrpA"+$i);
+select -add ($sel[0]+"ConAllGrp");
+parent;
+}
+select -r ($curve[0]+"bn0"); 
+delete;
+$conName[$ii]=($curve[0]+"Con0");
+select -r ($curve[0]+"Con0");
+addAttr -ln "distance"  -at double  -min 0 -k 1 -dv $distance;
+string $shape[]=`listRelatives -s ($curve[0]+"Con0")`;
+setAttr ($shape[0]+".overrideColor") 13;    
+    }
+    return $conName;
+}
+///////////////////
+gtWireDeformToolWin;
+//////////////// 

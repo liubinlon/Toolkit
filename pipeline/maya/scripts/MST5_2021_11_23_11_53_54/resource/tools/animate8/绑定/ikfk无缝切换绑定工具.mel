@@ -1,0 +1,369 @@
+/////////////////////////
+//老船IKFK无缝切换绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+///////////////////////////////////////
+global proc gtIkfkAutoSwitchProcWin(){
+if(`window -ex gtIkfkAutoSwitchProcWin`) deleteUI -window gtIkfkAutoSwitchProcWin;
+window -wh 400 450 -t "老船角色绑定-☆-老船IKFK无缝切换绑定工具!!!"  gtIkfkAutoSwitchProcWin;
+scrollLayout gtmainBSL;
+
+columnLayout -adj 1 -w 380 gtBSColumlayout;
+text -l "点击下方按钮↓↓↓↓↓" -h 25;
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1384\"";
+separator -style single;
+separator -style single;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "属性……" -bgc 0.2 0.15 0.1  ;
+text -l "" -bgc 0.2 0.15 0.1  ;
+textFieldGrp  -cw2 100 130 -l "控制器" -tx "" -ed 0 gtIKFKconText;
+button -l "载入" -c "gtIkfkLoadikfkConProc" ;
+
+textFieldGrp  -cw2 100 130 -l "属性" -tx "" -ed 0 gtIKFKattraText;
+button -l "载入" -c "gtIkfkLoadikfkAttraProc" ;
+setParent..;
+separator -style single;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "IK……"  -bgc 0.2 0.15 0.1  ;
+text -l "" -bgc 0.2 0.15 0.1  ;
+textFieldGrp  -cw2 100 130 -l "IK" -tx "" -ed 0 gtIKconText;
+button -l "载入" -c "gtIkfkLoadikConProc";
+textFieldGrp  -cw2 100 130 -l "极向量" -tx "" -ed 0 gtPolerconText;
+button -l "载入" -c "gtIkfkLoadPolerConProc";
+
+setParent..;
+separator -style single;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "FK……" -bgc 0.2 0.15 0.1  ;
+text -l "" -bgc 0.2 0.15 0.1  ;
+textFieldGrp  -cw2 100 130 -l "控制器一" -tx "" -ed 0 gtshoulderFKconText;
+button -l "载入" -c "gtIkfkLoadFkShoulderConProc";
+
+textFieldGrp  -cw2 100 130 -l "控制器二" -tx "" -ed 0 gtelbowFKconText;
+button -l "载入" -c "gtIkfkLoadFkElbowConProc";
+
+textFieldGrp  -cw2 100 130 -l "控制器三" -tx "" -ed 0 gtwristFKconText;
+button -l "载入" -c "gtIkfkLoadFkWristConProc";
+
+setParent..;
+separator -style single;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "关节……" -bgc 0.2 0.15 0.1  ;
+text -l ""  -bgc 0.2 0.15 0.1  ;
+textFieldGrp  -cw2 100 130 -l "关节一" -tx "" -ed 0 gtIKFKBoneText;
+button -l "载入" -c "gtIkfkLoadikfkBoneProc" ;
+
+textFieldGrp  -cw2 100 130 -l "关节二" -tx "" -ed 0 gtIKFKBoneElbowText;
+button -l "载入" -c "gtIkfkLoadikfkBoneElbowProc" ;
+
+textFieldGrp  -cw2 100 130 -l "关节三" -tx "" -ed 0 gtIKFKBoneWristText;
+button -l "载入" -c "gtIkfkLoadikfkBoneWristProc" ;
+setParent..;
+separator -style single;
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+text -l "确认全部载入正确物体名称，点击执行按钮";
+button -l "创建IKFK无缝切换绑定" -c "ttgIkfkAutoSwitchProc";
+setParent..;
+
+showWindow  gtIkfkAutoSwitchProcWin;
+}
+////////////////////
+global proc gtIkfkLoadikfkConProc(){
+    string $sel[]=`ls -sl`;
+    textFieldGrp  -e -tx  $sel[0] gtIKFKconText;
+}
+////////////////////
+global proc gtIkfkLoadikfkAttraProc(){
+    string $sel[]=`channelBox -q -sma mainChannelBox`;
+    textFieldGrp  -e -tx  $sel[0] gtIKFKattraText;
+}
+////////////////////
+global proc gtIkfkLoadikfkBoneProc(){
+    string $sel[]=`ls -sl`;
+    textFieldGrp  -e -tx  $sel[0] gtIKFKBoneText;
+}
+////////////////////
+global proc gtIkfkLoadikfkBoneElbowProc(){
+    string $sel[]=`ls -sl`;
+    textFieldGrp  -e -tx  $sel[0] gtIKFKBoneElbowText;
+}
+////////////////////
+global proc gtIkfkLoadikfkBoneWristProc(){
+    string $sel[]=`ls -sl`;
+    textFieldGrp  -e -tx  $sel[0] gtIKFKBoneWristText;
+}
+////////////////////
+global proc gtIkfkLoadikConProc(){
+    string $sel[]=`ls -sl`;
+    textFieldGrp  -e -tx  $sel[0] gtIKconText;
+}
+////////////////////
+global proc gtIkfkLoadPolerConProc(){
+    string $sel[]=`ls -sl`;
+    textFieldGrp  -e -tx  $sel[0] gtPolerconText;
+}
+////////////////////
+global proc gtIkfkLoadFkShoulderConProc(){
+    string $sel[]=`ls -sl`;
+    textFieldGrp  -e -tx  $sel[0] gtshoulderFKconText;
+}
+////////////////////
+global proc gtIkfkLoadFkElbowConProc(){
+    string $sel[]=`ls -sl`;
+    textFieldGrp  -e -tx  $sel[0] gtelbowFKconText;
+}
+////////////////////
+global proc gtIkfkLoadFkWristConProc(){
+    string $sel[]=`ls -sl`;
+    textFieldGrp  -e -tx  $sel[0] gtwristFKconText;
+}
+/////////////////////
+global proc ttgIkfkAutoSwitchProc(){
+    string $ikfkCon=`textFieldGrp  -q -tx gtIKFKconText`;
+    string $ikCon=`textFieldGrp  -q -tx gtIKconText`;
+    string $polerCon=`textFieldGrp  -q -tx gtPolerconText`;
+    string $fkShoulderCon=`textFieldGrp  -q -tx gtshoulderFKconText`;
+    string $fkElbowCon=`textFieldGrp  -q -tx gtelbowFKconText`;
+    string $fkWristCon=`textFieldGrp  -q -tx gtwristFKconText`;
+
+    string $bindBn=`textFieldGrp  -q -tx gtIKFKBoneText`;
+    string $switchAttr=`textFieldGrp  -q -tx gtIKFKattraText`;
+    
+    string $elbowBn=`textFieldGrp  -q -tx gtIKFKBoneElbowText`;
+    string $wristBn=`textFieldGrp  -q -tx gtIKFKBoneWristText`;
+        
+    select -r $ikfkCon;
+    addAttr -ln "ikfkSwitch"  -at "enum" -en "ik:fk:" ;
+    setAttr -cb 1 ($ikfkCon+".ikfkSwitch");
+    
+    spaceLocator -p 0 0 0 -n ($ikfkCon+"loc");
+    select -r ($ikfkCon+"loc");
+    select -add ($ikfkCon);
+    parent;
+    setAttr ($ikfkCon+"loc.translateZ") 0;
+    setAttr ($ikfkCon+"loc.translateY") 0;
+    setAttr ($ikfkCon+"loc.translateX") 0;
+
+    setAttr ($ikfkCon+"loc.visibility") 0;
+    setAttr -lock true ($ikfkCon+"loc.v");
+    addAttr -ln ($ikfkCon+"gtState") -at bool ($ikfkCon+"loc");
+
+    ///////////////////
+    select -r $ikCon;
+    addAttr -ln "gtWristIk"  -at bool ;    
+    select -r $ikfkCon;
+    addAttr -ln "gtWristIk"   -at bool ;
+    connectAttr -f ($ikfkCon+".gtWristIk") ($ikCon+".gtWristIk");
+    
+    select -r $polerCon;
+    addAttr -ln "gtPolerIk"  -at bool ;    
+    select -r $ikfkCon;
+    addAttr -ln "gtPolerIk"   -at bool ;
+    connectAttr -f ($ikfkCon+".gtPolerIk") ($polerCon+".gtPolerIk");
+
+    select -r $fkShoulderCon;
+    addAttr -ln "gtShoulderFk"  -at bool ;    
+    select -r $ikfkCon;
+    addAttr -ln "gtShoulderFk"   -at bool ;
+    connectAttr -f ($ikfkCon+".gtShoulderFk") ($fkShoulderCon+".gtShoulderFk");
+    
+    select -r $fkElbowCon;
+    addAttr -ln "gtElbowFk"  -at bool ;    
+    select -r $ikfkCon;
+    addAttr -ln "gtElbowFk"   -at bool ;
+    connectAttr -f ($ikfkCon+".gtElbowFk") ($fkElbowCon+".gtElbowFk");  
+      
+    select -r $fkWristCon;
+    addAttr -ln "gtWristFk"  -at bool ;    
+    select -r $ikfkCon;
+    addAttr -ln "gtWristFk"   -at bool ;
+    connectAttr -f ($ikfkCon+".gtWristFk") ($fkWristCon+".gtWristFk");        
+                
+    select -r $ikCon;
+    select -add $polerCon;
+    select -add $fkShoulderCon;
+    select -add $fkElbowCon;  
+    select -add $fkWristCon;     
+    string $conA[]=`ls -sl`;
+ for($i=0;$i<size($conA);$i++){
+    select -r $conA[$i];
+    duplicate -rr;
+    rename ($conA[$i]+"AimXform");
+    select -r $conA[$i];
+    addAttr -ln ("aimXformObj")  -at bool ;
+    select -r ($conA[$i]+"AimXform");
+    addAttr -ln ("aimXformObj")  -at bool ;
+    connectAttr -f ($conA[$i]+".aimXformObj") ($conA[$i]+"AimXform.aimXformObj");
+    setAttr -lock 0  ($conA[$i]+"AimXform.v");
+    setAttr ($conA[$i]+"AimXform.v") 0;
+        setAttr -lock 0  ($conA[$i]+"AimXform.tx");
+        setAttr -lock 0  ($conA[$i]+"AimXform.ty");
+        setAttr -lock 0  ($conA[$i]+"AimXform.tz");
+        setAttr -lock 0  ($conA[$i]+"AimXform.rx");
+        setAttr -lock 0  ($conA[$i]+"AimXform.ry");
+        setAttr -lock 0  ($conA[$i]+"AimXform.rz");
+        
+    setAttr -lock 1 ($conA[$i]+"AimXform.v");  
+    string $childs[]=`listRelatives -c -fullPath -type "transform" ($conA[$i]+"AimXform")`; 
+    int $size=size($childs);
+    if($size>0)delete $childs;  
+    } 
+    spaceLocator -p 0 0 0 -n ($polerCon+"IkfkSwitchLoc"); 
+    group -n ($polerCon+"IkfkSwitchLocGrp"); 
+    select -r $fkElbowCon;
+    select -add ($polerCon+"IkfkSwitchLocGrp");
+    delete`parentConstraint`;
+    select -r ($polerCon+"IkfkSwitchLocGrp");
+    select -add $fkElbowCon;
+    parent;
+
+    string $aimObj[]=`listConnections -s 0 -d 1 ($polerCon+".aimXformObj")`;
+    select -r ($polerCon+"IkfkSwitchLoc");    
+    select -add  ($aimObj[0]);  
+    parentConstraint;
+    setAttr ($polerCon+"IkfkSwitchLocGrp.visibility") 0;
+    setAttr -lock true ($polerCon+"IkfkSwitchLocGrp.visibility");
+    
+    string $aimObj[]=`listConnections -s 0 -d 1 ($ikCon+".aimXformObj")`;
+    select -r $wristBn;    
+    select -add  ($aimObj[0]);  
+    parentConstraint -mo;    
+    
+    string $aimObj[]=`listConnections -s 0 -d 1 ($fkShoulderCon+".aimXformObj")`;
+    select -r $bindBn;    
+    select -add  ($aimObj[0]);  
+    parentConstraint  -mo;     
+    
+    string $aimObj[]=`listConnections -s 0 -d 1 ($fkElbowCon+".aimXformObj")`;
+    select -r $elbowBn;    
+    select -add  ($aimObj[0]);  
+    parentConstraint  -mo; 
+    
+    string $aimObj[]=`listConnections -s 0 -d 1 ($fkWristCon+".aimXformObj")`;
+    select -r $wristBn;    
+    select -add  ($aimObj[0]);  
+    parentConstraint  -mo; 
+    
+    float $pa[]=`xform -q -a -ws -t $wristBn`;
+    float $pb[]=`xform -q -a -ws -t $elbowBn`;
+    float $dis=mag(<<$pa[0],$pa[1],$pa[2]>>-<<$pb[0],$pb[1],$pb[2]>>);
+    float $conSize=$dis*0.05;
+        
+    circle -ch 0 -o on -nr 0 1 0 -r $conSize -n ($bindBn+"IKFKAutoCon") ;
+    group -n ($bindBn+"IKFKAutoConGrp") ;
+    
+    select -r ($bindBn+"IKFKAutoCon.cv[0]") ($bindBn+"IKFKAutoCon.cv[2]") ($bindBn+"IKFKAutoCon.cv[4]") ($bindBn+"IKFKAutoCon.cv[6]");
+    scale -r -p 0cm 0cm 0cm 0.2 0.2 0.2 ;
+    string $shape[]=`listRelatives -s ($bindBn+"IKFKAutoCon")`;
+    setAttr ($shape[0]+".overrideEnabled") 1;
+    setAttr ($shape[0]+".overrideColor") 22;
+        
+    select -r ($ikfkCon+".cv[0:10000]");
+    newCluster " -envelope 1";
+    rename ($bindBn+"IKFKAutoConGrpTemp") ;
+    select -r ($bindBn+"IKFKAutoConGrpTemp") ;
+    select -add ($bindBn+"IKFKAutoConGrp") ;
+    delete`parentConstraint`;
+    delete  ($bindBn+"IKFKAutoConGrpTemp") ;
+    select -r ($ikfkCon);
+    select -add ($bindBn+"IKFKAutoConGrp") ;
+    parentConstraint -mo;
+    scaleConstraint;
+    
+    select -r ($bindBn+"IKFKAutoCon") ;
+    addAttr -ln ($bindBn+"gtIkfkState")  -at bool ;
+    select -r $ikfkCon;
+    addAttr -ln ($bindBn+"gtIkfkStateABC")   -at bool ;
+    connectAttr -f ($ikfkCon+"."+$bindBn+"gtIkfkStateABC") ($bindBn+"IKFKAutoCon."+$bindBn+"gtIkfkState");     
+
+string $gtScript="";
+       $gtScript+="string $ikCnam=\"";
+       $gtScript+=$ikfkCon+"gtState\";\n";
+       
+       $gtScript+="string $gtIkFkJob=`scriptJob  -e \"SelectionChanged\" (\""+$bindBn+"IKFKAutoCon\") -kws`;\n";
+       
+       $gtScript+="global proc "+$bindBn+"IKFKAutoCon(){\n";
+       $gtScript+="string $ikFkSel[]=`ls -type \"transform\" -sl`;\n";
+       $gtScript+="if(size($ikFkSel)==0) {return;}\n";
+       $gtScript+=" $gtstate=`objExists  ($ikFkSel[0]+\"."+$bindBn+"gtIkfkState\")`;\n";
+       $gtScript+=" if($gtstate==1){\n";
+       $gtScript+=" string $ikfkC[]=`listConnections -s 1 -d 0  ($ikFkSel[0]+\"."+$bindBn+"gtIkfkState\")`;\n";      
+       $gtScript+="select -r $ikfkC[0];\n";
+       $gtScript+="int $state=`getAttr  ($ikfkC[0]+\".\"+\""+$switchAttr+"\")`;\n";
+       $gtScript+="if($state<5){\n";
+       $gtScript+=$bindBn+"gtSnapeIkToFk;}\n";
+       $gtScript+="if($state>=5){\n";
+       $gtScript+=$bindBn+"gtSnapeFkToIk;\n";
+       $gtScript+="}}}\n";
+       
+       $gtScript+="string $gtIKFKlocA[]=`ls -type \"locator\"`;\n";
+       $gtScript+="string $gtIKFKlocP=\"\";\n";
+       $gtScript+="for($i=0;$i<size($gtIKFKlocA);$i++){\n";
+       $gtScript+="string $parent[]=`listRelatives -p ($gtIKFKlocA[$i])`;\n";
+       $gtScript+="int $ex=`objExists ($parent[0]+\".\"+$ikCnam)`;\n";
+       $gtScript+="if($ex==1){\n";
+       $gtScript+="string $ikfkC[]=`listRelatives -p $parent[0]`;\n";
+       $gtScript+="$gtIKFKlocP=$ikfkC[0];}}\n";
+
+       $gtScript+="$gtAttrIkFkJobs=`scriptJob  -attributeChange ($gtIKFKlocP+\".ikfkSwitch\") \""+$bindBn+"GtIKFKProc\" -kws`;\n";
+      
+       $gtScript+="global proc "+$bindBn+"GtIKFKProc(){\n";
+       $gtScript+="string $selIkfk[]=`ls -sl`;\n";
+       $gtScript+="int $ikfk=`getAttr ($selIkfk[0]+\".ikfkSwitch\")`;\n";
+       $gtScript+="if($ikfk==0){\n";
+       $gtScript+=$bindBn+"gtSnapeIkToFk;}\n";
+       $gtScript+="else{\n";
+       $gtScript+=$bindBn+"gtSnapeFkToIk;\n";
+       $gtScript+="}}\n";
+              
+       $gtScript+="global proc "+$bindBn+"gtSnapeIkToFk(){\n";
+       $gtScript+="string $ikFkSel[]=`ls -type \"transform\" -sl`;\n";
+              
+       $gtScript+="string $handIk[] =`listConnections -s 0 -d 1 ($ikFkSel[0] +\".gtWristIk\")`;\n";
+       $gtScript+="string $polerIk[] =`listConnections -s 0 -d 1 ($ikFkSel[0] +\".gtPolerIk\")`;\n";
+       
+       $gtScript+="string $handIkConXform[] =`listConnections -s 0 -d 1 ($handIk[0] +\".aimXformObj\")`;\n";
+       $gtScript+="string $polerConXform[] =`listConnections -s 0 -d 1 ($polerIk[0] +\".aimXformObj\")`;\n";
+       $gtScript+="float $handIkPos[]=`xform -q -a -ws -t $handIkConXform[0]`;\n";
+       $gtScript+="float $handIkRot[]=`getAttr ($handIkConXform[0]+\".rotate\")`;\n";
+       $gtScript+="setAttr -type float3 ($handIk[0] +\".r\") ($handIkRot[0]) ($handIkRot[1]) ($handIkRot[2]);\n";
+       $gtScript+="xform -a -ws -t  $handIkPos[0] $handIkPos[1] $handIkPos[2] ($handIk[0]);\n";
+
+       $gtScript+="float $polerIkPos[]=`xform -q -a -ws -t $polerConXform[0]`;\n";
+       $gtScript+="xform -a -ws -t  $polerIkPos[0] $polerIkPos[1] $polerIkPos[2] ($polerIk[0]);\n";
+       $gtScript+="setAttr ($ikFkSel[0]+\"."+$switchAttr+"\") 10;\n}\n";
+
+       $gtScript+="global proc "+$bindBn+"gtSnapeFkToIk(){\n";
+       $gtScript+="string $ikFkSel[]=`ls -type \"transform\" -sl`;\n";
+
+       $gtScript+="string $shoulderFk[] =`listConnections -s 0 -d 1 ($ikFkSel[0] +\".gtShoulderFk\")`;\n";
+       $gtScript+="string $elbowFk[] =`listConnections -s 0 -d 1 ($ikFkSel[0] +\".gtElbowFk\")`;\n";
+       $gtScript+="string $handFk[] =`listConnections -s 0 -d 1 ($ikFkSel[0] +\".gtWristFk\")`;\n";
+       
+       $gtScript+="string $shoulerFkXform[] =`listConnections -s 0 -d 1 ($shoulderFk[0] +\".aimXformObj\")`;\n";
+       $gtScript+="string $elbowFkXform[] =`listConnections -s 0 -d 1 ($elbowFk[0] +\".aimXformObj\")`;\n";
+       $gtScript+="string $handFkXform[] =`listConnections -s 0 -d 1 ($handFk[0] +\".aimXformObj\")`; \n";      
+       $gtScript+="float $rot[]=`getAttr ($shoulerFkXform[0]+\".rotate\")`;\n";
+       $gtScript+="setAttr -type float3 ($shoulderFk[0]+\".r\") ($rot[0]) ($rot[1]) ($rot[2]);\n";
+       $gtScript+="float $rot[]=`getAttr ($elbowFkXform[0]+\".rotate\")`;\n";
+       $gtScript+="setAttr -type float3 ($elbowFk[0]+\".r\") ($rot[0]) ($rot[1]) ($rot[2]);\n";       
+       $gtScript+="float $rot[]=`getAttr ($handFkXform[0]+\".rotate\")`;\n";
+       $gtScript+="setAttr -type float3 ($handFk[0]+\".r\") ($rot[0]) ($rot[1]) ($rot[2]); \n";       
+       $gtScript+="setAttr ($ikFkSel[0]+\"."+$switchAttr+"\") 0;\n}\n";       
+       
+       scriptNode  -beforeScript  $gtScript -n  ($bindBn+"gtIkFkScript");
+       setAttr ($bindBn+"gtIkFkScript.scriptType")  1;                     
+}
+//////////////
+gtIkfkAutoSwitchProcWin;
+//////////////////////////////////2016-10-9

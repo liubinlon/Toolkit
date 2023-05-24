@@ -1,0 +1,181 @@
+//单段双控制器IK绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtsingleBoneIKConWin(){
+   if(`window -ex gtsingleBoneIKConWin`) deleteUI -window gtsingleBoneIKConWin;
+    window -wh 400 200 -t "老船角色绑定-☆-单段双控制器IK绑定工具!" gtsingleBoneIKConWin;
+    columnLayout -adj 1 mainColumnattr;
+ text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 45  -c "showHelp -a \"http://www.animate8.com/archives/1352\"";
+        separator gtsep1;
+        rowColumnLayout -nc 3 -cw 1 100 -cw 2 150 -cw 3 150;
+text -l "   "  -h 24  textConName;
+textField -text ""  ttgRigConSingleBoneName;
+
+button -l "载入总控制器" -c  "ttgLaodSingleBnConNamProc;"   ;
+setParent..;
+	floatSliderGrp -l "控制器大小："  -f 1 -v 1 -min 0.01 -max 10  gtSingleConradius;
+  rowColumnLayout -nc 2 -cw 1 250 -cw 2 150 ;
+    text -l "选择关节，创建单段骨骼IK绑定";
+
+    button -l "创建单段骨骼IK绑定"   -c "gtVehicleIkStrechProc;" but7;
+   
+    showWindow gtsingleBoneIKConWin;   
+}
+
+/////////////////////////
+global proc ttgLaodSingleBnConNamProc(){
+string $sel[]=`ls -sl`;
+textField  -e -text $sel[0] ttgRigConSingleBoneName;
+}
+//////////////
+global proc gtVehicleIkStrechProc(){
+string $carN=`textField -q -tx ttgRigConSingleBoneName`;
+float $scale=`floatSliderGrp -q -v gtSingleConradius`;
+
+string $sel[]=`ls -sl`;
+
+for($i=0;$i<size($sel);$i++){
+    select -r ($sel[$i]);
+    pickWalk -d down;
+    string $endBn[]=`ls -sl`;
+    string $tm[];
+int $t=`tokenize ($sel[$i]) "_" $tm`;
+string $aa=$tm[1];
+if($aa!="r"||$aa!="l"){
+    $aa="m";}
+
+select -r ($sel[$i]+".rotatePivot") ;
+select -add ($endBn[0]+".rotatePivot") ;
+ikHandle -sol ikRPsolver;
+rename ($sel[$i]+"_"+$aa+"_BnIkhandle");
+
+curve -d 1 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 
+-p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 
+-p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0.5 0.5 
+-p 0.5 0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 
+-k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19  -n   ($sel[$i]+"_"+$aa+"_con0");
+
+group -n ($sel[$i]+"_"+$aa+"_con0Grp");
+scale -r $scale $scale $scale;
+makeIdentity -apply true -t 0 -r 0 -s 1 -n 0;
+
+select -r ($sel[$i]);
+select -add ($sel[$i]+"_"+$aa+"_con0Grp");
+delete `parentConstraint`;
+
+select -r ($sel[$i]+"_"+$aa+"_con0");
+select -add ($sel[$i]);
+parentConstraint -mo;
+
+string $shape[]=`listRelatives -s ($sel[$i]+"_"+$aa+"_con0")`;
+setAttr ($shape[0]+".overrideEnabled") 1;
+if($aa=="l"){setAttr ($shape[0]+".overrideColor") 22;}
+else if ($aa=="r"){setAttr ($shape[0]+".overrideColor") 13;}
+else{setAttr ($shape[0]+".overrideColor") 6;}
+
+curve -d 1 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 
+-p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 
+-p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0.5 0.5 
+-p 0.5 0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 
+-k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19  -n   ($sel[$i]+"_"+$aa+"_con1");
+
+group -n ($sel[$i]+"_"+$aa+"_con1Grp");
+scale -r $scale $scale $scale;
+makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 -pn 0;
+select -r ($sel[$i]+"_"+$aa+"_BnIkhandle");
+select -add ($sel[$i]+"_"+$aa+"_con1Grp");
+delete `parentConstraint`;
+
+select -r ($sel[$i]);
+select -add ($sel[$i]+"_"+$aa+"_con1Grp");
+delete `orientConstraint`;
+
+
+select -r ($sel[$i]+"_"+$aa+"_con1");
+select -add ($sel[$i]+"_"+$aa+"_BnIkhandle");
+parentConstraint -mo;
+
+string $shape[]=`listRelatives -s ($sel[$i]+"_"+$aa+"_con1")`;
+setAttr ($shape[0]+".overrideEnabled") 1;
+if($aa=="l"){setAttr ($shape[0]+".overrideColor") 22;}
+else if ($aa=="r"){setAttr ($shape[0]+".overrideColor") 13;}
+else{setAttr ($shape[0]+".overrideColor") 6;}
+
+distanceDimension -sp 0.1 -1 0.1 -ep 0.1 1 0.1 ;
+string $disnam[]=`ls -sl`;
+select -r $disnam[0];
+pickWalk -d up;
+rename ($sel[$i]+"_BnDisLoc1");
+select -r  $disnam[1];
+rename ($sel[$i]+"_BnDis");
+string $disShape[]=`listRelatives -s ($sel[$i]+"_BnDis")`;
+string $loc[]=`listConnections -s 1 -d 0  ($disShape[0]+".startPoint")`;
+rename ($loc[0]) ($sel[$i]+"_BnDisLoc2");
+
+
+select -r ($sel[$i]+"_"+$aa+"_con1");
+select -add ($sel[$i]+"_BnDisLoc1");
+pointConstraint;
+
+select -r ($sel[$i]+"_"+$aa+"_con0");
+select -add ($sel[$i]+"_BnDisLoc2");
+pointConstraint;
+
+shadingNode -asUtility multiplyDivide -n ($sel[$i]+"_BnDidMulti");
+connectAttr -f ($disShape[0]+".distance") ($sel[$i]+"_BnDidMulti.input1X");
+setAttr ($sel[$i]+"_BnDidMulti.operation") 2;
+
+shadingNode -asUtility multiplyDivide -n ($sel[$i]+"_BnStrechMulti");
+int $ex=`objExists ($carN)`;
+if($ex==1){connectAttr -f ($carN+".scaleX") ($sel[$i]+"_BnStrechMulti.input1X");}
+else{setAttr ($sel[$i]+"_BnStrechMulti.input1X") 1;}
+
+shadingNode -asUtility multiplyDivide -n ($sel[$i]+"_BnStrechMultiB");
+connectAttr -f ($sel[$i]+"_BnStrechMulti.outputX") ($sel[$i]+"_BnStrechMultiB.input1X");
+int $ex=`objExists ($carN+"_LocAll")`;
+if($ex==1)connectAttr -f ($carN+"_LocAll.scaleX") ($sel[$i]+"_BnStrechMultiB.input2X");
+
+shadingNode -asUtility multiplyDivide -n ($sel[$i]+"_BnStrechMultiA");
+connectAttr -f ($sel[$i]+"_BnStrechMultiB.outputX") ($sel[$i]+"_BnStrechMultiA.input1X");
+float $dis=`getAttr ($disShape[0]+".distance")`;
+setAttr ($sel[$i]+"_BnStrechMultiA.input2X") $dis;
+
+connectAttr -f ($sel[$i]+"_BnStrechMultiA.outputX") ($sel[$i]+"_BnDidMulti.input2X");
+select -r ($sel[$i]+"_"+$aa+"_con1");
+addAttr -ln "strech"  -at double  -min 0.1 -max 10 -dv 5 -k 1;
+addAttr -ln "strechLimit"  -at double  -min 0.01 -max 5 -dv 0.5 -k 1;
+
+shadingNode -asUtility condition -n ($sel[$i]+"_BnStrechConditionA");
+connectAttr -f ($sel[$i]+"_BnDidMulti.outputX")  ($sel[$i]+"_BnStrechConditionA.firstTerm");
+connectAttr -f ($sel[$i]+"_BnDidMulti.outputX")  ($sel[$i]+"_BnStrechConditionA.colorIfTrueR");
+connectAttr -f ($sel[$i]+"_"+$aa+"_con1.strech") ($sel[$i]+"_BnStrechConditionA.secondTerm");
+connectAttr -f ($sel[$i]+"_"+$aa+"_con1.strech") ($sel[$i]+"_BnStrechConditionA.colorIfFalseR");
+setAttr ($sel[$i]+"_BnStrechConditionA.operation") 4;
+
+shadingNode -asUtility condition -n ($sel[$i]+"_BnStrechConditionB");
+connectAttr -f ($sel[$i]+"_BnStrechConditionA.outColorR")  ($sel[$i]+"_BnStrechConditionB.firstTerm");
+connectAttr -f ($sel[$i]+"_BnStrechConditionA.outColorR")  ($sel[$i]+"_BnStrechConditionB.colorIfTrueR");
+connectAttr -f ($sel[$i]+"_"+$aa+"_con1.strechLimit") ($sel[$i]+"_BnStrechConditionB.secondTerm");
+connectAttr -f ($sel[$i]+"_"+$aa+"_con1.strechLimit") ($sel[$i]+"_BnStrechConditionB.colorIfFalseR");
+setAttr ($sel[$i]+"_BnStrechConditionB.operation") 2;
+
+connectAttr -f ($sel[$i]+"_BnStrechConditionB.outColorR") ($sel[$i]+".scaleX");
+select -r ($sel[$i]+"_BnDisLoc1") ($sel[$i]+"_BnDisLoc2") ($sel[$i]+"_BnDis") ;
+select -add ($sel[$i]+"_"+$aa+"_BnIkhandle");
+group -n ($sel[$i]+"_BnDonotMoveGrp");
+setAttr ($sel[$i]+"_BnDonotMoveGrp.visibility") 0;
+setAttr -lock true ($sel[$i]+"_BnDonotMoveGrp.v");
+    }
+}
+/////////////////////////////////
+gtsingleBoneIKConWin;

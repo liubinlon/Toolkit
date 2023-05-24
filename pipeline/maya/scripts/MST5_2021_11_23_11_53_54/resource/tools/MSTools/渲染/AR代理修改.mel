@@ -1,0 +1,48 @@
+if (`window -ex aaa`)
+deleteUI  aaa;
+
+    window -t "代理" aaa;
+        columnLayout -adj 1;
+             
+             rowLayout -nc 2;
+             optionMenu  -l "代理切换"  -cc bl op1;
+                 menuItem -l "Bounding Box" ;
+                 menuItem -l "Per Object Bounding Box" ;
+                 menuItem -l "Polywire" ;
+                 menuItem -l "Wireframe";
+                 menuItem -l "Point Cloud";
+             button -l "改路径" -c  ass.dso;
+            
+
+        
+ 
+window -e -s 0 -wh 280 30 aaa;
+showWindow aaa;
+
+//*****************************************************************************************************************界面
+
+proc ass.dso()
+{
+    string $path[]=`fileDialog2 -dir "C:/Users/xianan.fu/Desktop/ass" -ds 1 -fm 1`;
+    string $all[]=`ls -sl`;
+    for($i in $all)
+    {
+        setAttr -type "string" ($i+".dso")  $path[0];
+    }
+}
+
+
+//************************************************************************************************************代理
+
+
+
+proc bl()
+{
+    string $nn[]=`ls -sl`;
+    for ($rr in $nn)
+    {
+         setAttr ($rr+"Shape.mode") (`optionMenu -q -sl op1`-1);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////代理显示

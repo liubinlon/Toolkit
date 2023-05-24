@@ -1,0 +1,162 @@
+
+global proc window_makecloth()
+{
+if(`window -ex "make_cloth_mesh_window"`)
+{
+    deleteUI "make_cloth_mesh_window";
+}
+window -s 0 -tlb 1 -title "劲爆羊牌快速处理MD布料模型2.0"  "make_cloth_mesh_window";
+columnLayout -adj 1;
+
+frameLayout  -l "1、选择带形状的模型并载入";
+rowColumnLayout -nc 2 -cw 1 250 -cw 2 80; 
+textFieldGrp -ed 0 -pht "尚未载入模型" "textgrp_shape";
+button -l "载入所选" -c "import_mesh_A()";
+setParent "..";
+setParent "..";
+
+frameLayout -l "2、选择平片片儿模型并载入";
+rowColumnLayout -nc 2 -cw 1 250 -cw 2 80; 
+textFieldGrp -ed 0 -pht "尚未载入模型" "textgrp_NOshape";
+button -l "载入所选" -c "import_mesh_B()";
+setParent "..";
+setParent "..";
+
+frameLayout -l "3、生成拓扑媒介";
+columnLayout -adj 1 "kao_buzhou"; 
+textFieldGrp -ed 0 -pht "尚未生成拓扑媒介模型" "the_t_mod";
+
+
+setParent "..";
+setParent "..";
+
+frameLayout -l "4、开始处理";
+columnLayout -adj 1; 
+button -en 0  -c "start_trans_mod()" -l "开始" "start_button_trans";
+setParent "..";
+setParent "..";
+
+setParent "..";
+showWindow  "make_cloth_mesh_window";
+window -e -w 340 -h 290 "make_cloth_mesh_window";
+}
+global proc import_mesh_A()
+{
+    string $get_A_mesh[] = `ls -l -sl`;
+    textFieldGrp -e -tx $get_A_mesh[0]  "textgrp_shape";
+    if (`textFieldGrp -q -tx "textgrp_NOshape"`!="")
+    {
+        button -e -en 1 -bgc 1 0.5 0  "start_button_trans";
+        make_top_mesh();
+    }
+}
+
+global proc import_mesh_B()
+{
+    string $get_B_mesh[] = `ls -l -sl`;
+    textFieldGrp -e -tx $get_B_mesh[0]  "textgrp_NOshape";
+    if (`textFieldGrp -q -tx "textgrp_shape"`!="")
+    {
+        button -e -en 1 -bgc 1 0.5 0  "start_button_trans";
+        make_top_mesh();
+    }
+    
+}
+
+global proc make_top_mesh()
+{
+    string $get_shape_mesh = `textFieldGrp -q -tx "textgrp_shape"`;
+    string $get_NOshape_mesh = `textFieldGrp -q -tx "textgrp_NOshape"`;
+    float $get_bb_mesh[] = `xform -q -ws -bb $get_NOshape_mesh`;
+    vector $get_position_ply = <<($get_bb_mesh[0]+$get_bb_mesh[3])*0.5,($get_bb_mesh[1]+$get_bb_mesh[4])*0.5,($get_bb_mesh[2]+
+$get_bb_mesh[5])*0.5>>;
+    string $get_new_ply[] = `polyPlane -w 1 -h 1 -sx 10 -sy 10 -ax 0 0 1 -cuv 2 -ch 1 -n "the_mod_of_trans"`;
+    
+    string $get_shape_newply[] = `listRelatives -s -f $get_new_ply[0]`;
+    string $get_shape_plane[] = `listConnections ($get_shape_newply[0]+".inMesh")`;
+    
+    setAttr ($get_new_ply[0]+".tx") ($get_position_ply.x);
+    setAttr ($get_new_ply[0]+".ty") ($get_position_ply.y);
+    setAttr ($get_new_ply[0]+".tz") ($get_position_ply.z+20);
+    
+    setAttr -lock true ($get_new_ply[0]+".tx");
+    setAttr -lock true ($get_new_ply[0]+".ty");
+    setAttr -lock true ($get_new_ply[0]+".tz");
+    
+    setAttr ($get_new_ply[0]+".sy") (`abs($get_bb_mesh[1]-$get_bb_mesh[4])`*1.2);
+    setAttr ($get_new_ply[0]+".sx") (`abs($get_bb_mesh[1]-$get_bb_mesh[4])`*1.2);
+    
+    
+    setAttr ($get_shape_plane[0]+".subdivisionsWidth") (trunc(`abs($get_bb_mesh[1]-$get_bb_mesh[4])`*1.2));
+    setAttr ($get_shape_plane[0]+".subdivisionsHeight") (trunc(`abs($get_bb_mesh[1]-$get_bb_mesh[4])`*1.2));
+    
+    textFieldGrp -e  -tx $get_new_ply[0] "the_t_mod";
+    if (`rowColumnLayout -ex "attrCgrp_grp"`)
+    {
+        deleteUI "attrCgrp_grp";
+    }
+    rowColumnLayout -nc 2 -cw 1 10 -p "kao_buzhou" -vis 1 "attrCgrp_grp"; 
+    text -l " ";
+    attrControlGrp  -l "大小" -attribute ($get_new_ply[0]+".scale") "attrCgrp_size";
+    text -l " ";
+    attrControlGrp  -l "横向密度" -attribute ($get_shape_plane[0]+".subdivisionsWidth") "attrCgrp_X";
+    text -l " ";
+    attrControlGrp  -l "纵向密度" -attribute ($get_shape_plane[0]+".subdivisionsHeight") "attrCgrp_Y";
+    setParent "..";
+    
+}
+
+global proc int check_the_angle_in_3Point(vector $point_A,vector $point_0,vector $point_B,float $angle)
+{
+    int $if_check_cloth = 0;
+    float $get_angle = rad_to_deg (`angle ($point_A-$point_0) ($point_B-$point_0)`) ;
+    if($get_angle<$angle)
+    {
+        $if_check_cloth = 1; 
+    }
+        if($get_angle>=$angle)
+    {
+        $if_check_cloth = 0; 
+    }
+    return  $if_check_cloth;
+}
+
+
+global proc start_trans_mod()
+{
+    string $get_shape_mesh = `textFieldGrp -q -tx "textgrp_shape"`;
+    string $get_NOshape_mesh = `textFieldGrp -q -tx "textgrp_NOshape"`;
+    string $get_dup[] = `duplicate $get_NOshape_mesh`;
+    polyExtrudeFacet -translateZ 30 $get_dup[0];
+    string $mod_of_trans = `textFieldGrp -q  -tx  "the_t_mod"`;
+    string $get_new_pianer[] = `polyCBoolOp -op 3 -ch 0 -preserveColor 0 -classification 2 -name  $get_dup[0] $get_dup[0] $mod_of_trans`;
+    polySelectConstraint  -mode 3 -type 0x0001 -where 1  ;
+string $get_all_vtx_pian[] = `ls -sl -fl`;
+string $delete_vtx[];
+clear $delete_vtx;
+    for ($one_vtx in $get_all_vtx_pian)
+    {
+        string $get_edge[] = `polyInfo -ve $one_vtx`;
+        string $temp_caodanba[] = stringToStringArray($get_edge[0], " ");
+        float $get_posi_1[] = `xform -q -ws -t ($get_new_pianer[0]+".e["+$temp_caodanba[2]+"]")`;
+        float $get_posi_2[] = `xform -q -ws -t ($get_new_pianer[0]+".e["+$temp_caodanba[3]+"]")`;
+        vector $get_mid_1 = <<($get_posi_1[0] + $get_posi_1[3])*0.5,($get_posi_1[1] + $get_posi_1[4])*0.5,($get_posi_1[2] + $get_posi_1[5])*0.5>>;
+        vector $get_mid_2 = <<($get_posi_2[0] + $get_posi_2[3])*0.5,($get_posi_2[1] + $get_posi_2[4])*0.5,($get_posi_2[2] + $get_posi_2[5])*0.5>>;
+        vector $get_mid_0 = `xform -q -ws -t $one_vtx`;
+        
+        int $if_niubi = check_the_angle_in_3Point($get_mid_1,$get_mid_0,$get_mid_2,160);
+        if ($if_niubi == 1)
+        {
+            $delete_vtx[size($delete_vtx)] = $one_vtx;
+        }
+    }
+string $final_vtx[] = stringArrayRemove($delete_vtx,$get_all_vtx_pian);
+delete $final_vtx    ;
+    transferAttributes -transferPositions 0 -transferNormals 0 -transferUVs 2 -transferColors 2 -sampleSpace 0 -sourceUvSpace "map1" -
+targetUvSpace "map1" -searchMethod 3-flipUVs 0 -colorBorders 1 $get_NOshape_mesh $get_new_pianer[0];
+   string $get_new_top_pian[] = `transferAttributes -transferPositions 1 -transferNormals 0 -transferUVs 2 -transferColors 2 -sampleSpace 3 -sourceUvSpace "map1" -
+targetUvSpace "map1" -searchMethod 3-flipUVs 0 -colorBorders 1 $get_shape_mesh $get_new_pianer[0]`;
+
+}
+
+window_makecloth();

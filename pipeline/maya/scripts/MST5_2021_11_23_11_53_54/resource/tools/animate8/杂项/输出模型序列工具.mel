@@ -1,0 +1,82 @@
+//输出模型序列动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+global proc gtOutputSequenceModelWin(){
+ if(`window -ex gtoutputobjsequencemodelwin`)  deleteUI -window gtoutputobjsequencemodelwin;
+window -wh 400 300 -t "老船角色绑定-☆☆☆☆☆-模型序列输出动画工具！" gtoutputobjsequencemodelwin;
+columnLayout -adj 1 gtMaintColumnLay;
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频！" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1245\"";
+
+text -l "输出模型序列\n--------请注意本程序需要手动指定输出路径--------\n-------在路径浏览窗口中选择输出格式，命名输出文件--------\n-------只能输出obj、ma、mb、fbx、dae这五种文件格式---------\n--------可以选择多个物体同时输出--------\n-------输出文件名称：文件名称+选择顺序号+帧序号---------" text1;
+textFieldButtonGrp -cw3 80 300 65 -l ("输出路径") -text "浏览输出路径" -bl "浏    览" -bc "gtoutputmodelTexGetDir;" gtTextField;
+
+formLayout -h 100 gtform;
+
+intFieldGrp -l "开始帧数/结束帧数" -nf 2 -v1 1 -v2 100 gtIntFa;
+
+button -l "应用" -c "gtoutputobjsequencemodel;" but1;
+formLayout -e
+
+-af gtIntFa left 3 -af gtIntFa top 5  -af gtIntFa right 3
+-af but1 left 3 -af but1 right 3 -ac but1 top 5 gtIntFa gtform;
+setParent..;
+showWindow gtoutputobjsequencemodelwin;
+}
+
+///////////////////////////////////////////////
+global proc gtoutputmodelTexGetDir(){
+     string $first=`workspace -q -fn`;
+     setWorkingDirectory $first "" "";
+     fileBrowserDialog  -m 1
+                  -fc "gtoutputmodelCheckTexGetName"
+                  -ft "extension"
+                  -an "setpath";
+      }
+///////////////////////////////////////////////
+global proc gtoutputmodelCheckTexGetName(string $dir,string $type){
+textFieldButtonGrp -e -text ($dir)  gtTextField;
+}
+
+///////////////////////////////////////////////////////////
+
+global proc gtoutputobjsequencemodel(){
+
+string $sel[]=`ls -sl`;
+int $start=`intFieldGrp  -q -v1 gtIntFa`;
+int $end=`intFieldGrp  -q -v2 gtIntFa`;
+string $path=`textFieldButtonGrp -q -text gtTextField`;
+string $extension[];
+int $num=`tokenize $path "." $extension`;
+
+string $path2=$extension[1];
+
+string $typ="";
+if($path2=="ma")$typ="mayaAscii";
+if($path2=="mb")$typ="mayaBinary";
+if($path2=="obj")$typ="OBJexport";
+if($path2=="fbx")$typ="FBX export";
+if($path2=="dae")$typ="DAE_FBX export";
+
+if($typ=="") error ("选择的格式不正确");
+int $size=size($sel);
+for ($j=0;$j<$size;$j++){
+    
+string $path1=($extension[0]+$j+".");
+
+for($i=$start;$i<($end+1);$i++){
+currentTime -e $i;
+select -r ($sel[$j]);
+
+file -force -options "groups=1;ptgroups=1;materials=1;smoothing=1;normals=1" -typ $typ -pr -es ($path1+$i+"."+$path2);
+        }
+    }
+}
+gtOutputSequenceModelWin;
+//////////////////////////////////////////// ///////////////////

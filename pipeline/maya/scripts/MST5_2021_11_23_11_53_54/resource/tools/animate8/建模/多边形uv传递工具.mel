@@ -1,0 +1,380 @@
+//uv传递工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtUVtransforWin(){
+if(`window -ex gtUVtransforWin`) deleteUI  -window gtUVtransforWin;
+if(`windowPref -ex gtUVtransforWin`) windowPref -r gtUVtransforWin;
+window -wh 350 250 -title "老船动画吧-uv传递工具" gtUVtransforWin;
+
+columnLayout -adj 1   mainColumnL;
+text -l "老船绑定工具-老船动画吧：http://www.animate8.com/";
+button -l "访 问 老 船 动 画 吧！" -bgc 0.3 0.2 0.1 -h 45  -c "showHelp -a \"http://www.animate8.com/archives/1896\"";
+radioButtonGrp  -cw3 100  100  100  -numberOfRadioButtons 2 -l "层级方式："  -la2 "选择的物体:" "所有子层级"  -sl 1 gtUVRad; 
+radioButtonGrp  -cw3 100  100  100  -numberOfRadioButtons 2 -l "判断方式："  -la2 "顶点数量:" "当前位置"  -sl 1 gtUVcondition;  
+
+//rowColumnLayout -nc 2 -cw 1 40 -cw 2 320 ;
+//text -l "";
+//checkBox -l "强制批量载入模型（使用当前位置选项勾选）" -v 0 gtUVtransformCheckLoad;
+//setParent..;
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 100 ;
+
+textFieldGrp -l "编辑好UV的模型：" -text "" -ed 0 -cw2  100 120 gtUVobj;
+button  -l "载入模型" -c "gtUVtransforProcLoad" gtUVBut;
+
+setParent..;
+separator -style double;	
+rowColumnLayout -nc 3 -cw 1 168 -cw 2 4  -cw 3 168  ;;
+
+button  -l "等数量传递UV" -c "gtUVtransforProc" gtIntsecoundBnButA;
+text -l "";
+button  -l "一对N传递UV" -c "gtUVtransforProcA" gtIntsecoundBnButAA;
+
+setParent..;
+separator -style double;
+text -l "可以载入全部编辑好UV的多变形模型，或者一个" -bgc 0.38 0.38 0.38 -h 50 gtVexSameNum;	
+separator -style double;
+showWindow gtUVtransforWin;
+}
+/////////////////////////
+gtUVtransforWin;
+/////////////////////////////
+global proc gtUVtransforProcLoad(){
+    int $condition=`radioButtonGrp  -q  -sl  gtUVcondition`; 
+    string $sel[]=`ls -sl`;
+    string $name="";
+    string $nameE="";    
+    if($condition==1){      
+        for($j=0;$j<size($sel);$j++){
+        select -r $sel;
+        select -d $sel[$j];
+        int $tempvex[]=`polyEvaluate -v $sel[$j]`;
+        
+        string $tempSel[]=`ls -sl`;
+        for($i=0;$i<size($tempSel);$i++){
+        int $tempvexa[]=`polyEvaluate -v $tempSel[$i]`;
+        if($tempvexa[0]==$tempvex[0])$nameE+=$tempSel[$i]+" ";
+            }
+        }
+
+        string $mm[];
+        if($nameE!=""){
+        int $num=`tokenize $nameE " " $mm`;
+        select -r $sel;
+        select -d ($mm);
+        text -e -bgc 0.3 0 0 -l ($nameE+":\n当前选择的这些模型顶点数量相同\n无法自动识别对应物体，请逐个传递UV数据") gtVexSameNum;       
+        }else{
+        select -r $sel;  
+        text -e -bgc 0.1 0.2 0 -l ("所有选择的模型全部载入到输入框中") gtVexSameNum;                 
+        }
+        string $nam[]=`ls -sl`;
+        for($i=0;$i<size($nam);$i++){
+        $name+=$nam[$i]+" ";
+        }
+
+    textFieldGrp -e -tx ($name) gtUVobj; 
+    if($nameE!=""){
+    select -r ($mm);
+    }else{
+    select -r $nam;   
+        }
+    }else{
+        string $nam[]=`ls -sl`;
+        for($i=0;$i<size($nam);$i++){
+        $name+=$nam[$i]+" ";
+        }
+
+    textFieldGrp -e -tx ($name) gtUVobj; 
+    text -e -bgc 0.1 0.2 0 -l ("所有选择的模型全部载入到输入框中") gtVexSameNum;                    
+    }
+}
+///////////////
+global proc gtUVtransforProcAA()
+{
+    string $sel[]=`ls -sl -l`;
+    string $unDoObj[];
+    string $targetO= `textFieldGrp -q -tx  gtUVobj`;
+    int $style=`radioButtonGrp  -q  -sl  gtUVRad`;  
+    string $mm[];
+    int $tm=`tokenize $targetO " " $mm`;
+    string $targetObj[];
+    for($i=0;$i<size($mm);$i++){
+       $targetObj[$i]=$mm[$i]; 
+    }
+    if($style==2){
+        select -cl;
+        for($i=0;$i<size($sel);$i++){
+   string $objMm[]=`listRelatives -c -ad  -type "mesh" $sel[$i]`;
+         select -add   $objMm; 
+        }
+        string $objMesh[]=`ls -sl -type "mesh"`;
+   string  $objAll[];
+     for($i=0;$i<size($objMesh);$i++){
+       string $temp[]=`listRelatives -p $objMesh[$i]`;
+       $objAll[$i]=$temp[0]; 
+
+    }
+    select -r $objAll;
+    string $objM[]=`ls -type "transform" -sl`;
+    select -r $objM;
+    select -d $targetObj;
+    }
+    
+    string $objMeshT[]=`ls -sl`;
+    for($i=0;$i<size($objMeshT);$i++){
+   string $obj=$objMeshT[$i];
+   int $objV[]=`polyEvaluate -v $obj`;
+   string $oldObj="";
+   for($j=0;$j<size($targetObj);$j++){
+   int $objVe[]=`polyEvaluate -v $targetObj[$j]`;
+   if($objV[0]==$objVe[0])
+   $oldObj=$targetObj[$j]; 
+   }
+   if($oldObj==""){
+      int $undoS=size($unDoObj);
+      $unDoObj[$undoS] =$obj;
+   }else{
+    string $inputs[]= `listHistory  $obj`;
+    int $skin=0;
+    for($ii=3;$ii<size($inputs);$ii++){
+        string $type=`nodeType ($inputs[$ii])`;
+        if($type=="tweak")$skin=1;
+    }
+    if($skin==1){
+     string $targetShape[]= `listRelatives -shapes $obj`;  
+    string $targetOrigin = ($targetShape[1]);
+    select -r $targetOrigin ;
+    setAttr ($targetOrigin +".intermediateObject") 0;
+    select -r  $oldObj;
+    select -add $targetOrigin ;
+    transferAttributes -transferPositions 0 -transferNormals 0 -transferUVs 2 -transferColors 0 -sampleSpace 5 -sourceUvSpace "map1" -targetUvSpace "map1" -searchMethod 3-flipUVs 0 -colorBorders 1 ;
+    select -r $targetOrigin;
+    DeleteHistory;
+    setAttr ($targetOrigin +".intermediateObject") 1;
+    select -d;
+    }   
+    if($skin==0){  
+    select -r  $oldObj;
+    select -add $obj ;  
+    transferAttributes -transferPositions 0 -transferNormals 0 -transferUVs 2 -transferColors 0 -sampleSpace 5 -sourceUvSpace "map1" -targetUvSpace "map1" -searchMethod 3 -flipUVs 0 -colorBorders 1 ;
+    select -r $obj;
+    DeleteHistory;
+                }
+            }
+        }     
+    int $undoS=size($unDoObj);
+    if($undoS>0){
+    string $unDoO="";
+   for($i=0;$i<$undoS;$i++){
+       $unDoO+=$unDoObj[$i]+"、";
+   }
+    text -e -bgc 0.3 0 0 -l ($unDoO+":\n当前选择的模型没有对应目标模型\n请手动查找，并逐个传递UV数据") gtVexSameNum;       
+    select -r $unDoObj;
+    clear $unDoObj;
+       }else{
+    text -e -bgc 0.1 0.3 0 -l ("当前选择的模型全部完成传递UV数据操作") gtVexSameNum;       
+       select -r  $objMeshT;   
+       }
+}
+///////////////////
+global proc gtUVtransforProcBB()
+{
+    string $sel[]=`ls -sl -l`;
+    string $unDoObj[];
+    string $targetO= `textFieldGrp -q -tx  gtUVobj`;
+    int $style=`radioButtonGrp  -q  -sl  gtUVRad`;  
+    string $mm[];
+    int $tm=`tokenize $targetO " " $mm`;
+    string $targetObj[];
+    for($i=0;$i<size($mm);$i++){
+       $targetObj[$i]=$mm[$i]; 
+    }
+
+    if($style==2){
+        select -cl;
+        for($i=0;$i<size($sel);$i++){
+   string $objMm[]=`listRelatives -c -ad  -type "mesh" $sel[$i]`;
+         select -add   $objMm; 
+        }
+        string $objMesh[]=`ls -sl -type "mesh"`;
+   string  $objAll[];
+     for($i=0;$i<size($objMesh);$i++){
+       string $temp[]=`listRelatives -p $objMesh[$i]`;
+       $objAll[$i]=$temp[0]; 
+
+    }
+    select -r $objAll;
+    string $objM[]=`ls -type "transform" -sl`;
+    select -r $objM;
+    select -d $targetObj;
+    }
+    
+   string $objMeshT[]=`ls -sl`;
+   for($i=0;$i<size($objMeshT);$i++){
+   string $obj=$objMeshT[$i];
+   
+   float $posA[]=`xform -q -ws -t ($obj+".vtx[0]")`;      
+   string $oldObj="";
+   float $dis=1000000;
+   for($j=0;$j<size($targetObj);$j++){
+   float $posB[]=`xform -q -ws -t ($targetObj[$j]+".vtx[0]")`;
+   float $cdis=mag(<<$posA[0],$posA[1],$posA[2]>>-<<$posB[0],$posB[1],$posB[2]>>);
+   if($cdis<$dis){
+       $dis=$cdis;
+       $oldObj=$targetObj[$j]; 
+       }
+   }
+
+   if($oldObj==""){
+      int $undoS=size($unDoObj);
+      $unDoObj[$undoS] =$obj;
+   }else{
+    string $inputs[]= `listHistory  $obj`;
+    int $skin=0;
+    for($ii=3;$ii<size($inputs);$ii++){
+        string $type=`nodeType ($inputs[$ii])`;
+        if($type=="tweak")$skin=1;
+    }
+    if($skin==1){
+    string $targetShape[]= `listRelatives -shapes $obj`;  
+    string $targetOrigin = ($targetShape[1]);
+    select -r $targetOrigin ;
+    setAttr ($targetOrigin +".intermediateObject") 0;
+    select -r  $oldObj;
+    select -add $targetOrigin ;
+    transferAttributes -transferPositions 0 -transferNormals 0 -transferUVs 2 -transferColors 0 -sampleSpace 5 -sourceUvSpace "map1" -targetUvSpace "map1" -searchMethod 3-flipUVs 0 -colorBorders 1 ;
+    select -r $targetOrigin;
+    DeleteHistory;
+    setAttr ($targetOrigin +".intermediateObject") 1;
+    select -d;
+    }   
+    if($skin==0){  
+    select -r  $oldObj;
+    select -add $obj ;  
+    transferAttributes -transferPositions 0 -transferNormals 0 -transferUVs 2 -transferColors 0 -sampleSpace 5 -sourceUvSpace "map1" -targetUvSpace "map1" -searchMethod 3 -flipUVs 0 -colorBorders 1 ;
+    select -r $obj;
+    DeleteHistory;
+                }
+            }
+        }  
+           
+    int $undoS=size($unDoObj);
+    if($undoS>0){
+    string $unDoO="";
+   for($i=0;$i<$undoS;$i++){
+       $unDoO+=$unDoObj[$i]+"、";
+   }
+    text -e -bgc 0.3 0 0 -l ($unDoO+":\n当前选择的模型没有对应目标模型\n请手动查找，并逐个传递UV数据") gtVexSameNum;       
+    select -r $unDoObj;
+    clear $unDoObj;
+       }else{
+    text -e -bgc 0.1 0.3 0 -l ("当前选择的模型全部完成传递UV数据操作") gtVexSameNum;       
+       select -r  $objMeshT;   
+    }
+}
+//////////////////
+global proc gtUVtransforProc()
+{
+   int $condition=`radioButtonGrp  -q  -sl  gtUVcondition`; 
+   if($condition==1)
+       gtUVtransforProcAA;
+   else
+       gtUVtransforProcBB;   
+}
+/////////////////////////
+global proc gtUVtransforProcA(){
+   string $targetO= `textFieldGrp -q -tx  gtUVobj`;
+   int $ex=`objExists $targetO`;
+   if($ex==0)error "请载入一个编辑好UV的多边形物体名称";     
+    int $style=`radioButtonGrp  -q  -sl  gtUVRad`;  
+    string $sel[]=`ls -sl`; 
+    if($style==2){
+        select -cl;
+        for($i=0;$i<size($sel);$i++){
+         string $objMm[]=`listRelatives -c -ad  -type "mesh" $sel[$i]`;
+         select -add   $objMm; 
+        }
+        string $objMesh[]=`ls -sl -type "mesh"`;
+        string  $objAll[];
+     for($i=0;$i<size($objMesh);$i++){
+       string $temp[]=`listRelatives -p $objMesh[$i]`;
+       $objAll[$i]=$temp[0]; 
+    }
+    select -r $objAll;
+    string $objM[]=`ls -type "transform" -sl`;
+    select -r $objM;
+    select -d $targetO;  
+    }
+                
+   string $objMeshT[]=`ls -sl`;
+   int $numA=size($objMeshT);       
+   string $notMatchM[];
+   clear $notMatchM;
+   
+for($i=0;$i<size($objMeshT);$i++){
+   string $obj=$objMeshT[$i];
+   string $shap[]=`listRelatives -s $obj`;
+   $ex=`objExists $shap[0]`;
+   string $type;
+   if($ex!=0)$type=`nodeType $shap[0]`;
+
+   if($type!="mesh"){
+       print ($obj+":不是多边形物体！");
+   }else{  
+   int $objV[]=`polyEvaluate -v $obj`;
+   string $oldObj=$targetO;
+   int $objVe[]=`polyEvaluate -v $oldObj`;
+
+   if($objV[0]!=$objVe[0]){
+       int $nsize=size($notMatchM);
+       $notMatchM[$nsize]=$obj;
+   }else{
+ 
+    string $inputs[]= `listHistory  $obj`;
+    int $skin=0;
+    for($ii=0;$ii<size($inputs);$ii++){
+        string $type=`nodeType ($inputs[$ii])`;
+        if($type=="tweak")$skin=1;
+    }
+    if($skin==1){
+     string $targetShape[]= `listRelatives -shapes $obj`;  
+    string $targetOrigin = ($targetShape[1]);
+    select -r $targetOrigin ;
+    setAttr ($targetOrigin +".intermediateObject") 0;
+    select -r  $oldObj;
+    select -add $targetOrigin ;
+    transferAttributes -transferPositions 0 -transferNormals 0 -transferUVs 2 -transferColors 0 -sampleSpace 5 -sourceUvSpace "map1" -targetUvSpace "map1" -searchMethod 3-flipUVs 0 -colorBorders 1 ;
+    select -r $targetOrigin;
+    DeleteHistory;
+    setAttr ($targetOrigin +".intermediateObject") 1;
+    select -d;
+    }   
+    if($skin==0){  
+    select -r  $oldObj;
+    select -add $obj ;  
+    transferAttributes -transferPositions 0 -transferNormals 0 -transferUVs 2 -transferColors 0 -sampleSpace 5 -sourceUvSpace "map1" -targetUvSpace "map1" -searchMethod 3 -flipUVs 0 -colorBorders 1 ;
+    select -r $obj;
+    DeleteHistory;
+        }
+    }
+    int $nsize=size($notMatchM);
+    if($nsize==0){
+        text -e -bgc 0.1 0.3 0 -l ("当前选择的模型全部完成传递UV数据操作") gtVexSameNum; 
+        select -r  $objMeshT;
+    }else{
+        string $noeOM="";
+        for($i=0;$i<$nsize;$i++)
+            $noeOM+=($notMatchM[$i]+"、");
+        text -e -bgc 0.1 0.3 0 -l ("当前选择的模型中："+$noeOM+"这些模型顶点不匹配，没有传递UV数据操作") gtVexSameNum; 
+        select -r $notMatchM; 
+            }
+        }           
+    }  
+}
+//////////////////////

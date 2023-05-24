@@ -1,0 +1,2401 @@
+//
+// ScriptName : AriSceneOpener
+// Contents   : シーンを開く手間を最小限にします。
+// Author     : Ari
+// Since      : 2014/07
+// Update     : 2018/12/16 シーン名スペースに対応
+//                         ブックマーク表示切り替え機能追加
+//                         更新タイミング微調整
+//              2018/04/15 workspaceControlに対応
+//                         更新方法タイミング等微調整
+//              2018/04/09 誤字修正
+//              2018/03/25 サムネイルやソート機能など多数機能を追加
+//
+// Note       : 
+//
+//--------------------------------------------------------------------------
+
+
+
+
+
+proc TextSave(string $textArray[],string $savePath){
+	string $saveText;
+	for($text in $textArray){
+		$saveText = $saveText + $text +"\n";
+	}
+	int $fpid = `fopen $savePath "w"`;
+	fprint $fpid($saveText);
+	fclose $fpid;
+}
+proc string[] TextLoad(string $path){
+	string $loadText[];
+	string $LoadPath = $path;
+	if(!`filetest -f $LoadPath`)return $loadText;
+	int $fpid = `fopen $LoadPath "r"`;
+	string $get;
+	int $i=0;
+	do{
+		$get = `fgetline $fpid`;
+		string $sepa[];
+		tokenize $get "\n" $sepa;
+		$loadText[$i] = $sepa[0];
+    	$i++;
+	}
+	while(size($get));
+	fclose $fpid;
+	return $loadText;
+}
+proc string SavePath(){
+	string $scriptPass = `internalVar -usd`;
+	string $savePath = $scriptPass + "AriSceneOpener";
+	return $savePath;
+}
+global proc int[] AriNumber10to2(int $number){
+	int $boolList[];
+	int $baisu=pow(2,20);
+	$amari=$number;
+	for($i=20;$i>=0;$i--){
+		if($amari-$baisu>=0){
+			$amari=$amari-$baisu;
+			$boolList[$i]=1;
+		}
+		else $boolList[$i]=0;
+		$baisu=$baisu/2;
+	}
+	return $boolList;	
+}
+global proc int AriNumber2to10(int $boolList[]){
+	int $number;
+	int $baisu=1;
+	for($i=0;$i<size($boolList);$i++){
+		$number += $baisu*$boolList[$i];
+		$baisu = $baisu*2;
+	}
+	return $number;	
+}
+proc string InitialsToupper(string $text){
+	string $returnText;
+	string $initial = startString($text,1);
+	string $toupperIni = `toupper $initial`;
+	$returnText = ($toupperIni + endString($text,size($text)-1));
+	return $returnText;
+}
+proc string[] GetPathScene(string $fullPath){
+	string $text[];
+	string $sepa[];
+	tokenize $fullPath "/" $sepa;
+	string $sceneName = $sepa[size($sepa)-1];
+	int $fileNameSize = size($sceneName);
+	string $directory = startString($fullPath,(size($fullPath)-$fileNameSize));
+	$text[0] = $directory;
+	$text[1] = $sceneName;
+	return $text;
+}
+proc string[] getSnapshotPath(string $sceneName){
+	string $returnText[];
+	global string $AriSceneOpenerVal_SubDireName;
+	global int    $AriSceneOpenerVal_ssSeting;
+	int $settingBool[] = AriNumber10to2($AriSceneOpenerVal_ssSeting);
+	string $getPath[] = GetPathScene($sceneName);
+	string $directory = $getPath[0];
+	string $scene     = $getPath[1];
+	string $directoryName = startString($directory,(size($directory)-1));
+	if($settingBool[0]==1){
+		$directoryName = $directory + $AriSceneOpenerVal_SubDireName;
+		$sceneName = $directoryName+"/"+$scene;
+	}
+	string $picName = startString($sceneName,(size($sceneName)-3));
+	$picName = $picName + ".png";
+	$returnText[0] = $picName;
+	$returnText[1] = $directoryName;
+	return $returnText;
+}
+proc string[] getFileListInfo(string $path)
+{
+	string $info[];
+	float $sceneSize;
+	string $sceneDay;
+	string $sceneTime;
+	string $sepaName[];
+	string $sepa[];
+	tokenize $path "/" $sepa;
+	string $sceneName = $sepa[size($sepa)-1];
+	string $scenesPass = startString($path, (size($path)-size($sceneName)));
+	chdir $scenesPass;
+	string $fileS =`system("dir/-c "+$sceneName)`;
+	string $fileListS[];
+	tokenize $fileS "\n" $fileListS ;
+	return $fileListS;
+}
+proc string[] sceneInfo(string $path){
+	string $info[];
+	float  $sceneSize;
+	string $sceneDay;
+	string $sceneTime;
+	string $sepaName[];
+	string $sepa[];
+	tokenize $path "/" $sepa;
+	string $sceneName = $sepa[size($sepa)-1];
+	string $scenesPass = startString($path, (size($path)-size($sceneName)));
+	chdir $scenesPass;
+	string $fileS = `system("dir/-c "+ "\"" +$sceneName+"\"" )`;
+	if($fileS=="")return $info;
+	string $fileListS[];
+	tokenize $fileS "\n" $fileListS;
+	int $x;
+	for($x=0; $x<=size($fileListS); $x++){
+		string $file_name = startString($fileListS[$x],size($fileListS[$x])-1);
+		if(endsWith ($file_name, ($sceneName))){
+			string $infoSepa[];
+			tokenize $fileListS[$x] " " $infoSepa;
+			$sceneSize = $infoSepa[2];;
+			$sceneDay  = $infoSepa[0];;
+			$sceneTime = $infoSepa[1];;
+			break;
+		}
+	}
+	string $sceneSizeLabel;
+	$sceneSize = `trunc ($sceneSize+0.5)`;
+	$sceneSize = $sceneSize/1024;
+	if($sceneSize>1024){
+		$sceneSize = $sceneSize/1024;
+		$sceneSize = `trunc ($sceneSize+0.5)`;
+		$sceneSizeLabel = ($sceneSize+" MB");
+	}
+	else{
+		$sceneSize = `trunc ($sceneSize+0.5)`;
+		$sceneSizeLabel = ($sceneSize+" KB");
+	}
+	$info[0] = $sceneSizeLabel;
+	$info[1] = $sceneDay;
+	$info[2] = $sceneTime;
+	return $info;
+}
+proc int dayTotal(int $year, int $month, int $day){
+	int $dayTotals;
+	int $monthList[14] = {0,0,31,59,90,120,151,181,212,243,273,304,334,365};
+	int $yearToDay;
+	int $monthToDay;
+	$yearToDay  = 365*($year-1988);
+	$yearToDay  = $yearToDay + (($year-1989)/4)+1;
+	$monthToDay = $monthList[$month];
+	$dayToDay   = $day;
+	if($year%4==0 && $month>=3){
+		$monthToDay = $monthToDay+1;
+	}
+	$dayTotal = $yearToDay + $monthToDay + $dayToDay;
+	return $dayTotal;
+}
+proc int DayCompare(string $nowDate, string $targetDate){
+	int $day;
+	string $sepa[];
+	tokenize $nowDate "/" $sepa;
+	int $nowYear  = int($sepa[0]);
+	int $nowMonth = int($sepa[1]);
+	int $nowDay   = int($sepa[2]);
+	tokenize $targetDate "/" $sepa;
+	int $targetYear  = int($sepa[0]);
+	int $targetMonth = int($sepa[1]);
+	int $targetDay   = int($sepa[2]);
+	int $yearToDay;
+	int $monthToDay;
+	int $dayToDay;
+	int $nowTotalDay    = dayTotal($nowYear,$nowMonth,$nowDay);
+	int $targetTotalDay = dayTotal($targetYear,$targetMonth,$targetDay);	
+	$day = $nowTotalDay - $targetTotalDay;
+	return $day;
+}
+proc string DayCompareYMD(string $nowDate,string $targetDate){
+	int $monthList[13] = {0,31,28,31,30,31,30,31,31,30,31,30,31};
+	string $dayText;
+	string $sepa[];
+	tokenize $nowDate "/" $sepa;
+	int $nowYear  = int($sepa[0]);
+	int $nowMonth = int($sepa[1]);
+	int $nowDay   = int($sepa[2]);
+	tokenize $targetDate "/" $sepa;
+	int $targetYear  = int($sepa[0]);
+	int $targetMonth = int($sepa[1]);
+	int $targetDay   = int($sepa[2]);
+	if($targetYear == $nowYear){
+		if($targetYear%4 == 0){
+			$monthList[2] = 29;
+		}
+	}
+	int $yearSub  = $nowYear  - $targetYear;
+	int $monthSub = $nowMonth - $targetMonth;
+	int $daySub   = $nowDay   - $targetDay;
+	if($daySub < 0){
+		$monthSub--;
+	}
+	if($monthSub < 0){
+		$yearSub--;
+	}
+	if($monthSub==-12)$monthSub=0;
+	if($yearSub >= 1){
+		$dayText = ($yearSub+"Y");
+		return $dayText;
+	}
+	if($monthSub >= 1){
+		$dayText = ($monthSub+"M");
+		return $dayText;
+	}
+	if($monthSub < 0){
+		$monthSub = $monthSub+12;
+		$dayText = ($monthSub+"M");
+		return $dayText;
+	}	
+	if($daySub >= 0){
+		$dayText = ($daySub);
+		return $dayText;
+	}
+	else{
+		$daySub = $daySub + $monthList[$targetMonth];
+		$dayText = ($daySub);
+		return $dayText;
+	}
+}
+proc string[] AriSO_DirectryMarge(string $mode){
+	global string $AriSceneOpener_UI_RootPathTF;
+	global string $AriSceneOpener_UI_RightPathTextF;
+	global string $AriSceneOpener_UI_RightTreeView;
+	string $fullPath;
+	string $fullPathSet[];
+	string $rootPath  = `textField -q -text $AriSceneOpener_UI_RootPathTF`;
+	string $rightPath = `textField -q -text $AriSceneOpener_UI_RightPathTextF`;
+	string $selects[] = `treeView -q -selectItem $AriSceneOpener_UI_RightTreeView`; 
+	if($mode=="select"){
+		$fullPathSet = $selects;
+	}
+	if($mode=="left"){
+		$fullPathSet[0] = $rootPath;	
+	}
+	if($mode=="right"){
+		$fullPathSet[0] = $rootPath + $rightPath;	
+	}
+	if($mode=="full"){
+		int $i=0;
+		for($sel in $selects){
+			$fullPathSet[$i] = $fullPath + $sel;
+			$i++;
+		}
+	}
+	return $fullPathSet;
+}
+proc string[] AriSceneOpen_AllLoad_old(){
+	string $allText[];
+	string $scriptPath = `internalVar -usd`;
+	string $LoadPath = $scriptPath+"AriToolData.mel";
+	if(`filetest -f $LoadPath`){
+		int $fpid = `fopen $LoadPath "r"`;
+		string $get;
+		int $i=0;
+		do{
+			$get = `fgetline $fpid`;
+			$allText[$i]= startString($get,size($get)-1);
+			$i++;
+		}
+		while(size($get));
+		fclose $fpid;
+	}
+	else{
+		print ("AriToolData.mal  None");
+	}
+	return $allText;
+}
+proc string AriSceneOpener_ChangeSlash(string $inputString){
+	string $changeString;
+	$changeString = substituteAllString($inputString, "\\", "/");
+	if(startsWith($changeString,"//")){
+		$changeString = endString($changeString,size($changeString)-2);
+		$changeString = ("\\\\"+$changeString);
+	}
+	$changeString = substituteAllString($changeString, ",", "");
+	return $changeString;
+}
+proc AriSettingSave_old(string $melName,string $saveArray[]){
+	string $saveAllArray[];
+	string $saveString;
+	string $allText[] = AriSceneOpen_AllLoad_old();
+	int $saveFlag=1;
+	int $j=0;
+	for($i=0;$i<size($allText)-1;$i++){
+		if($allText[$i]==($melName+"_end------------------------------")){
+			$saveFlag=3;
+		}
+		if($allText[$i]==($melName+"_start------------------------------")){
+			$saveFlag=2;
+			$saveAllArray[$j]=($melName+"_start------------------------------");
+			$j++;
+		}
+		if($saveFlag==1 || $saveFlag==3){
+			$saveAllArray[$j]=$allText[$i];	
+			$j++;
+		}
+		if($saveFlag==2){
+			for($array in $saveArray){
+				$saveAllArray[$j]=$array;
+				$j++;
+			}
+			$saveFlag=0;
+		}
+	}
+	if($saveFlag==1){
+		print "AriSceneOpen_startNone";
+		$saveAllArray[$j]=($melName+"_start------------------------------");
+		$j++;
+		for($array in $saveArray){
+			$saveAllArray[$j]=$array;
+			$j++;
+		}
+		$saveAllArray[$j]=($melName+"_end------------------------------");
+		$j++;
+	}
+	for($j=0;$j<size($saveAllArray);$j++){
+		$saveString=$saveString+$saveAllArray[$j]+"\n";
+	}
+	string $scriptPath = `internalVar -usd`;
+	string $LoadPath = $scriptPath+"AriToolData.mel";
+	int $fpid = `fopen $LoadPath "w"`;
+	fprint $fpid($saveString);
+	fclose $fpid;
+}
+proc import_dayColorVal (string $dayColorStringList[])
+{
+	global vector $AriSceneOpener_ValDayColorStart[];
+	global vector $AriSceneOpener_ValDayColorEnd[];
+	for($i=0; $i<size($dayColorStringList); $i++){
+		string $sepaA[];
+		tokenize $dayColorStringList[$i] ";" $sepaA;
+		string $sepaB[];
+		tokenize $sepaA[1] "," $sepaB;
+		string $sepaC[];
+		tokenize $sepaB[0] " " $sepaC;
+		float $r,$g,$b;
+		$r = float($sepaC[0]);
+		$g = float($sepaC[1]);
+		$b = float($sepaC[2]);
+		$AriSceneOpener_ValDayColorStart[$i] = <<$r,$g,$b>>;
+		tokenize $sepaB[1] " " $sepaC;
+		$r = float($sepaC[0]);
+		$g = float($sepaC[1]);
+		$b = float($sepaC[2]);
+		$AriSceneOpener_ValDayColorEnd[$i] = <<$r,$g,$b>>;
+	}
+}
+proc import_bookMarkSL(string $bookMarkList[]){
+	global string $AriSceneOpener_UI_BookmarkTree;
+	string $stBookmarkList;
+	treeView       -e -ra        $AriSceneOpener_UI_BookmarkTree;
+	for($i=0; $i<size($bookMarkList); $i++){
+		if($bookMarkList[$i]!=""){
+			if(!`treeView -q -iex $bookMarkList[$i] $AriSceneOpener_UI_BookmarkTree`){
+				treeView -e -addItem $bookMarkList[$i] "" $AriSceneOpener_UI_BookmarkTree;
+			}
+		}
+	}
+}
+proc string pathUpChange(string $path,int $up){
+	string $sepa[];
+	tokenize $path "/" $sepa;
+	string $targetPath="";
+	for($i=0; $i<(size($sepa)-$up); $i++){
+		$targetPath = $targetPath + $sepa[$i]+"/";
+	}
+	if($targetPath=="")$targetPath = $sepa[$i]+"/";
+	return $targetPath;
+}
+proc projectCalculation(){
+	global string $AriSceneOpener_UI_RootPathTF;
+	global string $AriSceneOpener_UI_projTargetText;
+	global string $AriSceneOpener_UI_projTargetTextTrue;
+	global int $AriSceneOpenerVal_projSetMode; 
+	global int $AriSceneOpenerVal_projSetNum;  
+	string $targetProj;
+	if($AriSceneOpenerVal_projSetMode==11){
+		$targetProj = `textField -q -text $AriSceneOpener_UI_RootPathTF`;
+	}
+	if($AriSceneOpenerVal_projSetMode==12){
+		string $get[] = AriSO_DirectryMarge("full");
+		string $scene = $get[0];
+		string $sepa[];
+		tokenize $scene "/" $sepa;
+		int $num = 2;
+		for($i=0; $i<size($sepa); $i++){
+			if($sepa[size($sepa)-1-$i]=="scenes"){
+				$num = $i+1;
+			}
+		}
+		$targetProj = pathUpChange($scene, $num);
+		if(!`filetest -d $targetProj`) $targetProj = "";
+	}
+	if($AriSceneOpenerVal_projSetMode==13){
+		string $get[] = AriSO_DirectryMarge("full");
+		string $scene = $get[0];		
+		int $num = $AriSceneOpenerVal_projSetNum;
+		$targetProj = pathUpChange($scene, $num);
+		if(!`filetest -d $targetProj`) $targetProj = "";
+	}
+	string $sepa[];
+	tokenize $targetProj "/" $sepa;
+	textField -e -ann $targetProj -text $sepa[size($sepa)-1]  $AriSceneOpener_UI_projTargetText;
+	if(`filetest -f ($targetProj + "workspace.mel")`){
+		iconTextButton -e -bgc 0.8 0.8 1 $AriSceneOpener_UI_projTargetTextTrue;
+	}
+	else{
+		iconTextButton -e -bgc 0.2 0.2 0.2  $AriSceneOpener_UI_projTargetTextTrue;
+	}
+}
+global proc AriSceneOpenerWorkspaceMelOpen(){
+	global string $AriSceneOpener_UI_projTargetText;
+	string $proj = `textField -q -ann $AriSceneOpener_UI_projTargetText`;
+	if(`filetest -f ($proj+"workspace.mel")`){
+		string $path = substituteAllString(($proj+"workspace.mel"), "/", "\\");
+		system ("explorer.exe /select, "+ $path);
+	}
+	else{
+		system ("load "+ $proj);
+	}
+}
+proc AriSceneOpenerJump_main(string $workspace,string $scene){
+	global string $AriSceneOpener_UI_LeftSL; 
+	global string $AriSceneOpener_UI_RightTreeView;
+	global string $AriSceneOpener_UI_RightPathTextF;
+	AriSceneOpenerRootDireChange($workspace);
+	if(startsWith($scene,$workspace)==false)$scene="";
+	string $sceneLocalPath = endString ($scene,(size($scene)-size($workspace)));
+	string $sepa[];
+	tokenize $sceneLocalPath "/" $sepa;
+	string $sceneDire = startString ($sceneLocalPath, (size($sceneLocalPath)-size($sepa[size($sepa)-1]) ) );
+	if($scene == "") $sceneDire="scenes/";
+	textField -e -text $sceneDire $AriSceneOpener_UI_RightPathTextF;
+	AriSceneOpener_RightReload();
+	if($scene != ""){
+		if(`treeView -q -iex $scene $AriSceneOpener_UI_RightTreeView`){
+			treeView -e -clearSelection       $AriSceneOpener_UI_RightTreeView;
+			treeView -e -selectItem $scene 1  $AriSceneOpener_UI_RightTreeView;
+			treeView -e -showItem  1  $AriSceneOpener_UI_RightTreeView;
+		}
+	}
+	AriSceneOpener_RightBoxS();
+}
+global proc AriSceneOpenerJumpWindow_OK(string $scene){
+	global string $AriSceneOpener_UI_JumpProjTF;
+	global string $AriSceneOpener_UI_JumpSceneTextF[2];
+	global string $AriSceneOpener_UI_JumpRadioBT[2];
+	int $prjRadioTrue = `radioButton -q -sl $AriSceneOpener_UI_JumpRadioBT[0]`;
+	string $setProjPath = "";
+	string $setScenePath = "";
+	if($prjRadioTrue == true){
+		$setProjPath = `textField -q -text $AriSceneOpener_UI_JumpProjTF`;
+	}
+	else{
+		$setProjPath  = `textField -q -text $AriSceneOpener_UI_JumpSceneTextF[0]`;
+		$setScenePath = $scene;
+	}
+	AriSceneOpenerJump_main($setProjPath,$setScenePath);
+	if((`window -ex AriSceneOpener_JumpWindow`)==true)deleteUI AriSceneOpener_JumpWindow;
+}
+proc AriSceneOpenerJumpWindow(string $scene){
+	global string $AriSceneOpener_UI_JumpProjTF;
+	global string $AriSceneOpener_UI_JumpSceneTextF[2];
+	global string $AriSceneOpener_UI_JumpRadioBT[2];
+	string $workspace = `workspace -q -rd`;
+	string $sepa[];
+	tokenize $scene "/" $sepa;
+	int $num = 2;
+	for($i=0; $i<size($sepa); $i++){
+		if($sepa[size($sepa)-1-$i]=="scenes"){
+			$num = $i+1;
+		}
+	}
+	string $jumpScene[];
+	$jumpScene[0] = pathUpChange($scene, $num);
+	$jumpScene[1] = endString($scene, (size($scene) - size($jumpScene[0])));
+	if((`window -ex AriSceneOpener_JumpWindow`)==true)deleteUI AriSceneOpener_JumpWindow;
+	window -title "Path Focus"  -w 400 -h 100 -mnb false -mxb false AriSceneOpener_JumpWindow;
+	columnLayout -adj true;
+	radioCollection;
+	$AriSceneOpener_UI_JumpRadioBT[0] = `radioButton -label "CurrentProject"  -onc "AriSceneOpenerJumpWindow_UIChange()"`;
+	$AriSceneOpener_UI_JumpProjTF     = `textField -ed 0 -text $workspace -en false`;
+	$AriSceneOpener_UI_JumpRadioBT[1] = `radioButton -label "Scenes" -sl -onc "AriSceneOpenerJumpWindow_UIChange()"`;
+	rowLayout -nc 3 -ad3 1;
+	$AriSceneOpener_UI_JumpSceneTextF[0]  = `textField -ed 0 -text $jumpScene[0]`;
+	iconTextButton -i "arrowUp.png"   -c "AriSceneOpenerJumpWindow_ChangeButton(0)";
+	iconTextButton -i "arrowDown.png" -c "AriSceneOpenerJumpWindow_ChangeButton(1)";
+	setParent..;
+	$AriSceneOpener_UI_JumpSceneTextF[1] = `textField -ed 0 -text $jumpScene[1]`;
+	button -l "Focus" -c ("AriSceneOpenerJumpWindow_OK(\""+$scene+"\")");
+	setParent..;
+	showWindow;
+}
+global proc AriSceneOpenerJump_Enter(){
+	global string $AriSceneOpener_TargetScenesText;
+	string $scene = `textField -q -text $AriSceneOpener_TargetScenesText`;
+	string $sepa[];
+	tokenize $scene "\"" $sepa;
+	string $getPath = substituteAllString($sepa[0], "\\", "/");
+	$getPath = InitialsToupper($getPath);
+	textField -e -text $getPath $AriSceneOpener_TargetScenesText;
+	if(`filetest -f $getPath`){
+		AriSceneOpenerJumpWindow($getPath);
+	}
+	else{
+		AriSceneOpener_LeftBoxS();
+	}
+}
+global proc AriSceneOpenerDirectoryDialog(){
+	global string $AriSceneOpener_UI_RootPathTF;
+	string $defPath = `textField -q -text $AriSceneOpener_UI_RootPathTF`;
+	string $path[] =`fileDialog2 -cap "select directory" -dir $defPath -ds 2 -fm 3 -okc "folder"`;
+	if($path[0]!="")AriSceneOpenerRootDireChange($path[0]);
+}
+global proc AriSceneOpenerScenesDialog(){
+	global string $AriSceneOpener_TargetScenesText;
+	string $defPath = `textField -q -text $AriSceneOpener_TargetScenesText`;
+	string $path[] =`fileDialog2 -cap "select scenes" -dir $defPath -ds 2 -fm 1 -okc "scene"`;
+	if($path[0]!=""){
+		textField -e -text $path[0] $AriSceneOpener_TargetScenesText;
+		AriSceneOpenerJump_Enter();
+	}
+}
+global proc AriSceneOpener_TextDataLoad(){
+	global vector $AriSceneOpener_ValDayColorStart[];
+	global vector $AriSceneOpener_ValDayColorEnd[];
+	string $savePath = SavePath();
+	string $loadTextList[] = TextLoad($savePath);
+	string $bookmark_start = "bookMark_Start------------";
+	string $bookmark_end   = "bookMark_End------------";
+	string $dayColor_start = "dayColor_Start------------";
+	string $dayColor_end   = "dayColor_End------------";
+	int $bookMarkTrue   = false;
+	int $dayColorTrue   = false;
+	int $screenShotTrue = false;
+	string $bookMarkList[];
+	string $dayColorList[];
+	int $i=0;
+	int $j=0;
+	int $k=0;
+	for($text in $loadTextList){
+		if($text == $bookmark_start){	$bookMarkTrue = true;  continue; }
+		if($text == $bookmark_end){		$bookMarkTrue = false; continue; }
+		if($text == $dayColor_start){	$dayColorTrue = true;  continue; }
+		if($text == $dayColor_end){		$dayColorTrue = false; continue; }
+		if($bookMarkTrue){
+			$bookMarkList[$i] = $text;
+			$i++;
+		}
+		if($dayColorTrue){
+			$dayColorList[$j] = $text;
+			$j++;
+		}
+	}
+	import_bookMarkSL($bookMarkList);
+	import_dayColorVal($dayColorList);
+}
+global proc AriSceneOpener_TextDataSave(){
+	global string $AriSceneOpener_UI_BookmarkTree;
+	global vector $AriSceneOpener_ValDayColorStart[];
+	global vector $AriSceneOpener_ValDayColorEnd[];
+	string $bookmarkList[];
+	$bookmarkList = `treeView       -q -children "" $AriSceneOpener_UI_BookmarkTree`;
+	string $saveArray[];
+	string $bookmark_start = "bookMark_Start------------";
+	string $bookmark_end   = "bookMark_End------------";
+	$saveArray[0] = $bookmark_start;
+	$saveArray    = stringArrayCatenate($saveArray, $bookmarkList);
+	$saveArray[size($saveArray)] =  $bookmark_end;
+	string $dayColor_start = "dayColor_Start------------";
+	string $dayColor_end   = "dayColor_End------------";
+	string $colorTextList[];
+	for($i=0; $i<size($AriSceneOpener_ValDayColorStart); $i++){
+		$colorTextList[$i] = "color"+$i+"; " + ($AriSceneOpener_ValDayColorStart[$i]) +" , "+ ($AriSceneOpener_ValDayColorEnd[$i]);
+	}
+	$saveArray[size($saveArray)] =  $dayColor_start;
+	$saveArray    = stringArrayCatenate($saveArray, $colorTextList);
+	$saveArray[size($saveArray)] =  $dayColor_end;
+	string $savePath = SavePath();
+	TextSave($saveArray,$savePath);
+}
+proc AriSceneOpener_PreLoad(){
+	global int $AriSceneOpenerVal_timeViewTrue; 
+	global int $AriSceneOpenerVal_timeSortTrue; 
+	global int $AriSceneOpenerVal_reOrderTrue;  
+	global int $AriSceneOpenerVal_projSetMode; 
+	global int $AriSceneOpenerVal_projSetNum;  
+	global string $AriSceneOpenerVal_SubDireName;	
+	global int    $AriSceneOpenerVal_ssSeting;	
+	global int    $AriSceneOpenerVal_sizeX;	
+	global int    $AriSceneOpenerVal_sizeY;	
+	global string $AriSceneOpener_UI_paneVer;
+	global string $AriSceneOpener_UI_paneHor;
+	$AriSceneOpenerVal_timeViewTrue = true;
+	$AriSceneOpenerVal_timeSortTrue = true;
+	$AriSceneOpenerVal_reOrderTrue  = true;
+	if(`optionVar -exists "AriSceneOpener_timeView"`) $AriSceneOpenerVal_timeViewTrue = `optionVar -q "AriSceneOpener_timeView"`;
+	if(`optionVar -exists "AriSceneOpener_timeSort"`) $AriSceneOpenerVal_timeSortTrue = `optionVar -q "AriSceneOpener_timeSort"`;
+	if(`optionVar -exists "AriSceneOpener_reOrder"`)  $AriSceneOpenerVal_reOrderTrue  = `optionVar -q "AriSceneOpener_reOrder"`;
+	int $paneV = 50;
+	int $paneH = 80;
+	if(`optionVar -exists "AriSceneOpener_paneV"`) $paneV = `optionVar -q "AriSceneOpener_paneV"`;
+	if(`optionVar -exists "AriSceneOpener_paneH"`) $paneH = `optionVar -q "AriSceneOpener_paneH"`;
+	$AriSceneOpenerVal_projSetMode = 11;
+	$AriSceneOpenerVal_projSetNum  = 2;
+	if(`optionVar -exists "AriSceneOpener_projSetMode"`) $AriSceneOpenerVal_projSetMode = `optionVar -q "AriSceneOpener_projSetMode"`;
+	if(`optionVar -exists "AriSceneOpener_projSetNum" `) $AriSceneOpenerVal_projSetNum  = `optionVar -q "AriSceneOpener_projSetNum"`;
+	$AriSceneOpenerVal_SubDireName = "screenshot";
+	$AriSceneOpenerVal_ssSeting = 7;
+	$AriSceneOpenerVal_sizeX = 640;
+	$AriSceneOpenerVal_sizeY = 480;
+	if(`optionVar -exists "AriSceneOpener_ssSubDire"`) $AriSceneOpenerVal_SubDireName = `optionVar -q "AriSceneOpener_ssSubDire"`;
+	if(`optionVar -exists "AriSceneOpener_ssSetting"`) $AriSceneOpenerVal_ssSeting    = `optionVar -q "AriSceneOpener_ssSetting"`;
+	if(`optionVar -exists "AriSceneOpener_ssSize"`)    $AriSceneOpenerVal_sizeX       = `optionVar -q "AriSceneOpener_ssSize"`;
+	$AriSceneOpenerVal_sizeY = $AriSceneOpenerVal_sizeX*3/4.0;
+	paneLayout -e -ps 1 $paneV 100 $AriSceneOpener_UI_paneVer;
+	paneLayout -e -ps 1 100 $paneH $AriSceneOpener_UI_paneHor;
+}
+proc AriSceneOpener_PreSave(){
+	global int $AriSceneOpenerVal_timeViewTrue;
+	global int $AriSceneOpenerVal_timeSortTrue;
+	global int $AriSceneOpenerVal_reOrderTrue;
+	global string $AriSceneOpener_UI_paneVer;
+	global string $AriSceneOpener_UI_paneHor;
+	global int $AriSceneOpenerVal_projSetMode; 
+	global int $AriSceneOpenerVal_projSetNum;  
+	global string $AriSceneOpenerVal_SubDireName;	
+	global int    $AriSceneOpenerVal_ssSeting;	
+	global int    $AriSceneOpenerVal_sizeX;	
+	global int    $AriSceneOpenerVal_sizeY;	
+	int $paneV[] = `paneLayout -q -ps  $AriSceneOpener_UI_paneVer`;
+	int $paneH[] = `paneLayout -q -ps  $AriSceneOpener_UI_paneHor`;
+	optionVar -intValue "AriSceneOpener_timeView" $AriSceneOpenerVal_timeViewTrue;
+	optionVar -intValue "AriSceneOpener_timeSort" $AriSceneOpenerVal_timeSortTrue;
+	optionVar -intValue "AriSceneOpener_reOrder"  $AriSceneOpenerVal_reOrderTrue;
+	optionVar -intValue "AriSceneOpener_paneV"  $paneV[0];
+	optionVar -intValue "AriSceneOpener_paneH"  $paneH[1];
+	optionVar -stringValue "AriSceneOpener_projSetMode"  $AriSceneOpenerVal_projSetMode;
+	optionVar -stringValue "AriSceneOpener_projSetNum"   $AriSceneOpenerVal_projSetNum;
+	optionVar -stringValue "AriSceneOpener_ssSubDire" $AriSceneOpenerVal_SubDireName;
+	optionVar -intValue    "AriSceneOpener_ssSetting" $AriSceneOpenerVal_ssSeting;
+	optionVar -intValue    "AriSceneOpener_ssSize"    $AriSceneOpenerVal_sizeX;
+}
+proc string[] bookMarkLoad_old(string $melName){
+	string $loadText[];
+	string $allText[] = AriSceneOpen_AllLoad_old();
+	int $getFrag=0;
+	string $get;
+	int $i=0;
+	int $j=0;
+	for($i=0;$i<size($allText);$i++){
+		$get = $allText[$i];
+		if($get==($melName+"_end------------------------------"))break;
+		if($getFrag==1){
+			$getPath = AriSceneOpener_ChangeSlash($get);
+			$loadText[$j]= $getPath;
+			$j++;
+		}
+		if($get==($melName+"_start------------------------------"))$getFrag=1;
+	}
+	return $loadText;
+}
+proc textDataLoad(){
+	global vector $AriSceneOpener_ValDayColorStart[];
+	global vector $AriSceneOpener_ValDayColorEnd[];
+	global int    $AriSceneOpener_ValDayDay[];
+	$AriSceneOpener_ValDayColorStart[0] = <<1,1,1>>;
+	$AriSceneOpener_ValDayColorEnd[0]   = <<1,1,1>>;
+	$AriSceneOpener_ValDayColorStart[1] = <<0.240, 0.710, 1.000>>;
+	$AriSceneOpener_ValDayColorEnd[1]   = <<0.455, 1.000, 0.455>>;
+	$AriSceneOpener_ValDayColorStart[2] = <<1.000, 1.000, 0.370>>;
+	$AriSceneOpener_ValDayColorEnd[2]   = <<0.822, 0.533, 0.240>>;
+	$AriSceneOpener_ValDayColorStart[3] = <<1.000, 0.000, 0.000>>;
+	$AriSceneOpener_ValDayColorEnd[3]   = <<0.472, 0.145, 0.145>>;
+	$AriSceneOpener_ValDayColorStart[4] = <<0.200, 0.000, 0.000>>;
+	$AriSceneOpener_ValDayColorEnd[4]   = <<0.165, 0.000, 0.000>>;
+	string $scriptPath = `internalVar -usd`;
+	string $LoadPath   = $scriptPath+"AriToolData.mel";
+	string $newSavePath = SavePath();
+	if(!`filetest -f $newSavePath`){
+		if(`filetest -f $LoadPath`){	
+			string $pathBookMarkList[100];
+			$pathBookMarkList = bookMarkLoad_old("AriSceneOpen");
+			import_bookMarkSL($pathBookMarkList);
+			AriSceneOpener_TextDataSave();
+		}
+		else{
+			AriSceneOpener_TextDataLoad();
+		}
+	}
+	else{
+		AriSceneOpener_TextDataLoad();
+	}
+}
+global proc AriSceneOpener_Bookmark_ListCrick(){
+	global string $AriSceneOpener_UI_RootPathTF;
+	global string $AriSceneOpener_UI_BookmarkTree;
+	string $select[];
+	$select = `treeView  -q -selectItem $AriSceneOpener_UI_BookmarkTree`;
+	AriSceneOpenerRootDireChange($select[0]);
+	return;
+	string $selectAfter[]  = `treeView -q -selectItem  $AriSceneOpener_UI_BookmarkTree`;
+	if($select[0]!=$selectAfter[0]){
+		string $newPath=`textField -q  -text $AriSceneOpener_UI_RootPathTF`;
+	}
+	AriSceneOpener_SearchCancel();
+}
+global proc AriSceneOpener_Bookmark_ListDblCrick(string $selects){
+}
+global proc AriSceneOpener_BookMark_LabelView(){
+	global string $AriSceneOpener_UI_BookmarkTree;
+	global int $AriSceneOpener_bool;
+	string $allList[] = `treeView -q -children "" $AriSceneOpener_UI_BookmarkTree`;
+	for($i=0; $i<size($allList); $i++){
+		string $label;
+		$label = $allList[$i];
+		if($AriSceneOpener_bool==true){
+			string $sepa[];
+			tokenize $label "/" $sepa;
+			$label = $sepa[size($sepa)-1];
+		}
+		treeView -e -dl $allList[$i] $label $AriSceneOpener_UI_BookmarkTree;
+	}
+}
+global proc AriSceneOpener_BookMark_LabelChange(){
+	global string $AriSceneOpener_UI_BookmarkTree;
+	global int $AriSceneOpener_bool;
+	if($AriSceneOpener_bool==true)	$AriSceneOpener_bool=false;
+	else							$AriSceneOpener_bool=true;
+	AriSceneOpener_BookMark_LabelView();
+}
+global proc AriSceneOpener_BookMark_Delete(){
+	global string $AriSceneOpener_UI_BookmarkTree;
+	string $select[]  = `treeView -q -selectItem  $AriSceneOpener_UI_BookmarkTree`;
+	string $allList[] = `treeView -q -children "" $AriSceneOpener_UI_BookmarkTree`;
+	treeView -e -ra $AriSceneOpener_UI_BookmarkTree;
+	for($i=0; $i<size($allList); $i++){
+		if(!stringArrayContains($allList[$i],$select)){
+			treeView       -e -addItem $allList[$i] "" $AriSceneOpener_UI_BookmarkTree;
+		}
+	}
+	AriSceneOpener_BookMark_LabelView();
+}
+global proc AriSceneOpener_BookMark_Add(){
+	global string $AriSceneOpener_UI_RootPathTF; 
+	global string $AriSceneOpener_UI_BookmarkTree;
+	string $path = `textField -q -text  $AriSceneOpener_UI_RootPathTF`;
+	if(!`filetest -d $path`)return;
+	if(!`treeView -q -iex $path $AriSceneOpener_UI_BookmarkTree`){
+		treeView       -e -addItem $path "" $AriSceneOpener_UI_BookmarkTree;
+		treeView    -e -selectItem $path true $AriSceneOpener_UI_BookmarkTree;
+	}
+	AriSceneOpener_BookMark_LabelView();
+}
+global proc AriSceneOpener_BookMark_Move(string $updown){
+	global string $AriSceneOpener_UI_BookmarkTree;
+	/*
+	string $select[]   = `textScrollList -q -selectItem $AriSceneOpener_UI_BookmarkSL`; 
+	int $selectIndex[] = `textScrollList -q -sii $AriSceneOpener_UI_BookmarkSL`; 
+	int $moveIndex;
+	int $totalIndex=`textScrollList -q -ni $AriSceneOpener_UI_BookmarkSL`;
+	if($updown=="up")   $moveIndex = $selectIndex[0]-1;
+	if($updown=="down") $moveIndex = $selectIndex[0]+1;
+	if($moveIndex<=$totalIndex && $moveIndex>0){
+		textScrollList -e -rii $selectIndex[0] $AriSceneOpener_UI_BookmarkSL;
+		textScrollList -e -ap  $moveIndex $select[0] $AriSceneOpener_UI_BookmarkSL;
+		textScrollList -e -sii $moveIndex $AriSceneOpener_UI_BookmarkSL;
+	}
+	*/
+	string $select[]  = `treeView -q -selectItem  $AriSceneOpener_UI_BookmarkTree`;
+	string $allList[] = `treeView -q -children "" $AriSceneOpener_UI_BookmarkTree`;
+	if(size($select)==0)return;
+	string $sortList[] = $allList;
+	for($i=0; $i<size($allList); $i++){
+		if($allList[$i] == $select[0]){
+			if($updown=="up" && $i-1>=0) {
+				$sortList[$i]   = $allList[$i-1];
+				$sortList[$i-1] = $allList[$i];
+			}
+			if($updown=="down" && $i+1<size($allList)) {
+				$sortList[$i]   = $allList[$i+1];
+				$sortList[$i+1] = $allList[$i];
+			}
+		}
+	}
+	treeView -e -ra $AriSceneOpener_UI_BookmarkTree;
+	for($i=0; $i<size($sortList); $i++){
+		treeView -e -addItem $sortList[$i] "" $AriSceneOpener_UI_BookmarkTree;
+	}
+	treeView -e -selectItem $select[0] true $AriSceneOpener_UI_BookmarkTree;
+	AriSceneOpener_BookMark_LabelView();
+}
+global proc AriSceneOpener_LeftBox_Reload(int $plusmode){
+	global string $AriSceneOpener_history[];
+	global int    $AriSceneOpener_hisNum;
+	global string $AriSceneOpener_UI_LeftSL;
+	global string $AriSceneOpener_UI_RootPathTF;
+	global string $AriSceneOpener_UI_ProjSearchTF;
+	global string $AriSceneOpener_UI_RightPathTextF;
+	global string $AriSceneOpener_UI_RightTreeView;
+	global string $AriSceneOpener_UI_LeftYajirushiIcon[];
+	global string $AriSceneOpener_UI_SearchCancel;
+	string $inputPath;
+	string $rootPath;
+	string $rightPath;
+	if($plusmode==2){
+		$AriSceneOpener_hisNum--;
+		if($AriSceneOpener_hisNum<0)$AriSceneOpener_hisNum=0;
+		string $hisPath=$AriSceneOpener_history[$AriSceneOpener_hisNum];
+		if(`textField -q -text $AriSceneOpener_UI_RootPathTF` == $hisPath){
+			if($AriSceneOpener_hisNum-1>=0)	$hisPath=$AriSceneOpener_history[$AriSceneOpener_hisNum-1];
+		}		
+		textField -e -text $hisPath  $AriSceneOpener_UI_RootPathTF;
+	}
+	$inputPath = `textField -q -text $AriSceneOpener_UI_RootPathTF`;
+	$rootPath = AriSceneOpener_ChangeSlash($inputPath);
+	$rootPath = InitialsToupper($rootPath);
+	$rightPath = `textField -q -text $AriSceneOpener_UI_RightPathTextF`;
+	if(!endsWith($rootPath,"/")){
+		$rootPath=$rootPath+"/";
+	}
+	string $sepa[];
+	tokenize $rootPath "/" $sepa;
+	string $fldPath;
+	int $i=0;
+	for($i=0; $i<size($sepa); $i++){
+		$fldPath = $fldPath+$sepa[$i]+"/";
+		if($i<size($sepa)-1){
+			string $fldList[]=`getFileList -fld  ($fldPath+"/")`;
+			if(!stringArrayContains($sepa[$i+1],$fldList)){
+				for($fld in $fldList){
+					if(tolower($sepa[$i+1])==tolower($fld)){
+						$sepa[$i+1]=$fld;
+						break;
+					}
+				}
+			}
+		}
+	}
+	$rootPath = $fldPath;
+	if($inputPath != $rootPath){
+		print($inputPath+"\n"+$rootPath+"     path fix\n");
+	}
+	textField -e -text $rootPath  $AriSceneOpener_UI_RootPathTF;
+	textScrollList -e  -removeAll $AriSceneOpener_UI_LeftSL;
+	treeView       -e  -ra        $AriSceneOpener_UI_RightTreeView;
+	if(!`filetest -d $rootPath`){
+		textField -e -bgc 0.7 0.3 0.3 $AriSceneOpener_UI_RootPathTF;
+		return;
+	}
+	textField -e -bgc 0.2 0.2 0.2 $AriSceneOpener_UI_RootPathTF;
+	tokenize $rootPath "/" $sepa;
+	$rootPath = startString($rootPath,(size($rootPath)-size($sepa[size($sepa)])));
+	string $getPath;
+	string $selectPath;
+	if($plusmode==1){
+		$getPath = $rootPath;
+	}
+	else{
+		$getPath    = startString($rootPath,(size($rootPath)-size($sepa[size($sepa)-1])-1));
+		$selectPath = endString($rootPath,(size($rootPath)-size($getPath)));
+		$selectPath = startString($selectPath,size($selectPath)-1);
+	}
+	if($getPath!=""){
+		string $list[]=`getFileList -fld  $getPath`; 
+		string $listSt; 
+		$listSt=$listSt+" -append \""+ ".." +"\"";	
+		for($folder in $list){
+			if(`filetest -d ($getPath+"/"+$folder)`){ 
+				string $searchTex = `textField -q -text $AriSceneOpener_UI_ProjSearchTF`;
+				if($searchTex == "" || `gmatch $folder ("*"+$searchTex+"*")` ){
+					if(`filetest -d ($getPath+"/"+$folder+$rightPath)`){ 
+						$listSt=$listSt+" -a \""+$folder+"\"";
+					}
+					else	$listSt=$listSt+" -a \""+$folder+"\"";
+				}
+				if($searchTex == ""){
+					button -e -en false $AriSceneOpener_UI_SearchCancel;
+				}
+				else{
+					button -e -en true $AriSceneOpener_UI_SearchCancel;
+				}
+			}
+		}
+		eval("textScrollList -e  -selectCommand AriSceneOpener_LeftBoxS "+$listSt+" $AriSceneOpener_UI_LeftSL");
+		nodeIconButton -e -en 1  $AriSceneOpener_UI_LeftYajirushiIcon[0];
+	}
+	else{
+		textField -e -text ""  $AriSceneOpener_UI_RootPathTF;
+		string $driveList[]={"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+		string $listSt; 
+		for($drive in $driveList){
+			if(`filetest -d ($drive+":")`){
+				$listSt += (" -a \""+$drive+":\" ");
+			}
+		}
+		eval("textScrollList -e  "+$listSt+" $AriSceneOpener_UI_LeftSL");
+		nodeIconButton -e -en 0  $AriSceneOpener_UI_LeftYajirushiIcon[0];
+	}
+	if(`textScrollList -q -ni $AriSceneOpener_UI_LeftSL` >= 2){
+		if($rootPath != ""){
+			if($plusmode==1){
+				$rootPath = $rootPath+"__/";
+			}
+			textField -e -text ($rootPath)  $AriSceneOpener_UI_RootPathTF;
+			textScrollList -e -sii 2 $AriSceneOpener_UI_LeftSL;
+		}
+		else{
+			textScrollList -e -sii 1 $AriSceneOpener_UI_LeftSL;	
+		}
+		if(stringArrayContains($selectPath,`textScrollList -q -ai $AriSceneOpener_UI_LeftSL`)){
+			textScrollList -e -si $selectPath $AriSceneOpener_UI_LeftSL;
+		}
+		AriSceneOpener_LeftBoxS();
+	}
+	else{
+		AriSceneOpener_RightReload();
+	}
+	if($plusmode!=2){
+		$AriSceneOpener_history[$AriSceneOpener_hisNum]=`textField -q -text $AriSceneOpener_UI_RootPathTF`;
+		$AriSceneOpener_hisNum++;
+		while($AriSceneOpener_hisNum < size($AriSceneOpener_history)){
+			stringArrayRemoveAtIndex($AriSceneOpener_hisNum,$AriSceneOpener_history);
+		}
+	}
+	/*
+	print("his____________________________________________  \n\n");
+	print($AriSceneOpener_hisNum+"\n");
+	$i=0;
+	for($his in $AriSceneOpener_history){
+		if($i==$AriSceneOpener_hisNum)print(">");
+		print($i+"  "+$his+"\n");
+		$i++;
+	}
+	print("\n___________________________________________\n");
+	*/
+	if($AriSceneOpener_hisNum==0)nodeIconButton -e -en 0  $AriSceneOpener_UI_LeftYajirushiIcon[1];
+	else nodeIconButton -e -en 1 $AriSceneOpener_UI_LeftYajirushiIcon[1];
+	if($AriSceneOpener_hisNum>100){
+		for($i=0;$i<100;$i++){
+			$AriSceneOpener_history[$i]=$AriSceneOpener_history[$i+1];
+		}
+		$AriSceneOpener_hisNum=100;
+	}
+}
+global proc AriSceneOpener_SearchCancel(){
+	global string $AriSceneOpener_UI_ProjSearchTF;
+	textField -e -text "" $AriSceneOpener_UI_ProjSearchTF;
+	AriSceneOpener_LeftBox_Reload(0);
+}
+global proc AriSceneOpenerRootDireChange(string $directory){
+	global string $AriSceneOpener_UI_RootPathTF;
+ 	textField -e  -text $directory $AriSceneOpener_UI_RootPathTF;
+	AriSceneOpener_LeftBox_Reload(0);
+}
+proc string[] reverseOrder(string $list[]){
+	string $reverseList[];
+	for($i=0; $i<size($list); $i++){
+		$reverseList[size($list)-$i-1] = $list[$i];
+	}
+	return $reverseList;
+}
+global proc AriSceneOpenerProjectSet(){
+	global string $AriSceneOpener_UI_projTargetText;
+	string $proj = `textField -q -ann $AriSceneOpener_UI_projTargetText`;
+	if(`filetest -d $proj`){
+		setProject ($proj);
+		print("Projectset   "+$proj+"\n");
+	}
+}
+proc vector vectorLeap(vector $start, vector $end, float $val){
+	vector $returnVal;
+	$returnVal = $start + (($end-$start)*$val);
+	return $returnVal;
+}
+proc vector GetButtonCol(string $dayYMD){
+	global vector $AriSceneOpener_ValDayColorStart[];
+	global vector $AriSceneOpener_ValDayColorEnd[];
+	global int    $AriSceneOpener_ValDayDay[];
+	vector $getButtonColor;
+	int $YMTrue = false;
+	if(endsWith($dayYMD,"Y")){
+		$YMTrue = true;
+		int $val = (startString($dayYMD,size($dayYMD)-1) );
+		$getButtonColor = vectorLeap($AriSceneOpener_ValDayColorStart[3],$AriSceneOpener_ValDayColorEnd[3],$val/10.0);
+	}
+	if(endsWith($dayYMD,"M")){
+		$YMTrue = true;
+		int $val = (startString($dayYMD,size($dayYMD)-1) );
+		$getButtonColor = vectorLeap($AriSceneOpener_ValDayColorStart[2],$AriSceneOpener_ValDayColorEnd[2],$val/11.0);
+	}
+	if($YMTrue == false){
+		int $val = $dayYMD;
+		$getButtonColor = vectorLeap($AriSceneOpener_ValDayColorStart[1],$AriSceneOpener_ValDayColorEnd[1],$val/30.0);
+	}
+	if($dayYMD == "0"){
+		$getButtonColor = $AriSceneOpener_ValDayColorStart[0];
+	}
+	return $getButtonColor;
+}
+global proc AriSceneOpenerSSDirectoryOpen(string $paht){
+	$path = substituteAllString($paht, "/", "\\");
+	system ("explorer.exe /select, "+ $path );
+}
+global proc AriSceneOpener_RightReload(){
+	global string $AriSceneOpener_UI_RightPathTextF;
+	global string $AriSceneOpener_UI_RightTreeView;
+	global string $AriSceneOpener_UI_YajirushiIcon[5];
+	global int $AriSceneOpenerVal_timeSortTrue;
+	global int $AriSceneOpenerVal_timeViewTrue;
+	global int $AriSceneOpenerVal_reOrderTrue;
+	string $fullPathSet[] = AriSO_DirectryMarge("right");
+	string $rightPath = `textField -q -text $AriSceneOpener_UI_RightPathTextF`;
+	string $parentDirectory = $fullPathSet[0];
+	string $selects[] = `treeView  -q -selectItem $AriSceneOpener_UI_RightTreeView`;
+	string $selectItem = "";
+	int $picTrue = false;
+	treeView -e -ra $AriSceneOpener_UI_RightTreeView;
+	if(`filetest -d $parentDirectory`){
+		string $listAll[] = `getFileList -fld $parentDirectory`;
+		string $list_All[];
+		string $list_mb[];
+		string $list_ma[];
+		string $list_directly[];
+		string $list_etc[];
+		int $i=0,$j=0,$k=0,$l=0;
+		string $workDirectory = startString($parentDirectory,(size($parentDirectory)-1));
+		string $getFileListString[] = getFileListInfo($workDirectory);
+		string $folderInFileList[] = `getFileList -folder ($parentDirectory)`;
+		string $beforeSortString[];
+		int $ii=0;
+		for($fileString in $getFileListString){
+			string $sepa[];
+			$fileString = startString ($fileString,size($fileString)-1);
+			tokenize $fileString " " $sepa;
+			string $fileName = $sepa[3];
+			if(size($sepa)>4){
+				string $fileNameTest;
+				for($folderInFile in $folderInFileList){
+					if(endsWith($fileString, $folderInFile)){
+						$fileNameTest = $folderInFile;
+						break;
+					}
+				}
+				if(`filetest -f ($parentDirectory + $fileNameTest)`){
+					$fileName = $fileNameTest;
+				}
+				else{
+					continue;
+				}
+			}
+			if( $AriSceneOpenerVal_timeSortTrue){
+				$beforeSortString[$ii] = $sepa[0]+","+$sepa[1]+","+$fileName+","+$sepa[2];
+			}
+			if(!$AriSceneOpenerVal_timeSortTrue){
+				string $tolowerName = `tolower $fileName`;
+				$beforeSortString[$ii] = $tolowerName+","+$sepa[0]+","+$sepa[1]+","+$sepa[2]+","+$fileName;
+			}
+			$ii++;
+		}
+		string $sortGetFileListString[] = `sort $beforeSortString`;
+		if($AriSceneOpenerVal_reOrderTrue) $sortGetFileListString = reverseOrder($sortGetFileListString);
+		string $nowDay = `date -date`;
+		string $time = `date -time`;
+		string $mb_List[];
+		string $mb_Full_List[];
+		string $mb_Day_List[];
+		string $mb_Time_List[];
+		int    $mb_flag[];
+		int    $mb_days[];
+		string $mb_dayTMDText[];
+		vector $mb_buttonColor[];
+		string $ma_List[];
+		string $ma_Full_List[];
+		string $ma_Day_List[];
+		string $ma_Time_List[];
+		int    $ma_flag[];
+		int    $ma_days[];
+		string $ma_dayTMDText[];
+		vector $ma_buttonColor[];
+		string $directory_List[];
+		string $etc_List[];
+		string $directoryFull_List[];
+		string $etcFull_List[];
+		string $mb_timeList[];
+		string $mb_dayList[];
+		int $jj=0, $kk=0, $ll=0, $count=0;
+		int $systemTrue = true;
+		$ii=0;
+		if($systemTrue){
+			for($fileString in $sortGetFileListString){		
+				string $sepa[];
+				tokenize $fileString "," $sepa;
+				string $name;
+				string $time;
+				string $day;
+				if($AriSceneOpenerVal_timeSortTrue){
+					$name = $sepa[2];
+					$day  = $sepa[0];
+					$time = $sepa[1];
+				}
+				else{
+					$name = $sepa[4];
+					$day  = $sepa[1];
+					$time = $sepa[2];
+				}
+				if(endsWith($name,".mb")){
+					$mb_List[$ii]      = $name;
+					$mb_Full_List[$ii] = $parentDirectory + $name;
+					$mb_Day_List[$ii]  = $day;
+					$mb_Time_List[$ii] = $time;
+					$mb_days[$ii]      = DayCompare($nowDay,$day);
+					$mb_dayTMDText[$ii]= DayCompareYMD($nowDay,$day);
+					$ii++;
+				}
+				if(endsWith($name,".ma")){
+					$ma_List[$jj]      = $name;
+					$ma_Full_List[$jj] = $parentDirectory + $name;
+					$ma_Day_List[$jj]  = $day;
+					$ma_Time_List[$jj] = $time;
+					$ma_days[$jj]      = DayCompare($nowDay,$day);
+					$ma_dayTMDText[$jj]= DayCompareYMD($nowDay,$day);
+					$jj++;
+				}
+				if($sepa[3] == "<DIR>"){
+					if($name != ".." && $name != "."){
+						$directory_List[$kk]     = $name;
+						$directoryFull_List[$kk] = $parentDirectory + $name;
+						$kk++;
+					}
+				}
+			}
+		}
+		else{
+			for($list in $listAll){
+				if(endsWith($list,".mb")){
+					$mb_List[$ii]     = $list;
+					$mb_Full_List[$ii] = $parentDirectory + $list;
+					$ii++;
+					continue;
+				}
+				if(endsWith($list,".ma")){
+					$ma_List[$jj]     = $list;
+					$maFull_List[$jj] = $parentDirectory + $list;
+					$jj++;
+				}
+				if( `filetest -d ($parentDirectory+$list)`){
+					$directory_List[$kk]     = $list;
+					$directoryFull_List[$kk] = $parentDirectory + $list;
+					$kk++;
+				}
+				if( !endsWith($list,".mb") && !endsWith($list,".ma") && !`filetest -d ($parentDirectory+$list)`){
+					$etc_List[$ll]     = $list;
+					$etcFull_List[$ll] = $parentDirectory + $list;
+					$ll++;
+				}
+			}
+		}
+		appendStringArray($list_All,$list_directly,size($list_directly));
+		appendStringArray($list_All,$list_mb,size($list_mb));
+		appendStringArray($list_All,$list_ma,size($list_ma));
+		appendStringArray($list_All,$list_etc,size($list_etc));
+		treeView -e -nb 2 -arp false $AriSceneOpener_UI_RightTreeView;
+		if(size($directoryFull_List)>0){
+			treeView -e -addItem   "directory" ""             $AriSceneOpener_UI_RightTreeView;
+			treeView -e -lbc       "directory" 0.25 0.25 0.25 $AriSceneOpener_UI_RightTreeView;
+			treeView -e -textColor "directory" 0.7 0.7 0.7    $AriSceneOpener_UI_RightTreeView;
+			treeView -e -btc "directory" 1 0.25 0.25 0.25 -btc "directory" 2 0.25 0.25 0.25 $AriSceneOpener_UI_RightTreeView;
+			for($i=0; $i<size($directoryFull_List); $i++){
+				treeView -e -addItem      $directoryFull_List[$i] "directory" $AriSceneOpener_UI_RightTreeView;
+				treeView -e -displayLabel $directoryFull_List[$i] $directory_List[$i] $AriSceneOpener_UI_RightTreeView;
+				treeView -e -image        $directoryFull_List[$i] 2 "SP_DirClosedIcon.png" $AriSceneOpener_UI_RightTreeView;
+			}
+		}
+		if(size($mb_Full_List)>0){
+			treeView -e -addItem   "mb" ""             $AriSceneOpener_UI_RightTreeView;
+			treeView -e -lbc       "mb" 0.25 0.25 0.25 $AriSceneOpener_UI_RightTreeView;
+			treeView -e -textColor "mb" 0.7 0.7 0.7    $AriSceneOpener_UI_RightTreeView;
+			treeView -e -btc "mb" 1 0.25 0.25 0.25 -btc "mb" 2 0.25 0.25 0.25 $AriSceneOpener_UI_RightTreeView;
+			for($ii=0; $ii<size($mb_Full_List); $ii++){
+				string $labelText;
+				if($AriSceneOpenerVal_timeViewTrue)	$labelText=($mb_Day_List[$ii]+" "+$mb_Time_List[$ii]+"  "+$mb_List[$ii]);
+				else								$labelText=($mb_List[$ii]);
+				treeView -e -addItem      $mb_Full_List[$ii] "mb"             $AriSceneOpener_UI_RightTreeView; 
+				treeView -e -displayLabel $mb_Full_List[$ii] $labelText       $AriSceneOpener_UI_RightTreeView; 
+				treeView -e -image        $mb_Full_List[$ii] 2 "mayaIcon.png" $AriSceneOpener_UI_RightTreeView; 
+				if(!`filetest -w $mb_Full_List[$ii]`)treeView -e -btc $mb_Full_List[$ii] 2 0.5 0.5 0.5 -image  $mb_Full_List[$ii] 2 "Lock_ON.png" $AriSceneOpener_UI_RightTreeView;
+				string $imagePath[] = getSnapshotPath($mb_Full_List[$ii]);
+				if(`filetest -f $imagePath[0]`){
+					treeView -e -btc  $mb_Full_List[$ii] 2 0 0.5 1  $AriSceneOpener_UI_RightTreeView;
+					if($picTrue == false){
+						$selectItem = $mb_Full_List[$ii];
+						$picTrue = true;
+					}
+				}
+				vector $col = GetButtonCol($mb_dayTMDText[$ii]);
+				string $dayText = ($mb_Day_List[$ii] +"  ("+ $mb_days[$ii] + " Days ago)");
+				treeView -e -btc  $mb_Full_List[$ii] 1 ($col.x) ($col.y) ($col.z)  $AriSceneOpener_UI_RightTreeView;
+				treeView -e -bti  $mb_Full_List[$ii] 1 $mb_dayTMDText[$ii] $AriSceneOpener_UI_RightTreeView;
+				treeView -e -btp  $mb_Full_List[$ii] 1 $dayText            $AriSceneOpener_UI_RightTreeView;
+				if($selectItem=="")$selectItem = $mb_Full_List[$ii];
+			}
+		}
+		if(size($ma_Full_List)>0){
+			treeView -e -addItem   "ma" ""             $AriSceneOpener_UI_RightTreeView;
+			treeView -e -lbc       "ma" 0.25 0.25 0.25 $AriSceneOpener_UI_RightTreeView;
+			treeView -e -textColor "ma" 0.7 0.7 0.7    $AriSceneOpener_UI_RightTreeView;
+			treeView -e -btc "ma" 1 0.25 0.25 0.25 -btc "ma" 2 0.25 0.25 0.25 $AriSceneOpener_UI_RightTreeView;
+			for($ii=0; $ii<size($ma_Full_List); $ii++){
+				string $labelText;
+				if($AriSceneOpenerVal_timeViewTrue)	$labelText=($ma_Day_List[$ii]+" "+$ma_Time_List[$ii]+"  "+$ma_List[$ii]);
+				else								$labelText=($ma_List[$ii]);
+				treeView -e -addItem      $ma_Full_List[$ii] "ma"             $AriSceneOpener_UI_RightTreeView;
+				treeView -e -displayLabel $ma_Full_List[$ii] $labelText       $AriSceneOpener_UI_RightTreeView;
+				treeView -e -image        $ma_Full_List[$ii] 2 "mayaIcon.png" $AriSceneOpener_UI_RightTreeView;
+				if(!`filetest -w $ma_Full_List[$ii]`){
+					treeView -e -image  $ma_Full_List[$ii] 2 "Lock_ON.png" $AriSceneOpener_UI_RightTreeView;
+				}
+				string $imagePath[] = getSnapshotPath($ma_Full_List[$ii]);
+				if(`filetest -f $imagePath[0]`){
+					treeView -e -btc  $ma_Full_List[$ii] 2 0 0.5 1  $AriSceneOpener_UI_RightTreeView;
+					if($picTrue == false){
+						$selectItem = $ma_Full_List[$ii];
+						$picTrue = true;
+					}
+				}
+				vector $col = GetButtonCol($ma_dayTMDText[$ii]);
+				treeView -e -btc    $ma_Full_List[$ii] 1 ($col.x) ($col.y) ($col.z)  $AriSceneOpener_UI_RightTreeView;
+				treeView -e -bti    $ma_Full_List[$ii] 1  $ma_dayTMDText[$ii] $AriSceneOpener_UI_RightTreeView;
+				if($selectItem=="")$selectItem = $ma_Full_List[$ii];
+			}
+		}
+		if(size($etcFull_List)>0){
+			treeView -e -addItem "etc" "" $AriSceneOpener_UI_RightTreeView;
+			for($i=0; $i<size($etcFull_List); $i++){
+				treeView -e -addItem      $etcFull_List[$i] "etc" $AriSceneOpener_UI_RightTreeView;
+				treeView -e -displayLabel $etcFull_List[$i] $etc_List[$i] $AriSceneOpener_UI_RightTreeView;
+			}
+		}
+		textField -e -bgc 0.2 0.2 0.2 $AriSceneOpener_UI_RightPathTextF;
+	}
+	else{
+		textField -e -bgc 0.7 0.2 0.2 $AriSceneOpener_UI_RightPathTextF;
+	}
+	if(`treeView -q -iex $selects[0] $AriSceneOpener_UI_RightTreeView`){
+		treeView -e -selectItem $selects[0] 1  $AriSceneOpener_UI_RightTreeView;
+	}
+	else if($selectItem != ""){
+		treeView -e -selectItem $selectItem true $AriSceneOpener_UI_RightTreeView;
+	}
+	string $rightText = `textField -q -text  $AriSceneOpener_UI_RightPathTextF`;
+	if($rightText=="")	nodeIconButton -e -en 0 $AriSceneOpener_UI_YajirushiIcon[3];
+	else nodeIconButton -e -en 1 $AriSceneOpener_UI_YajirushiIcon[3];
+}
+global proc AriSceneOpener_RightBoxS(){
+	string $fullPathSet[] = AriSO_DirectryMarge("full");
+	string $rightPath[1]  = AriSO_DirectryMarge("right");
+	string $select[]      = AriSO_DirectryMarge("select");
+	global string $AriSceneOpener_TargetScenesText;
+	global string $AriSceneOpener_UI_infoText[5];
+	global string $AriSceneOpener_UI_infoImage;
+	global string $AriSceneOpener_UI_infoImageInfoF[5];
+	global string $AriSceneOpener_UI_infoImageMenuItem[5];
+	global string $AriSceneOpener_UI_ssButton;
+	global string $AriSceneOpener_UI_RightTreeView;
+	global string $AriSceneOpener_UI_ssPopup;
+	global string $AriSceneOpener_UI_ssMenuItem;
+	iconTextButton -e -i "mmEmpty.png" $AriSceneOpener_UI_infoImage; 
+	textField -e -text "" $AriSceneOpener_TargetScenesText;
+	textField -e -text "" -bgc 0.3 0.3 0.3 $AriSceneOpener_UI_infoText[1];
+	textField -e -text "" -bgc 0.3 0.3 0.3 $AriSceneOpener_UI_infoText[2];
+	textField -e -text "" -bgc 0.3 0.3 0.3 $AriSceneOpener_UI_infoText[3];
+	textField -e -text "" -bgc 0.3 0.3 0.3 $AriSceneOpener_UI_infoText[4];
+	if(size($select)==0){
+		return;
+	}
+	string $info[] = sceneInfo($select[0]);
+	if(`filetest -f $select[0]`){
+		string $nowDay = `date -date`;
+		string $dayAgo = DayCompare($nowDay,$info[1]);
+		string $dayTMD = DayCompareYMD($nowDay,$info[1]);
+		vector $col = GetButtonCol($dayTMD);
+		string $deyAgoText;
+		int $intDayAgo = int($dayAgo);
+		int $hour24True=false;
+		if($intDayAgo <= 1){
+			string $nowTime = `date -time`;
+			string $nowHM[]; 
+			tokenize $nowTime ":" $nowHM;
+			string $FileHM[];
+			tokenize $info[2] ":" $FileHM;
+			int $subHour   = int($nowHM[0]) - int($FileHM[0]);
+			int $subMinute = int($nowHM[1]) - int($FileHM[1]);
+			if($subMinute < 0){
+				$subHour--;
+				$subMinute += 60;
+			}
+			if($subHour < 0){
+				$intDayAgo--;
+				$subHour += 24;
+			}			
+			if($subHour == 0){
+				$deyAgoText = ($subMinute + " Before");
+				$hour24True = true;
+			}
+			else{
+				if($subHour < 24){
+					$deyAgoText = ($subHour + " By the time");
+					$hour24True = true;
+				}
+			}
+			if($intDayAgo==1){
+				$deyAgoText = ($intDayAgo+" In days ago");
+			}
+		}
+		else{
+			$deyAgoText = ($dayAgo+" days ago");
+		}
+		textField -e -bgc 0.2 0.2 0.2 -text $select[0] $AriSceneOpener_TargetScenesText;
+		textField -e -bgc 0.2 0.2 0.2 -text ($info[1]) $AriSceneOpener_UI_infoText[1];
+		textField -e -bgc 0.2 0.2 0.2 -text ($info[2]) $AriSceneOpener_UI_infoText[2];
+		textField -e -bgc 0.2 0.2 0.2 -text ($info[0]) $AriSceneOpener_UI_infoText[3];
+		textField -e -text ($deyAgoText) -bgc ($col.x) ($col.y) ($col.z)  $AriSceneOpener_UI_infoText[4];
+		if($hour24True==true){
+			textField -e -bgc ($col.x) ($col.y) ($col.z) $AriSceneOpener_UI_infoText[2];
+		}
+		else{
+			textField -e -bgc ($col.x) ($col.y) ($col.z) $AriSceneOpener_UI_infoText[1];
+		}
+	}
+	if($select[0] == "mb" || $select[0] == "ma" || $select[0] == "directory"){	
+		AriSceneOpener_RightReload();
+	}
+	string $image = "mmEmpty.png";
+	string $getPath[] = getSnapshotPath($select[0]);
+	$image = $getPath[0];
+	string $imageInfo[] = sceneInfo($image);
+	textField -e -text $imageInfo[1] $AriSceneOpener_UI_infoImageInfoF[0];
+	textField -e -text $imageInfo[2] $AriSceneOpener_UI_infoImageInfoF[1];
+	string $dayTime = ($imageInfo[1] +"  "+ $imageInfo[2]);
+	if(!`filetest -f $image`){
+		$image = "mmEmpty.png";
+	}
+	iconTextButton -e -i $image -ann $dayTime $AriSceneOpener_UI_infoImage;
+	menuItem -e -c ("AriSceneOpenerSSDirectoryOpen(\""+$image+"\")") $AriSceneOpener_UI_infoImageMenuItem[0];
+	menuItem -e -l $dayTime $AriSceneOpener_UI_infoImageMenuItem[1];
+	string $currentScene = `file -q -sceneName`;
+	popupMenu -e -dai  $AriSceneOpener_UI_ssPopup;
+	if($fullPathSet[0] == $currentScene && $currentScene != ""){
+		iconTextButton -e -en true -bgc 0.8 1 0.8 $AriSceneOpener_UI_ssButton;
+	}
+	else{
+		iconTextButton -e -en true -bgc 0.2 0.2 0.2 $AriSceneOpener_UI_ssButton;
+		menuItem -p $AriSceneOpener_UI_ssPopup -enableCommandRepeat false -l "Create snapshot of open scene" -c "AriSceneOpenerSnapshot();" ;
+	}
+	projectCalculation();
+	for($sel in $select){
+		if($sel == "directory" || $sel == "mb" || $sel == "ma")continue;
+		string $iconImage = "Lock_ON.png";
+		vector $rgb = <<0, 0.5, 1>>;
+		if(`filetest -w $sel`){
+			if(endsWith($sel,".ma") || endsWith($sel,".mb")){
+				$iconImage = "mayaIcon.png";
+			}
+		}
+		if(`filetest -d $sel`){
+			$iconImage = "SP_DirClosedIcon.png";
+		}
+		string $getImagePath[] = getSnapshotPath($sel);
+		if(!`filetest -f $getImagePath[0]`){
+			$rgb = <<0.5, 0.5, 0.5>>;
+		}
+		treeView -e -image $sel 2 $iconImage $AriSceneOpener_UI_RightTreeView;
+		treeView -e -btc   $sel 2 ($rgb.x) ($rgb.y) ($rgb.z) $AriSceneOpener_UI_RightTreeView;
+	}
+	global float $AriSceneOpener_ReloadTime;
+	if(`timerX -startTime $AriSceneOpener_ReloadTime` > 60){
+		AriSceneOpener_RightReload();
+	}
+	$AriSceneOpener_ReloadTime = `timerX`;
+	/*
+	string $baseName = `basename $fullPathSet[0] "" `;
+	string $prevPng=$rightPath[0]+"prev/"+$baseName+".png";
+	if (`filetest -f $prevPng`){
+		if((`window -ex AriSceneOpenPreview`)==true)deleteUI AriSceneOpenPreview;
+		window -title "AriSceneOpenPreview"  -w 500 -h 400  AriSceneOpenPreview;		
+		paneLayout;
+		string $form=`formLayout`;
+		string $image=`image -image $prevPng`;
+		setParent..;
+		formLayout -e
+		-af $image "bottom" 0
+		-af $image "left" 0
+		-af $image "right" 0
+		-af $image "top" 0
+		$form;
+		showWindow;
+		showWindow AriSceneOpen;
+	}
+	else{
+		if((`window -ex AriSceneOpenPreview`)==true)deleteUI AriSceneOpenPreview;
+	}
+	*/
+}
+global proc AriSceneOpener_RightBoxW(int $mode){
+	global string $AriSceneOpener_UI_RightPathTextF;
+	global string $AriSceneOpener_UI_CurrentProjTextF;
+	global string $AriSceneOpener_UI_YajirushiIcon[];
+	global string $AriSceneOpener_UI_RightTreeView;
+	global string $AriSceneOpener_UI_RootPathTF;
+	global int    $AriSceneOpenerVal_projSetMode;
+	global int    $AriSceneOpenerVal_ssSeting;
+	int $settingBool[] = AriNumber10to2($AriSceneOpenerVal_ssSeting);
+	int $ssTrue = $settingBool[1];
+	string $fullPathSet[] = AriSO_DirectryMarge("full");
+	string $select[]      = AriSO_DirectryMarge("select");
+	string $rightPath;
+	if($mode==1 || $mode==2){
+		$rightPath = `textField -q -text $AriSceneOpener_UI_RightPathTextF`;
+	}
+	string $fullPath;
+	string $workLocal;
+	if($mode==1 || $mode==3){
+		/*
+		if(size($select)>=2)return;
+		if(endsWith ($select[0],"---") ){
+			if(startsWith ($select[0],"|------------.mb"))checkBox -e -v 0 $AriSceneOpenerProj_FileTypeRadio[0];
+			if(startsWith ($select[0],"|------------.ma"))checkBox -e -v 0 $AriSceneOpenerProj_FileTypeRadio[1];
+			if(startsWith ($select[0],"|------------directory"))checkBox -e -v 0 $AriSceneOpenerProj_FileTypeRadio[2];
+			if(startsWith ($select[0],"|------------etc"))checkBox -e -v 0 $AriSceneOpenerProj_FileTypeRadio[3];
+			if(startsWith ($select[0],"---.mb"))checkBox -e -v 1 $AriSceneOpenerProj_FileTypeRadio[0];
+			if(startsWith ($select[0],"---.ma"))checkBox -e -v 1 $AriSceneOpenerProj_FileTypeRadio[1];
+			if(startsWith ($select[0],"---directory"))checkBox -e -v 1 $AriSceneOpenerProj_FileTypeRadio[2];
+			if(startsWith ($select[0],"---etc"))checkBox -e -v 1 $AriSceneOpenerProj_FileTypeRadio[3];
+			AriSceneOpener_RightReload();
+			return;
+		}
+		if($select[0]==".."){
+			string $parentD[];
+			tokenize $rightPath "/" $parentD;
+			string $lastD = $parentD[size($parentD)-1];
+			$workLocal = startString($rightPath,size($rightPath)-size($lastD)-1);
+			$fullPath = $projPath[0]+$workLocal;
+			if($workLocal == "") nodeIconButton -e -en 0 $AriSceneOpener_UI_YajirushiIcon[3];
+		}
+		else{
+			$workLocal=$rightPath+$select[0]+"/";
+			$fullPath=$fullPathSet[0];
+		}
+		*/
+		if($mode==3 || $mode==4){
+			string $selects[] = `treeView  -q -selectItem $AriSceneOpener_UI_RightTreeView`;
+			$fullPath = $selects[0];
+		}
+		if(`filetest -d $fullPath`){
+			string $rightText = `textField -q -text  $AriSceneOpener_UI_RightPathTextF`;
+			string $sepa[];
+			tokenize $fullPath "/" $sepa;
+			string $newRightPath = ($rightText+($sepa[size($sepa)-1])+"/");
+			textField -e -text $newRightPath $AriSceneOpener_UI_RightPathTextF;
+			AriSceneOpener_RightReload();
+			AriSceneOpener_RightBoxS();
+		}
+		string $fileEx = fileExtension($fullPath);
+		$fileEx = `toupper $fileEx`;
+		if($fileEx=="MA" || $fileEx=="MB" ){
+			if($AriSceneOpenerVal_projSetMode >= 10){
+				AriSceneOpenerProjectSet();
+			}
+			file -f -options "v=0" -ignoreVersion -o $fullPath;
+			string $getPath[] = getSnapshotPath($fullPath);
+			if(!`filetest -f $getPath[0]`){
+				if($ssTrue){
+					AriSceneOpenerSnapshot();
+				}
+			}
+			string $leftPath  = `textField -q -text $AriSceneOpener_UI_RootPathTF`;
+			optionVar -stringValue "AriSceneOpener_leftPath"  $leftPath;
+ 			optionVar -stringValue "AriSceneOpener_scenePath" $fullPath;
+		}
+		else{
+			if(`filetest -x $fullPath`){
+				file -f -options "v=0" -ignoreVersion -type $fileEx -o $fullPath;
+			}
+		}
+		AriSceneOpener_RightReload();
+	}
+	if($mode==2){
+		for($sel in $select){
+			if(endsWith ($sel,"---") )continue;
+			$workLocal=$rightPath+$select[0]+"/";
+			$fullPath=$fullPathSet[0];
+			string $fileEx = fileExtension($fullPath);
+			$fileEx = `toupper $fileEx`;
+			if($fileEx=="MA" || $fileEx=="MB" ){
+				file -f -options "v=0" -i $fullPath;
+			}
+			else{
+				file -f -options "v=0"  -type $fileEx -i $fullPath;
+			}
+		}
+	}
+	string $workspace = `workspace -q -rd`;
+	textField -e -text $workspace $AriSceneOpener_UI_CurrentProjTextF;
+	AriSceneOpener_RightBoxS();
+}
+global proc AriSceneOpener_RightBoxPushUpButton(){
+	global string $AriSceneOpener_UI_RightPathTextF;
+	string $rightText = `textField -q -text  $AriSceneOpener_UI_RightPathTextF`;
+	string $sepa[];
+	tokenize $rightText "/" $sepa;
+	string $newPath = startString($rightText,(size($rightText)-size($sepa[size($sepa)-1])-1));
+	textField -e -text $newPath $AriSceneOpener_UI_RightPathTextF;
+	AriSceneOpener_RightReload();
+	AriSceneOpener_RightBoxS();
+	projectCalculation();
+}
+global proc AriSceneOpener_LeftBoxS(){
+	global string $AriSceneOpener_UI_RootPathTF;
+	global string $AriSceneOpener_UI_RightPathTextF;
+	global string $AriSceneOpener_UI_LeftSL;
+	global string $AriSceneOpener_UI_BookmarkTree;
+	string $leftPath;
+	string $rootPath = `textField -q -text $AriSceneOpener_UI_RootPathTF`;
+	string $rightPath= `textField -q -text $AriSceneOpener_UI_RightPathTextF`;
+	$select = `textScrollList -q -selectItem $AriSceneOpener_UI_LeftSL`;
+	$leftPath = $select[0]+"/";
+	string $sepa[];
+	tokenize $rootPath "/" $sepa;
+	$rootPath = startString($rootPath,(size($rootPath)-size($sepa[size($sepa)-1])-1));
+	$rootPath = $rootPath + $leftPath;
+	textField -e -text $rootPath $AriSceneOpener_UI_RootPathTF;
+	treeView -e -cs $AriSceneOpener_UI_BookmarkTree;
+	if(`treeView -q -iex $rootPath $AriSceneOpener_UI_BookmarkTree`){
+		treeView -e -selectItem $rootPath true $AriSceneOpener_UI_BookmarkTree;
+	}
+	else{
+	}
+	AriSceneOpener_RightReload();
+	AriSceneOpener_RightBoxS();
+	projectCalculation();
+}
+global proc AriSceneOpener_LeftBoxW(){
+	global string $AriSceneOpener_UI_LeftSL;
+	global string $AriSceneOpener_UI_RootPathTF;
+	global string $AriSceneOpener_UI_RightPathTextF;
+	string $rootPath = `textField -q -text $AriSceneOpener_UI_RootPathTF`;
+	string $rightPath= `textField -q -text $AriSceneOpener_UI_RightPathTextF`;
+	string $select[]=`textScrollList -q -selectItem $AriSceneOpener_UI_LeftSL`;
+	string $search;
+	string $lastPath="";
+	if($select[0]==".."){
+		AriSceneOpener_LeftBoxUpDirectory();
+	}
+	else{
+		if($rootPath!="")$search=$rootPath;
+		else $search=$select[0];
+		if(`filetest -d ($search+"/")`){  
+			$rootPath=$search;
+			string $list[]=`getFileList -fld ( $search+"/")`;
+			string $listSt;
+			textField -e  -text $rootPath  $AriSceneOpener_UI_RootPathTF;
+			AriSceneOpener_LeftBox_Reload(1);
+		}
+	}
+}
+global proc AriSceneOpener_LeftBoxUpDirectory(){
+	global string $AriSceneOpener_UI_RootPathTF;
+	global string $AriSceneOpener_UI_LeftSL;
+	string $rootPath = `textField -q -text $AriSceneOpener_UI_RootPathTF`;
+	string $select[]=`textScrollList -q -selectItem $AriSceneOpener_UI_LeftSL`;
+	$rootPath=startString($rootPath,size($rootPath)-size($select[0])-1);
+	textField -e  -text $rootPath  $AriSceneOpener_UI_RootPathTF;
+	AriSceneOpener_LeftBox_Reload(0);
+}
+global proc AriSceneOpenerTreeViewDblClick(string $name){
+	AriSceneOpener_RightBoxW(3);
+}
+global proc AriSceneOpenerJumpWindow_UIChange(){
+	global string $AriSceneOpener_UI_JumpProjTF;
+	global string $AriSceneOpener_UI_JumpSceneTextF[];
+	global string $AriSceneOpener_UI_JumpRadioBT[2];
+	int $prjRadioTrue = `radioButton -q -sl $AriSceneOpener_UI_JumpRadioBT[0]`;
+	if($prjRadioTrue == true){
+		textField -e -en true  $AriSceneOpener_UI_JumpProjTF;
+		textField -e -en false $AriSceneOpener_UI_JumpSceneTextF[0];
+		textField -e -en false $AriSceneOpener_UI_JumpSceneTextF[1];
+	}
+	else{
+		textField -e -en false $AriSceneOpener_UI_JumpProjTF;
+		textField -e -en true  $AriSceneOpener_UI_JumpSceneTextF[0];
+		textField -e -en true  $AriSceneOpener_UI_JumpSceneTextF[1];
+	}
+}
+global proc AriSceneOpenerJumpWindow_ChangeButton(int $mode){
+	global string $AriSceneOpener_UI_JumpSceneTextF[2];
+	string $jumpSceneIn[];
+	$jumpSceneIn[0] = `textField -q -text $AriSceneOpener_UI_JumpSceneTextF[0]`;
+	$jumpSceneIn[1] = `textField -q -text $AriSceneOpener_UI_JumpSceneTextF[1]`;
+	string $sepa[];
+	tokenize $jumpSceneIn[1] "/" $sepa;
+	int $nowPos = size($sepa);
+	string $scene = $jumpSceneIn[0] + $jumpSceneIn[1];
+	int $setPos;
+	if($mode==0) $nowPos++;
+	if($mode==1) $nowPos--;
+	if($nowPos==0)$nowPos=1;
+	string $jumpScene[];
+	$jumpScene[0] = pathUpChange($scene, $nowPos);
+	$jumpScene[1] = endString($scene, (size($scene) - size($jumpScene[0])));
+	textField -e -text $jumpScene[0] $AriSceneOpener_UI_JumpSceneTextF[0];
+	textField -e -text $jumpScene[1] $AriSceneOpener_UI_JumpSceneTextF[1];
+}
+global proc AriSceneOpenerProjJump(){
+	string $workspace = `workspace -q -rd`;
+	string $scene     = `file -q -sceneName`;
+	print ("Workspace: "+ $workspace  +"\n");
+	print ("Scene    : "+ $scene +"\n");
+	if(startsWith($scene,$workspace) || $scene==""){
+		AriSceneOpenerJump_main($workspace,$scene);
+	}
+	else{
+		AriSceneOpenerJumpWindow($scene);
+	}
+}
+global proc AriSceneOpenerDirectoryOpen(int $mode)
+{
+	global string $AriSceneOpener_UI_RootPathTF;
+	global string $AriSceneOpener_UI_RightPathTextF;
+	string $rootPath  = `textField -q -text $AriSceneOpener_UI_RootPathTF`;
+	string $rightPath = `textField -q -text $AriSceneOpener_UI_RightPathTextF`;
+	string $select[]  = AriSO_DirectryMarge("full");
+	int $openTrue = false;
+	if(`filetest -f $select[0]` && $mode==0){
+		$openTrue = true;
+		string $path = substituteAllString($select[0], "/", "\\");
+		system ("explorer.exe /select, "+ $path);
+	}
+	if(`filetest -d $rootPath` && $mode==1){
+		$openTrue = true;
+		system ("load "+$rootPath);
+	}
+	if(!$openTrue){
+		system ("load "+ $rootPath + $rightPath);
+	}
+}
+global proc AriSceneOpenerMakePreview(string $mbPath,string $savePath){
+	string $currentScene = `file -q -sceneName`;
+	if(!endsWith($mbPath,".mb") && !endsWith($mbPath,".ma"))return;
+	if($currentScene != $mbPath){
+		file -f -options "v=0" -ignoreVersion  -o $mbPath;
+		$currentScene=`file -q -sceneName`;
+		string $selectPanel =`getPanel -wf`;
+		lookThroughModelPanel persp $selectPanel;
+		viewFit -f 1;
+		DisplayShadedAndTextured;
+	}
+	string $sepa[];
+	tokenize $currentScene "/" $sepa;
+	string $sceneName = $sepa[size($sepa)-1];
+	int $fileNameSize = size($sceneName);
+	$savePath = startString($mbPath,(size($mbPath)-$fileNameSize));
+	$savePath=$savePath+"prev";
+	string $saveName=$savePath+"/"+$sceneName+".png";
+	string $saveName_s=$savePath+"/"+$sceneName+"_s.png";
+	if(!`filetest -d $savePath`){
+		print `sysFile -md $savePath`;
+	}
+	setAttr "defaultRenderGlobals.imageFormat" 32;
+	playblast -frame `currentTime -q` -wh 600 400 -orn false  -rfn  -fmt "image" -viewer false  -cf  $saveName;
+	playblast -frame `currentTime -q` -wh 200 200 -orn false  -rfn  -fmt "image" -viewer false  -cf  $saveName_s;
+}
+global proc AriSceneOpenerSnapshot(){
+	global string $AriSceneOpener_UI_infoImageInfoF[5];
+	global int    $AriSceneOpenerVal_sizeX;
+	global int    $AriSceneOpenerVal_sizeY;
+	global int    $AriSceneOpenerVal_ssSeting;
+	int $settingBool[] = AriNumber10to2($AriSceneOpenerVal_ssSeting);
+	int $oldSaveTrue = $settingBool[2];
+	if($AriSceneOpenerVal_sizeX==0)$AriSceneOpenerVal_sizeX = 640;
+	if($AriSceneOpenerVal_sizeY==0)$AriSceneOpenerVal_sizeY = 480;
+	int $imageFormat = 32;
+	string $currentScene = `file -q -sceneName`;
+	if(!endsWith($currentScene,".mb") && !endsWith($currentScene,".ma"))return;
+	string $getPath[] = getSnapshotPath($currentScene);
+	string $savePath  =  $getPath[0];
+	string $saveDirectory = $getPath[1];
+	if(!`filetest -d $saveDirectory`){
+		print `sysFile -md $saveDirectory`;
+	}
+	if($oldSaveTrue){
+		if(`filetest -f $savePath`){
+			string $sepa[];
+			tokenize $savePath "." $sepa;
+			string $path = $sepa[0];
+			string $fileType = $sepa[1];
+			string $renamePath = $savePath;
+			string $day  = `textField -q -text $AriSceneOpener_UI_infoImageInfoF[0]`;
+			string $time = `textField -q -text $AriSceneOpener_UI_infoImageInfoF[1]`;
+			$day  = substituteAllString($day, "/", "");
+			$time = substituteAllString($time, ":", "");
+			$path = $path+"_"+$day+"_"+$time;
+			int $j;
+			for($j=1;$j<1000;$j++){
+				if(`filetest -f $renamePath`){
+					string $numberString = "";
+					int $num = log10 ($j);
+					for($k=0 ; $k<2-$num ; $k++){
+						$numberString = $numberString+0;
+					}
+					$numberString = $numberString + $j;
+					$renamePath = ($path +"_"+ $numberString +"."+ $fileType);
+				}
+			}
+			sysFile -rename  $renamePath $savePath;
+		}
+	}
+	int $formatNum = `getAttr "defaultRenderGlobals.imageFormat"`;
+	setAttr "defaultRenderGlobals.imageFormat" $imageFormat;
+	playblast -frame `currentTime -q` -wh $AriSceneOpenerVal_sizeX $AriSceneOpenerVal_sizeY -percent 100 -orn false -rfn  -fmt "image" -viewer false -cf $savePath;
+	setAttr "defaultRenderGlobals.imageFormat" $formatNum;
+	AriSceneOpener_RightBoxS();
+}
+global proc AriSceneOpener_AllCloseWindow()
+{	
+	string $window[] =`lsUI -windows`;
+	int $total=0;
+	print("\n\n---------------------------------------------\n");
+	for($win in $window){
+		if(!`window -ex $win`){	
+			continue;
+		}
+		if(    $win != "learningMoviesLaunchWnd"
+			&& $win != "ColorEditor"
+			&& $win != "MayaWindow"
+			&& $win != "CommandWindow"
+			&& $win != "gozwin"
+			&& $win != "nexFloatWindow"
+			&& $win != "AriCompactToolSettingsWindow"
+			&& $win != "AriSceneOpener"
+			){
+				string $title=`window -q -title $win`; 
+				print ($title+"  ("+$win+")\n");
+				deleteUI $win;
+				$total++;
+		}
+	}
+	print("\n\n---------------------------------------------\n");
+	print ($total +" Windows Close\n");
+}
+
+proc AriSceneOpenerButtonReroad(){
+	global string $AriSceneOpener_UI_sortButton[3];
+	global int $AriSceneOpenerVal_timeViewTrue;
+	global int $AriSceneOpenerVal_timeSortTrue;
+	global int $AriSceneOpenerVal_reOrderTrue;
+	iconTextCheckBox -e -v $AriSceneOpenerVal_timeViewTrue  $AriSceneOpener_UI_sortButton[0];
+	if( $AriSceneOpenerVal_timeSortTrue)	iconTextButton -e -i "sortTime.png" $AriSceneOpener_UI_sortButton[1];
+	if(!$AriSceneOpenerVal_timeSortTrue)	iconTextButton -e -i "sortName.png" $AriSceneOpener_UI_sortButton[1];
+	if( $AriSceneOpenerVal_reOrderTrue)	iconTextButton -e -i "arrowDown.png" $AriSceneOpener_UI_sortButton[2];
+	if(!$AriSceneOpenerVal_reOrderTrue)	iconTextButton -e -i "arrowUp.png"   $AriSceneOpener_UI_sortButton[2];
+}
+global proc AriSceneOpenerSortMode(int $mode){
+	global int $AriSceneOpenerVal_timeViewTrue;
+	global int $AriSceneOpenerVal_timeSortTrue;
+	global int $AriSceneOpenerVal_reOrderTrue;
+	if($mode==0)$AriSceneOpenerVal_timeViewTrue = !$AriSceneOpenerVal_timeViewTrue;
+	if($mode==1)$AriSceneOpenerVal_timeSortTrue = !$AriSceneOpenerVal_timeSortTrue;
+	if($mode==2)$AriSceneOpenerVal_reOrderTrue = !$AriSceneOpenerVal_reOrderTrue;
+	/*
+	if($mode==1){
+		if($AriSceneOpenerVal_timeSortTrue == false)	$AriSceneOpenerVal_timeSortTrue = true; 
+		else										$AriSceneOpenerVal_reOrderTrue = !$AriSceneOpenerVal_reOrderTrue;
+	}
+	if($mode==2){
+		if($AriSceneOpenerVal_timeSortTrue == true)	$AriSceneOpenerVal_timeSortTrue = false; 
+		else										$AriSceneOpenerVal_reOrderTrue  = !$AriSceneOpenerVal_reOrderTrue;
+	}
+	*/
+	AriSceneOpenerButtonReroad();
+	AriSceneOpener_RightReload();
+	AriSceneOpener_PreSave();
+}
+proc ProjectSetting_OK(){
+	global string $AriSceneOpener_UI_projSetTrueCB;    
+	global string $AriSceneOpener_UI_projSetModeRB[4]; 
+	global string $AriSceneOpener_UI_projSetColumn;    
+	global string $AriSceneOpener_UI_projSetInt;       
+	global int $AriSceneOpenerVal_projSetMode;
+	global int $AriSceneOpenerVal_projSetNum;
+	if(`radioButton -q -sl $AriSceneOpener_UI_projSetModeRB[0]`) $AriSceneOpenerVal_projSetMode = 1;
+	if(`radioButton -q -sl $AriSceneOpener_UI_projSetModeRB[1]`) $AriSceneOpenerVal_projSetMode = 2;
+	if(`radioButton -q -sl $AriSceneOpener_UI_projSetModeRB[2]`) $AriSceneOpenerVal_projSetMode = 3;
+	if(`checkBox -q -v $AriSceneOpener_UI_projSetTrueCB`) $AriSceneOpenerVal_projSetMode += 10;
+	$AriSceneOpenerVal_projSetNum = `intField -q -v $AriSceneOpener_UI_projSetInt`;
+	projectCalculation();
+}
+proc SnapshotSetting_OK(){
+	global string $AriSceneOpener_UI_ssSubRB[2];
+	global string $AriSceneOpener_UI_ssDireTF;
+	global string $AriSceneOpener_UI_ssSizeIF[2];
+	global string $AriSceneOpener_UI_ssRow;
+	global string $AriSceneOpener_UI_ssCB[5];
+	global string $AriSceneOpenerVal_SubDireName;
+	global int    $AriSceneOpenerVal_ssSeting;
+	global int    $AriSceneOpenerVal_sizeX;
+	global int    $AriSceneOpenerVal_sizeY;
+	$AriSceneOpenerVal_SubDireName = `textField -q -text $AriSceneOpener_UI_ssDireTF`;
+	$AriSceneOpenerVal_sizeX = `intField -q -v $AriSceneOpener_UI_ssSizeIF[0]`;
+	$AriSceneOpenerVal_sizeY = `intField -q -v $AriSceneOpener_UI_ssSizeIF[1]`;
+	if(`radioButton -q -sl $AriSceneOpener_UI_ssSubRB[0]`)	$settingBool[0] = 0;
+	else													$settingBool[0] = 1;
+	$settingBool[1] = `checkBox -q -v $AriSceneOpener_UI_ssCB[0]`;
+	$settingBool[2] = `checkBox -q -v $AriSceneOpener_UI_ssCB[1]`;
+	$AriSceneOpenerVal_ssSeting = AriNumber2to10($settingBool);
+}
+global proc AriSceneOpenerSetting_OK(){
+	ProjectSetting_OK();
+	SnapshotSetting_OK();
+	AriSceneOpener_PreSave();
+	if((`window -ex AriSceneOpener_OptionsW`)==true)deleteUI AriSceneOpener_OptionsW;
+}
+global proc AriSceneOpenerSnapshotSetting_sizeChange(int $mode){
+	global string $AriSceneOpener_UI_ssSizeIF[2];
+	int $sizeA = `intField -q -v $AriSceneOpener_UI_ssSizeIF[$mode]`;
+	int $sizeB;
+	if($mode==0)	$sizeB = $sizeA * 3/4;
+	else			$sizeB = $sizeA * 4/3;
+	int $num;
+	if($mode==0) $num=1;
+	else		 $num=0;
+	intField -e -v $sizeB $AriSceneOpener_UI_ssSizeIF[$num];
+	if($sizeA<=40){
+		intField -e -v 40 $AriSceneOpener_UI_ssSizeIF[0];
+		intField -e -v 30 $AriSceneOpener_UI_ssSizeIF[1];
+	}
+	if($sizeA>8192){
+		intField -e -v 8192 $AriSceneOpener_UI_ssSizeIF[0];
+		intField -e -v 6144 $AriSceneOpener_UI_ssSizeIF[1];
+	}
+}
+global proc AriSceneOpenerSettingUIChange(){
+	global string $AriSceneOpener_UI_projSetTrueCB;    
+	global string $AriSceneOpener_UI_projSetModeRB[4]; 
+	global string $AriSceneOpener_UI_projSetColumn;    
+	global string $AriSceneOpener_UI_projSetInt;       
+	if(`checkBox -q -v $AriSceneOpener_UI_projSetTrueCB`){
+		columnLayout -e -en true $AriSceneOpener_UI_projSetColumn;
+	}
+	else{
+		columnLayout -e -en false $AriSceneOpener_UI_projSetColumn;
+	}
+	if(`radioButton -q -sl 	$AriSceneOpener_UI_projSetModeRB[2]`)	intField -e -en true  $AriSceneOpener_UI_projSetInt;
+	else 															intField -e -en false $AriSceneOpener_UI_projSetInt;
+	global string $AriSceneOpener_UI_ssSubRB[2];
+	global string $AriSceneOpener_UI_ssDireTF;
+	global string $AriSceneOpener_UI_ssSizeIF[2];
+	global string $AriSceneOpener_UI_ssRow;
+	int $ssSelect =`radioButton -q -sl $AriSceneOpener_UI_ssSubRB[0]`;
+	if($ssSelect==true)	rowLayout -e -en false $AriSceneOpener_UI_ssRow;
+	else 				rowLayout -e -en true  $AriSceneOpener_UI_ssRow;
+}
+proc AriSceneOpenerSnapshotSetting(){
+	global string $AriSceneOpener_UI_ssSubRB[2];
+	global string $AriSceneOpener_UI_ssDireTF;
+	global string $AriSceneOpener_UI_ssSizeIF[2];
+	global string $AriSceneOpener_UI_ssRow;
+	global string $AriSceneOpener_UI_ssCB[5];
+	global string $AriSceneOpenerVal_SubDireName;
+	global int    $AriSceneOpenerVal_ssSeting;
+	global int    $AriSceneOpenerVal_sizeX;
+	global int    $AriSceneOpenerVal_sizeY;
+	int $settingBool[] = AriNumber10to2($AriSceneOpenerVal_ssSeting);
+	columnLayout;
+	radioCollection;
+	$AriSceneOpener_UI_ssSubRB[0] = `radioButton -onc "AriSceneOpenerSettingUIChange()" -l "Same folder as scene"`;
+	$AriSceneOpener_UI_ssSubRB[1] = `radioButton -onc "AriSceneOpenerSettingUIChange()" -l "Subfolder"`;
+	$AriSceneOpener_UI_ssRow =`rowLayout -nc 2 -cw 1 84`;
+		text -l "Subfolder name: ";
+		$AriSceneOpener_UI_ssDireTF    = `textField -text $AriSceneOpenerVal_SubDireName`;
+	setParent..;
+	rowLayout -nc 3 -cw 1 84;
+		text -l "Image size: ";
+		$AriSceneOpener_UI_ssSizeIF[0] = `intField -v $AriSceneOpenerVal_sizeX -w 50 -cc "AriSceneOpenerSnapshotSetting_sizeChange(0)"`;
+		$AriSceneOpener_UI_ssSizeIF[1] = `intField -v $AriSceneOpenerVal_sizeY -w 50 -cc "AriSceneOpenerSnapshotSetting_sizeChange(1)"`;
+	setParent..;
+	$AriSceneOpener_UI_ssCB[0] = `checkBox -v $settingBool[1] -l "Capture if there is no thumbnail when opening the scene"`;
+	$AriSceneOpener_UI_ssCB[1] = `checkBox -v $settingBool[2] -l "Save old screenshot"`;
+	setParent..;
+	if($settingBool[0]==0)	radioButton -e -sl $AriSceneOpener_UI_ssSubRB[0]; 
+	else					radioButton -e -sl $AriSceneOpener_UI_ssSubRB[1];
+}
+proc AriSceneOpenerProjectSetting(){
+	global string $AriSceneOpener_UI_projSetTrueCB;    
+	global string $AriSceneOpener_UI_projSetModeRB[4]; 
+	global string $AriSceneOpener_UI_projSetColumn;    
+	global string $AriSceneOpener_UI_projSetInt;       
+	global int $AriSceneOpenerVal_projSetMode; 
+	global int $AriSceneOpenerVal_projSetNum;  
+	columnLayout -adj true;
+	$AriSceneOpener_UI_projSetTrueCB = `checkBox -label "Automatic project set" -ann "Project set automatically when opening a scene" -cc "AriSceneOpenerSettingUIChange()"`;
+	$AriSceneOpener_UI_projSetColumn = `columnLayout -columnOffset "left" 14`;
+		radioCollection;
+		rowLayout;	$AriSceneOpener_UI_projSetModeRB[0] = `radioButton -onc "AriSceneOpenerSettingUIChange()" -label "Directory selected in left panel" `;	setParent..;
+		rowLayout;	$AriSceneOpener_UI_projSetModeRB[1] = `radioButton -onc "AriSceneOpenerSettingUIChange()" -label "One level above the scenes folder"`;			setParent..;
+		rowLayout -nc 3;
+			$AriSceneOpener_UI_projSetModeRB[2] =`radioButton -onc "AriSceneOpenerSettingUIChange()" -label "指定階層  "`;
+			$AriSceneOpener_UI_projSetInt       =`intField -w 30 -v $AriSceneOpenerVal_projSetNum`;
+			text -l "Hierarchically";
+		setParent..;
+	setParent..;
+	setParent..;
+	if($AriSceneOpenerVal_projSetMode==1 || $AriSceneOpenerVal_projSetMode==11)radioButton -e -sl $AriSceneOpener_UI_projSetModeRB[0];
+	if($AriSceneOpenerVal_projSetMode==2 || $AriSceneOpenerVal_projSetMode==12)radioButton -e -sl $AriSceneOpener_UI_projSetModeRB[1];
+	if($AriSceneOpenerVal_projSetMode==3 || $AriSceneOpenerVal_projSetMode==13)radioButton -e -sl $AriSceneOpener_UI_projSetModeRB[2];
+	if($AriSceneOpenerVal_projSetMode>=10)checkBox -e -v true $AriSceneOpener_UI_projSetTrueCB;
+}
+global proc AriSceneOpenerSetting(int $mode){
+	if((`window -ex AriSceneOpener_OptionsW`)==true)deleteUI AriSceneOpener_OptionsW;
+	window -title "Options"  -w 300 -h 200 -mnb false -mxb false AriSceneOpener_OptionsW;
+	columnLayout -adj true;
+	frameLayout -l "ProjectSet" -cll false;
+	AriSceneOpenerProjectSetting();
+	setParent..;
+	frameLayout -l "Snapshot" -cll false;
+	AriSceneOpenerSnapshotSetting();
+	setParent..;
+	button -l "OK" -c "AriSceneOpenerSetting_OK()";
+	setParent..;
+	showWindow;
+	AriSceneOpenerSettingUIChange();
+}
+global proc AriSceneOpenerGetDayColorSetting_OK(){
+	global vector $AriSceneOpener_ValDayColorStart[];
+	global vector $AriSceneOpener_ValDayColorEnd[];
+	global string $AriSceneOpener_UI_colorStart[];
+	global string $AriSceneOpener_UI_colorEnd[];
+	for($i=0; $i<5; $i++){
+		$AriSceneOpener_ValDayColorStart[$i] = `colorSliderGrp -q -rgb $AriSceneOpener_UI_colorStart[$i]`;
+		$AriSceneOpener_ValDayColorEnd[$i]   = `colorSliderGrp -q -rgb $AriSceneOpener_UI_colorEnd[$i]`;
+	}
+	AriSceneOpener_TextDataSave();
+}
+global proc AriSceneOpener_ColorSettingWindow_Open(){
+	global vector $AriSceneOpener_ValDayColorStart[];
+	global vector $AriSceneOpener_ValDayColorEnd[];
+	global int    $AriSceneOpener_ValDayDay[];
+	global string $AriSceneOpener_UI_colorStart[];
+	global string $AriSceneOpener_UI_colorEnd[];
+	global string $AriSceneOpener_UI_DayDay[];
+	if((`window -ex AriSceneOpener_SettingWindow`)==true)deleteUI AriSceneOpener_SettingWindow;
+	window -title "Setting"  -w 500 -h 400 -mnb false -mxb false  AriSceneOpener_SettingWindow;
+	columnLayout;
+	for($i=0; $i<5; $i++){
+		UI_ColorList($AriSceneOpener_ValDayColorStart[$i],$AriSceneOpener_ValDayColorEnd[$i],$AriSceneOpener_ValDayDay[$i],$i);
+	}
+	button -l "OK" -c "AriSceneOpenerGetDayColorSetting_OK()";
+	setParent..;
+	showWindow;
+}
+proc UI_ColorList(vector $colorStart,vector $colorEnd, int $day, int $number){
+	global string $AriSceneOpener_UI_colorStart[];
+	global string $AriSceneOpener_UI_colorEnd[];
+	global string $AriSceneOpener_UI_DayDay[];
+	string $dayText[] = {"Today","Day","Month","Year","10YearAgo"};
+	rowLayout -nc 5;
+	$AriSceneOpener_UI_colorStart[$number] = `colorSliderGrp -cw 1 30 -cw 2 0 -rgb ($colorStart.x) ($colorStart.y) ($colorStart.z)`;
+	$AriSceneOpener_UI_colorEnd[$number]   = `colorSliderGrp -cw 1 30 -cw 2 0 -rgb ($colorEnd.x)   ($colorEnd.y)   ($colorEnd.z)`;
+	text -l $dayText[$number];
+	setParent..;
+}
+proc string UI_LeftPanel(){
+	global string $AriSceneOpener_UI_LeftSL; 
+	global string $AriSceneOpener_UI_ProjSearchTF;
+	global string $AriSceneOpener_UI_LeftYajirushiIcon[];
+	global string $AriSceneOpener_UI_SearchCancel;
+	string $formLeft = `formLayout`;
+		string $dummyText = `text -bgc 1 0 0 -h 20 -l ""`;
+		$AriSceneOpener_UI_LeftSL = `textScrollList  -selectCommand AriSceneOpener_LeftBoxS -dcc AriSceneOpener_LeftBoxW`; 
+		$AriSceneOpener_UI_ProjSearchTF = `textField  -text "" -aie true -ec "AriSceneOpener_LeftBox_Reload(0)"`;
+		$AriSceneOpener_UI_LeftYajirushiIcon[1] = `nodeIconButton -w 26 -h 20 -style "iconOnly" -vis 0 -command "AriSceneOpener_LeftBox_Reload(2)" -image1 "SP_FileDialogBack.xpm"`;
+		$AriSceneOpener_UI_LeftYajirushiIcon[0] = `nodeIconButton -w 26 -h 20 -style "iconOnly" -en 0 -command "AriSceneOpener_LeftBoxUpDirectory" -image1 "SP_FileDialogToParent.xpm"`;
+		string $searchB = `button -l "Search" -c "AriSceneOpener_LeftBox_Reload(0)"`;
+	$AriSceneOpener_UI_SearchCancel = `button -l "Cancel" -en false -c "AriSceneOpener_SearchCancel()"`;
+	setParent..;
+	formLayout -e
+	-af $dummyText "top" 0
+	-af $AriSceneOpener_UI_LeftYajirushiIcon[1] "top" 0
+	-af $AriSceneOpener_UI_LeftYajirushiIcon[1] "left" 0
+	-af $AriSceneOpener_UI_LeftYajirushiIcon[0] "top" 0
+	-ac $AriSceneOpener_UI_LeftYajirushiIcon[0] "left" 0 $AriSceneOpener_UI_LeftYajirushiIcon[1]
+	-af $searchB "bottom" 0
+	-af $searchB "left"   0
+	-ap $searchB "right"  0 50
+	-af $AriSceneOpener_UI_SearchCancel "bottom" 0
+	-ac $AriSceneOpener_UI_SearchCancel "left"   0 $searchB
+	-af $AriSceneOpener_UI_SearchCancel "right"  0	
+	-ac $AriSceneOpener_UI_ProjSearchTF "bottom" 0  $searchB
+	-af $AriSceneOpener_UI_ProjSearchTF "right" 0
+	-af $AriSceneOpener_UI_ProjSearchTF "left" 0
+	-ac $AriSceneOpener_UI_LeftSL "top" 0 $dummyText
+	-ac $AriSceneOpener_UI_LeftSL "bottom" 0 $AriSceneOpener_UI_ProjSearchTF
+	-af $AriSceneOpener_UI_LeftSL "right" 0
+	-af $AriSceneOpener_UI_LeftSL "left" 0
+	$formLeft;
+	return $formLeft;
+}
+proc string UI_CurrentProjSet(){
+	global string $AriSceneOpener_UI_CurrentProjTextF;
+	string $workspace = `workspace -q -rd`;
+	string $form = `formLayout `;
+	string $currentProjButton  = `button -h 20 -w 70 -l "CurrentProj" -command "AriSceneOpenerProjJump()"`;
+	$AriSceneOpener_UI_CurrentProjTextF = `textField -ed 0 -text $workspace`;
+	setParent..;
+	formLayout -e
+	-af $currentProjButton "top"  0
+	-af $currentProjButton "left" 0
+	-af $AriSceneOpener_UI_CurrentProjTextF "top"   0
+	-ac $AriSceneOpener_UI_CurrentProjTextF "left"  0 $currentProjButton
+	-af $AriSceneOpener_UI_CurrentProjTextF "right" 0
+	$form;
+	return $form;
+}
+proc string UI_TargetProjFieldSet(){
+	global string $AriSceneOpener_UI_projTargetText;
+	global string $AriSceneOpener_UI_projTargetTextTrue;
+	string $form = `formLayout `;
+	string $targetProjButton   = `text -h 20 -l "TargetProj: " `;
+	$AriSceneOpener_UI_projTargetText     = `textField -ed false -text "" `;
+	$AriSceneOpener_UI_projTargetTextTrue = `iconTextButton -i "out_list.png" -c "AriSceneOpenerWorkspaceMelOpen()" -w 22 -h 22`;
+	setParent..;
+	formLayout -e
+	-af $targetProjButton "top"  0
+	-af $targetProjButton "left" 0
+	-af $AriSceneOpener_UI_projTargetTextTrue "top"  0
+	-af $AriSceneOpener_UI_projTargetTextTrue "right" 0
+	-af $AriSceneOpener_UI_projTargetText "top"   0 
+	-ac $AriSceneOpener_UI_projTargetText "left"  0 $targetProjButton
+	-ac $AriSceneOpener_UI_projTargetText "right" 0 $AriSceneOpener_UI_projTargetTextTrue
+	$form;
+	return $form;
+}
+proc string UI_ScenesDateTimeSet(){
+	global string $AriSceneOpener_UI_infoText[6];
+	string $form = `formLayout`;
+		$AriSceneOpener_UI_infoText[1] = `textField -ed false -text "" -w 90  `;
+		$AriSceneOpener_UI_infoText[2] = `textField -ed false -text "" -w 60  `;
+		$AriSceneOpener_UI_infoText[3] = `textField -ed false -text "" -w 80  `;
+		$AriSceneOpener_UI_infoText[4] = `textField -ed false -text "" -w 70  `;
+	setParent..;
+	formLayout -e
+	-af $AriSceneOpener_UI_infoText[4] "left"   0
+	-af $AriSceneOpener_UI_infoText[4] "top"    0
+	-ac $AriSceneOpener_UI_infoText[1] "top"   0 $AriSceneOpener_UI_infoText[4]
+	-af $AriSceneOpener_UI_infoText[1] "left"  0 
+	-ac $AriSceneOpener_UI_infoText[2] "top"    0 $AriSceneOpener_UI_infoText[4]
+	-ac $AriSceneOpener_UI_infoText[2] "left"   0 $AriSceneOpener_UI_infoText[1]
+	-ac $AriSceneOpener_UI_infoText[3] "left"  0 $AriSceneOpener_UI_infoText[4]
+	-af $AriSceneOpener_UI_infoText[3] "top"   0 
+	$form;
+	return $form;
+}
+proc string UI_ScenesInfoSet(){
+	string $form = `formLayout `;
+		string $targetScenes = UI_ScenesDateTimeSet(); 
+		string $targetProj   = UI_TargetProjFieldSet();
+	setParent..;
+	formLayout -e
+	-af $targetScenes "top"  0
+	-af $targetScenes "left" 0
+	-af $targetScenes "right" 0
+	-ac $targetProj "top"  0 $targetScenes
+	-af $targetProj "left" 0
+	-af $targetProj "right" 0
+	$form;
+	return $form;
+}
+proc string UI_ScenePathField(){
+	global string $AriSceneOpener_TargetScenesText;
+	string $form = `formLayout`;
+		$AriSceneOpener_TargetScenesText = `textField -text "" -aie true -enterCommand "AriSceneOpenerJump_Enter()"`;
+		string $openFolderBT     = `nodeIconButton -w 26 -h 20 -style "iconOnly" -image1 "fileOpen.png" -command  "AriSceneOpenerDirectoryOpen(0)"`;
+		string $fileDialogButton = `button -w 26 -h 20 -l ".." -command "AriSceneOpenerScenesDialog()" `;
+	setParent..;
+	formLayout -e
+	-af $openFolderBT "right"  0
+	-ac $fileDialogButton "right"  0 $openFolderBT
+	-af $AriSceneOpener_TargetScenesText "left"  0
+	-ac $AriSceneOpener_TargetScenesText "right" 0 $fileDialogButton
+	$form;
+	return $form;
+}
+proc string UI_DownField(){
+	global string $AriSceneOpener_UI_infoImage;
+	global string $AriSceneOpener_UI_infoImageInfoF[5];
+	global string $AriSceneOpener_UI_infoImageMenuItem[5];
+	global string $AriSceneOpener_UI_ssButton;
+	global string $AriSceneOpener_RightScrollLayout;
+	global string $AriSceneOpener_UI_ssPopup;
+	$AriSceneOpener_RightScrollLayout = `formLayout`;
+		string $scenesTextF = UI_ScenePathField();
+		$AriSceneOpener_UI_infoImage = `iconTextButton -w 120 -h 90 -i "mmEmpty.png"`;
+			popupMenu -button 1;
+			$AriSceneOpener_UI_infoImageMenuItem[0] = `menuItem -l "Directory" -image "fileOpen.png"`;
+			$AriSceneOpener_UI_infoImageMenuItem[1] = `menuItem -l "" `;
+		string $infoSet = UI_ScenesInfoSet();
+		$AriSceneOpener_UI_ssButton  = `iconTextButton -w 24 -h 24 -i "savePaintSnapshot.png" -c "AriSceneOpenerSnapshot()"`;
+		$AriSceneOpener_UI_ssPopup = `popupMenu -button 1`;
+		string $ssOptionButton      = `iconTextButton -w 24 -h 24 -i "gear.png" -l "Option" -c "AriSceneOpenerSetting(0)"`;
+		$AriSceneOpener_UI_infoImageInfoF[0] = `textField -vis false -bgc 0 0 0 -ed false -w 80`;
+		$AriSceneOpener_UI_infoImageInfoF[1] = `textField -vis false -ed false -w 40`;
+		string $pic =  `iconTextButton`;
+	setParent..;
+	formLayout -e
+		-af $scenesTextF "left"  0
+		-af $scenesTextF "right" 0
+		-ac $AriSceneOpener_UI_infoImage "top"  0 $scenesTextF
+		-af $AriSceneOpener_UI_infoImage "left" 0 
+		-ac $AriSceneOpener_UI_infoImageInfoF[0] "top"  0 $AriSceneOpener_UI_infoImage
+		-af $AriSceneOpener_UI_infoImageInfoF[0] "left" 0 
+		-ac $AriSceneOpener_UI_infoImageInfoF[1] "top"  0 $AriSceneOpener_UI_infoImage
+		-ac $AriSceneOpener_UI_infoImageInfoF[1] "left" 0 $AriSceneOpener_UI_infoImageInfoF[0]
+		-ac $infoSet "top"  0 $scenesTextF
+		-ac $infoSet "left" 0 $AriSceneOpener_UI_infoImage
+		-af $infoSet "right" 0 
+		-ac $AriSceneOpener_UI_ssButton "left" 0 $AriSceneOpener_UI_infoImage
+		-ac $AriSceneOpener_UI_ssButton "top"  0 $infoSet	
+		-af $ssOptionButton "right" 0
+		-ac $ssOptionButton "top"   0  $infoSet
+	$AriSceneOpener_RightScrollLayout;
+	return $AriSceneOpener_RightScrollLayout;
+}
+proc string UI_RightPanel(){
+	global string $AriSceneOpener_UI_YajirushiIcon[];
+	global string $AriSceneOpener_UI_RightPathTextF;
+	global string $AriSceneOpener_UI_sortButton[3];
+	global string $AriSceneOpener_UI_RightTreeView;
+	string $formRight = `formLayout`;
+		$AriSceneOpener_UI_YajirushiIcon[3] = `nodeIconButton -w 26 -h 20 -style "iconOnly" -en 1 -command "AriSceneOpener_RightBoxPushUpButton()" -image1 "SP_FileDialogToParent.xpm"`;
+		$AriSceneOpener_UI_RightPathTextF = `textField -ed 0 -text "scenes/"`;
+		$AriSceneOpener_UI_sortButton[0] = `iconTextCheckBox -i "out_time.png" -cc "AriSceneOpenerSortMode(0)" -w 20 -h 20`;
+		$AriSceneOpener_UI_sortButton[1] = `iconTextButton   -i "sortTime.png"  -c "AriSceneOpenerSortMode(1)" -w 20 -h 20`;
+		$AriSceneOpener_UI_sortButton[2] = `iconTextButton   -i "arrowDown.png" -c "AriSceneOpenerSortMode(2)" -w 20 -h 20`;
+		string $paneRight = `paneLayout -configuration "horizontal2"`;
+			$AriSceneOpener_UI_RightTreeView = `treeView -enk true -itemDblClickCommand "AriSceneOpenerTreeViewDblClick" -scc "AriSceneOpener_RightBoxS" -adr false`;
+				popupMenu;
+				menuItem -l "Import" -c "AriSceneOpener_RightBoxW(2)" ; menuItem -l "Open folder" -c "AriSceneOpenerDirectoryOpen(0)";
+			setParent..;
+			string $reloadBT   = `button   -label "Update" -command  "AriSceneOpener_RightReload()"`;
+			string $openfileBT = `button   -label "Open" -command  "AriSceneOpener_RightBoxW(3)"`;
+		setParent..;
+		formLayout -e
+		-af $AriSceneOpener_UI_sortButton[2] "top"   0
+		-af $AriSceneOpener_UI_sortButton[2] "right" 0
+		-af $AriSceneOpener_UI_sortButton[1] "top"   0
+		-ac $AriSceneOpener_UI_sortButton[1] "right" 0 $AriSceneOpener_UI_sortButton[2]
+		-af $AriSceneOpener_UI_sortButton[0] "top"   0
+		-ac $AriSceneOpener_UI_sortButton[0] "right" 0 $AriSceneOpener_UI_sortButton[1]
+		-af $AriSceneOpener_UI_YajirushiIcon[3] "left" 0
+		-af $AriSceneOpener_UI_YajirushiIcon[3] "top" 0
+		-af $AriSceneOpener_UI_RightPathTextF "top"   0
+		-ac $AriSceneOpener_UI_RightPathTextF "left"  0 $AriSceneOpener_UI_YajirushiIcon[3]
+		-ac $AriSceneOpener_UI_RightPathTextF "right" 0 $AriSceneOpener_UI_sortButton[0]
+		-af $reloadBT "bottom" 0
+		-af $reloadBT "left" 0 
+		-ap $reloadBT "right" 0 50
+		-af $openfileBT "bottom" 0 
+		-af $openfileBT "right" 0
+		-ap $openfileBT "left" 0 50
+		-ac $paneRight "top" 0 $AriSceneOpener_UI_sortButton[0]
+		-ac $paneRight "bottom" 0 $openfileBT
+		-af $paneRight "right" 0
+		-af $paneRight "left" 0
+		$formRight;
+	return $formRight;
+}
+proc string UI_BookmarkPanel(){
+	global string $AriSceneOpener_UI_BookmarkTree;
+	string $formBookmark   = `formLayout -bgc 0.2 0.2 0.2`;
+	$AriSceneOpener_UI_BookmarkTree = `treeView  -scc "AriSceneOpener_Bookmark_ListCrick()" -idc "AriSceneOpener_Bookmark_ListDblCrick"`;
+	treeView -e -vis true -enk true -nb 0 -arp false $AriSceneOpener_UI_BookmarkTree;
+	string $bookmarkText   = `text -label "Bookmark"`;
+	string $bookmarkAppend = `button -l "Add"    -c "AriSceneOpener_BookMark_Add()"`;
+	string $bookmarkDelete = `button -l "Delete" -c "AriSceneOpener_BookMark_Delete()"`;
+	string $bookmarkUp     = `iconTextButton -i "moveButtonUp.png"   -c "AriSceneOpener_BookMark_Move(\"up\")"`;
+	string $bookmarkDown   = `iconTextButton -i "moveButtonDown.png" -c "AriSceneOpener_BookMark_Move(\"down\")"`;
+	string $bookmarkSave   = `button -l "Save"   -c "AriSceneOpener_TextDataSave()"`;
+	string $bookmarkLabel  = `iconTextButton -i "out_list.png" -c "AriSceneOpener_BookMark_LabelChange()"`;
+	setParent..;
+	formLayout -e
+	-af $bookmarkText "top"   0
+	-af $bookmarkText "right" 0
+	-af $bookmarkText "left"  0
+	-af $bookmarkLabel "bottom" 0
+	-ap $bookmarkLabel "right"  0 10
+	-af $bookmarkLabel "left"   0
+	-af $bookmarkAppend "bottom" 0
+	-ap $bookmarkAppend "right"  0 30
+	-ac $bookmarkAppend "left"   0 $bookmarkLabel
+	-af $bookmarkDelete "bottom" 0
+	-ap $bookmarkDelete "right"  0 50
+	-ac $bookmarkDelete "left"   0 $bookmarkAppend
+	-af $bookmarkUp "bottom" 0
+	-ap $bookmarkUp "right"  0 62
+	-ap $bookmarkUp "left"   0 50
+	-af $bookmarkDown "bottom" 0
+	-ap $bookmarkDown "right"  0 75
+	-ap $bookmarkDown "left"   0 62
+	-af $bookmarkSave "bottom" 0
+	-af $bookmarkSave "right"  0
+	-ap $bookmarkSave "left"   0 75
+	-ac $AriSceneOpener_UI_BookmarkTree "top"    0 $bookmarkText
+	-ac $AriSceneOpener_UI_BookmarkTree "bottom" 0 $bookmarkAppend
+	-af $AriSceneOpener_UI_BookmarkTree "right"  0
+	-af $AriSceneOpener_UI_BookmarkTree "left"   0
+	$formBookmark;
+	return $AriSceneOpener_UI_BookmarkTree;
+}
+proc string UI_UPPanel(){
+	global string $AriSceneOpener_UI_RootPathTF; 
+	string $form = `formLayout`;
+	string $currentProj = UI_CurrentProjSet();	
+	$AriSceneOpener_UI_RootPathTF = `textField  -text "" -aie true -enterCommand "AriSceneOpener_LeftBox_Reload(0)"`;
+	string $fileDialogButton     = `button -w 26 -h 20 -l ".." -command "AriSceneOpenerDirectoryDialog" `;
+	string $openFolderBT         = `nodeIconButton -w 26 -h 20 -style "iconOnly" -image1 "fileOpen.png" -command  "AriSceneOpenerDirectoryOpen(1)"`;
+	if(!`exists "fileDialog2"`){
+		nodeIconButton -e -m 0 $fileDialogButton;
+	}
+	setParent..;
+	formLayout -e
+	-af $currentProj "top"   0
+	-af $currentProj "left"  0
+	-af $currentProj "right" 0
+	-ac $openFolderBT "top"   0 $currentProj
+	-af $openFolderBT "right" 0
+	-ac $fileDialogButton "top"   0 $currentProj
+	-ac $fileDialogButton "right" 0 $openFolderBT
+	-ac $AriSceneOpener_UI_RootPathTF "top"   0 $currentProj
+	-af $AriSceneOpener_UI_RootPathTF "left"  0
+	-ac $AriSceneOpener_UI_RootPathTF "right" 0 $fileDialogButton
+	$form;
+	return $form;
+}
+global proc AriSceneOpener_floatChangeCommand(){
+	string $dockArea = `dockControl -q -area AriSceneOpenerDock`;
+	int    $dockFloating = `dockControl -q -fl AriSceneOpenerDock`;
+	int    $width   = `dockControl -q -w AriSceneOpenerDock`;
+	int    $height  = `dockControl -q -h AriSceneOpenerDock`;
+	optionVar -stringValue "AriSceneOpener_dockArea"     $dockArea;
+	optionVar -intValue    "AriSceneOpener_dockFloating" $dockFloating;
+}
+global proc string AriSceneOpenerUI()
+{
+	global string $pathBookMark[10];
+	global string $pathBookMarkButton[10];
+	global string $AriSceneOpener_history[];
+	global int    $AriSceneOpener_hisNum;
+	global string $AriSceneOpener_UI_paneVer;
+	global string $AriSceneOpener_UI_paneHor;
+	string $defPath=`internalVar -uad`;
+	$defPath=startString($defPath,size($defPath)-1);
+	$pathBookMark[0] = $defPath;
+	$pathBookMark[1] = $defPath;
+	$pathBookMark[2] = $defPath;
+	$pathBookMark[3] = $defPath;
+	$pathBookMark[4] = $defPath;
+	$pathBookMark[5] = $defPath;
+    $pathBookMark[6] = $defPath;
+	string $rootPath;
+	string $form=`formLayout`;
+		string $upPane = UI_UPPanel();
+		$AriSceneOpener_UI_paneHor = `paneLayout -configuration "horizontal2" -ps 1 100 85 `;
+			string $form2 = `formLayout `;
+				$AriSceneOpener_UI_paneVer = `paneLayout -configuration "vertical2" -ps 1 50 100 `;
+					UI_LeftPanel();
+					UI_RightPanel();
+				setParent..;
+				string $info = UI_DownField();
+			setParent..;
+			formLayout -e
+			-af $info "bottom"   0
+			-af $info "left"  0
+			-af $info "right" 0
+			-af $AriSceneOpener_UI_paneVer "top"   0
+			-af $AriSceneOpener_UI_paneVer "left"  0
+			-af $AriSceneOpener_UI_paneVer "right" 0
+			-ac $AriSceneOpener_UI_paneVer "bottom"   0 $info
+			$form2;
+			UI_BookmarkPanel();
+			setParent..;
+		setParent..;
+		formLayout -e
+		-af $upPane "top"   0
+		-af $upPane "left"  0
+		-af $upPane "right" 0
+		-af $AriSceneOpener_UI_paneHor "bottom" 0
+		-ac $AriSceneOpener_UI_paneHor "top" 0 $upPane
+		-af $AriSceneOpener_UI_paneHor "right" 0
+		-af $AriSceneOpener_UI_paneHor "left" 0
+		$form;
+	AriSceneOpener_PreLoad();
+	textDataLoad();
+	string $workspace;
+	string $currentScene;
+	if(`optionVar -exists "AriSceneOpener_leftPath"`)  $workspace    = `optionVar -q "AriSceneOpener_leftPath"`;
+	if(`optionVar -exists "AriSceneOpener_scenePath"`) $currentScene = `optionVar -q "AriSceneOpener_scenePath"`;
+	if(!`filetest -f $currentScene` || !`filetest -d $workspace`){
+		$workspace    = `workspace -q -rd`;
+		$currentScene = `file -q -sceneName`;
+	}
+	AriSceneOpenerJump_main($workspace,$currentScene);
+	AriSceneOpenerButtonReroad();
+	projectCalculation();
+	return $form;
+}
+global proc AriSceneOpener(){
+	int $wscexTrue =`exists("workspaceControl")`;
+	if($wscexTrue){
+		int    $wscWidth   = 100;
+		int    $wscHeight  = 200;
+		if((`workspaceControl -ex AriSceneOpenerWSC`)==true){
+			workspaceControl -e -uiScript "source AriSceneOpener; AriSceneOpenerUI();" AriSceneOpenerWSC;
+			deleteUI AriSceneOpenerWSC;
+		}
+		workspaceControl
+			-label  "AriSceneOpener"
+			-retain false    
+			-floating true
+			-minimumWidth $wscWidth
+			-initialWidth $wscWidth
+			-uiScript "source AriSceneOpener; AriSceneOpenerUI();"
+			AriSceneOpenerWSC;
+	}
+	else{
+		if((`window -ex AriSceneOpenerW`)==true)deleteUI AriSceneOpenerW;
+		string $window = `window -title "AriSceneOpener"  -w 100 -h 400  AriSceneOpenerW`;
+		columnLayout;
+		string $mainUI = AriSceneOpenerUI();
+		string $dockArea     = "left";
+		int    $dockFloating = true;
+		int    $dockWidth   = 400;
+		int    $dockHeight  = 400;
+		if(`optionVar -exists "AriSceneOpener_dockArea"`)     $dockArea     = `optionVar -q "AriSceneOpener_dockArea"`;
+		if(`optionVar -exists "AriSceneOpener_dockFloating"`) $dockFloating = `optionVar -q "AriSceneOpener_dockFloating"`;
+		if((`dockControl -ex  AriSceneOpenerDock`)==true)deleteUI AriSceneOpenerDock;
+		dockControl
+			-content $mainUI
+			-l "AriSceneOpener"
+			-area $dockArea
+			-fl $dockFloating
+			-fcc "AriSceneOpener_floatChangeCommand()"
+			-w $dockWidth
+			-h $dockHeight
+			-allowedArea "left"
+			-allowedArea "right"
+		AriSceneOpenerDock;
+		refresh;
+		dockControl -e -raise AriSceneOpenerDock;
+		if((`window -ex AriSceneOpenerW`)==true)deleteUI AriSceneOpenerW;
+	}
+	AriSceneOpener_BookMark_LabelView();
+}

@@ -1,0 +1,164 @@
+//FK单关节控制器绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtFKIKConCreateWin(){
+
+if(`window -ex gtFKIKConCreateWin`) deleteUI  -window gtFKIKConCreateWin;
+window -wh 400 200 -title "老船角色绑定-☆☆☆☆☆-假样条IKFK控制器创建工具！！！！！！" gtFKIKConCreateWin;
+columnLayout -adj 1   mainColumnL;
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1087\"";
+	floatSliderGrp -l "控制器大小："  -f 1 -v 1 -min 0.01 -max 10  gtfkikConradius;
+	
+	separator -style double;
+   
+    text -l "创建FK绑定，并创建蒙皮单关节" textgta;
+	button  -l "为选择的关节链创建单关节IKFK混合控制器" -c "gtIkFkConProc" ;
+    separator -style double;	
+
+showWindow gtFKIKConCreateWin;
+
+}
+////////////
+global proc gtIkFkConProc(){
+    
+ global float $gttall;
+$gttall=`floatSliderGrp -q -v gtfkikConradius`;
+      
+string $bn[]=`ls -sl`;
+int $bnnum=size($bn);
+
+for($jj=0;$jj<$bnnum;$jj++){
+    select -r ($bn[$jj]);
+	string $sels[] = `ls -sl`;
+	
+	int $size=size($sels);	
+	string $baseJoint = $sels[0];
+	
+	string $endJoint;
+	
+	string $childs[]=`listRelatives -c -ad $sels[0]`;
+	int $num=size($childs);
+	$endJoint=$childs[0];
+	//////////////////////////////////////	
+	string $typs=`nodeType  $baseJoint`;
+	string $type=`nodeType  $endJoint`;
+	if($typs!="joint")error "需要选择两个关节";
+	if($type!="joint")error "需要选择两个关节";
+select -r $childs[1];
+select -add $endJoint;
+delete `orientConstraint`;
+select -r $endJoint;
+makeIdentity -apply true -t 0 -r 1 -s 0 -n 0;
+
+	select -r  $baseJoint;	
+for($a=($num-1);$a>=0;$a--){
+    
+    select -add ($childs[$a]);
+}
+string $sel[]=`ls -sl`;
+string $tokem[];
+int $tonum=`tokenize ($sel[0]) "_" $tokem`;
+string $side=$tokem[1];
+float $p[]=`joint -q -p ($sel[0])`;
+int $bnnum=size($sel);
+int $d=2;
+if($bnnum<2)$d=1;
+curve -d ($d) -p ($p[0]) ($p[1]) ($p[2]) -n ($sel[0]+"rotCurve");
+for($i=1;$i<size($sel);$i++){
+    float $p[]=`joint -q -p ($sel[$i])`;
+curve -a  -p ($p[0]) ($p[1]) ($p[2]) ($sel[0]+"rotCurve");
+}
+
+select -r  ($sel[0]+"rotCurve");
+group -n ($sel[0]+"rotCurveGrp");
+setAttr ($sel[0]+"rotCurveGrp.visibility") 0;
+setAttr -lock true ($sel[0]+"rotCurveGrp.v");
+
+for($i=0;$i<size($sel);$i++){
+  circle -ch 0 -o on -nr 1 0 0 -r ($gttall) -n ($sel[$i]+"Con") ;
+  select -r ($sel[$i]+"Con");
+  group -n ($sel[$i]+"ConGrp");
+  group -n ($sel[$i]+"ConGrpA");
+  select -r ($sel[$i]);
+  select -add ($sel[$i]+"ConGrpA");
+  delete `parentConstraint`;
+  
+  select -r ($sel[$i]+"Con");
+  select -add ($sel[$i]);
+  parentConstraint;
+  //scaleConstraint; 
+  setAttr ($sel[$i]+".radius") 0.01;
+  select -r ($sel[$i]);
+joint -p 0 0 0 -n ($sel[$i]+"BJTA");
+  select -r ($sel[$i]);
+select -add ($sel[$i]+"BJTA");
+delete`parentConstraint`;
+select -r ($sel[$i]+"BJTA");
+makeIdentity -apply true -t 0 -r 1 -s 0 -n 0;
+
+select -r ($sel[$i]+"Con");
+select -add ($sel[$i]+"BJTA");
+connectAttr -f ($sel[$i]+"Con.scale") ($sel[$i]+"BJTA.scale");
+
+select -r ($sel[0]+"rotCurve.cv["+$i+"]");
+newCluster " -envelope 1";
+rename ($sel[$i]+"cluster");
+select -r ($sel[$i]+"cluster");
+select -add ($sel[$i]+"Con");
+parent;
+setAttr ($sel[$i]+"cluster.visibility") 0;
+setAttr -lock true ($sel[$i]+"cluster.v");
+select -r ($sel[0]+"rotCurve");
+select -add ($sel[$i]+"BJTA");
+tangentConstraint -weight 1 -aimVector 1 0 0 -upVector 0 1 0 -worldUpType "objectrotation" -worldUpVector 0 1 0 -worldUpObject ($sel[$i]+"Con");
+
+  setAttr -lock true ($sel[$i]+"Con.sx");
+  setAttr -lock true ($sel[$i]+"Con.sy");
+  setAttr -lock true ($sel[$i]+"Con.sz");
+  setAttr -lock true ($sel[$i]+"Con.v");
+  string $shape[]=`listRelatives -s ($sel[$i]+"Con")`;
+    setAttr ($shape[0]+".overrideEnabled") 1;
+  if($side=="l"){
+    setAttr ($shape[0]+".overrideColor") 22;   
+  }else if($side=="r"){
+    setAttr ($shape[0]+".overrideColor") 13;   
+  }else{
+        setAttr ($shape[0]+".overrideColor") 6;     
+  }  
+}
+for($i=0;$i<(size($sel)-1);$i++){
+    $j=$i+1;
+    select -r ($sel[$j]+"ConGrpA");
+    select -add ($sel[$i]+"Con");
+    parent;
+}
+int $size=size($sel);
+
+addAttr -ln "rotx"  -at double -k 1 ($sel[$size-1]+"Con");
+addAttr -ln "roty"  -at double -k 1 ($sel[$size-1]+"Con");
+addAttr -ln "rotz"  -at double -k 1 ($sel[$size-1]+"Con");
+addAttr -ln "showCon"  -at bool -k 1 ($sel[$size-1]+"Con");
+
+for($i=0;$i<size($sel);$i++){
+    connectAttr -f ($sel[$size-1]+"Con.rotx") ($sel[$i]+"ConGrp.rotateX");
+    connectAttr -f ($sel[$size-1]+"Con.roty") ($sel[$i]+"ConGrp.rotateY");
+    connectAttr -f ($sel[$size-1]+"Con.rotz") ($sel[$i]+"ConGrp.rotateZ");    
+}
+
+for($i=0;$i<(size($sel)-1);$i++){
+    string $shap[]=`listRelatives -s ($sel[$i]+"Con")`;
+
+    connectAttr -f ($sel[$size-1]+"Con.showCon") ($shap[0]+".v");
+        }
+    }
+}
+/////////////////
+gtFKIKConCreateWin;

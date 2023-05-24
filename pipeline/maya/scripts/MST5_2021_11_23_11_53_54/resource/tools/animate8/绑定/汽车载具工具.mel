@@ -1,0 +1,967 @@
+//汽车载具轮胎自动转动绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+//////////////////////////////////ttg////////////////////////////////////
+global proc gtVehicleSetUpWin(){
+if(`window -ex gtVehicleSetUpWin`) deleteUI -window gtVehicleSetUpWin;
+window -wh 500 300 -t "老船角色绑定-☆-汽车载具轮胎自动转动绑定工具!!!" gtVehicleSetUpWin;
+columnLayout -adj 1;
+      text -l "点击下方按钮↓↓↓↓↓";
+    button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 35  -c "showHelp -a \"http://www.animate8.com/archives/1343\"";
+frameLayout -l "载具装配工具说明" -cl 1 -cll 1 gtFramLaya;
+text -l "------------------载具装配说明------------------\n老船载具绑定工具：可以装配轮胎类型载具角色" -h 45 -bgc 0 0.4 0.5;
+setParent..;
+formLayout gtFormC;
+textFieldGrp -l "车牌" -tx  "carName" carTextF1;
+button -l "载入" -c "gtCarLaodName" butC;
+formLayout -e
+-af carTextF1 left 5 -af carTextF1 top 5 -ap carTextF1 right 0 75
+-ac butC left 5  carTextF1 -af butC top 5 -af butC right 5  gtFormC;
+setParent..;
+
+rowColumnLayout -nc 2 -cw 1 490 -cw 2 10 ;
+
+intSliderGrp -l "轮胎数量(单位：双）" -f 1 -v 2 -min 1 -max 10 gtintNum;
+text -l "";
+
+setParent..;
+
+button -l "创建载具关节" -c "gtVehicleBoneProc" butBone;
+
+	rowColumnLayout -nc 3 -cw 1 100 -cw 2 180  -cw 3 180 ;
+text -l "";
+checkBox -l "创建路径动画" -v 1  gtCarPathCurve;
+checkBox -l "车体颠簸" -v 1  gtCarUpDown;
+
+setParent..;
+separator -style "double" ;
+	rowColumnLayout -nc 3 -cw 1 100 -cw 2 180  -cw 3 180;
+text -l "";
+string $onA="checkBox -e -en 1  gtCargroudAttach;";
+string $ofA="checkBox -e -v 0 -en 0 gtCargroudAttach;";
+checkBox -l "创建地面物体" -v 1 -ofc $ofA -onc  $onA gtCargroudPlane;
+checkBox -l "轮胎附着地面" -v 1  gtCargroudAttach;
+
+setParent..;
+
+button -l "创建一个车体引擎" -c "gtVehicleSetUpProcA"  carBut;
+text -l "载入路径曲线，选择两个前轮胎曲线控制器";
+	rowColumnLayout -nc 2 -cw 1 390 -cw 2 100 ;
+
+textFieldGrp -l "路径曲线" -tx  "" carPathCurve;
+button -l "载入" -c "gtCarLaodNameA" butCa;
+
+setParent..;
+button -l "创建前轮胎转向绑定" -c "gtVehicleTireOrientProc"  carButa;
+
+showWindow gtVehicleSetUpWin;
+}
+
+/////////////////////////////////////////////////
+global proc gtCarLaodName(){
+string $sel[]=`ls -sl`;
+string $carName[];
+int $t=`tokenize ($sel[0]) "_" $carName`;
+if($t==1){
+    textFieldGrp -e -text ($sel[0]) carTextF1;
+}else if($t>1){
+    textFieldGrp -e -text ($carName[0]) carTextF1;
+    }
+}
+//////////////////////////////////////////////
+global proc gtCarLaodNameA(){
+string $sel[]=`ls -sl`;
+textFieldGrp -e -text ($sel[0]) carPathCurve;
+}
+///////////////////
+
+global proc gtVehicleBoneProc(){
+string $carN=`textFieldGrp -q -tx carTextF1`;
+int $tireNum=`intSliderGrp -q -v gtintNum`;
+
+$carN=($carN+"_");
+circle -ch 0 -o on -nr 0 1 0 -r 5 -n ($carN+"con");
+group -n ($carN+"conGrpA");
+group -n ($carN+"conGrp");
+
+select -r ($carN+"con.cv[7]") ;
+select -tgl ($carN+"con.cv[5]") ;
+select -tgl ($carN+"con.cv[3]") ;
+select -tgl ($carN+"con.cv[1]") ;
+move -r 0 0.5 0;
+
+string $shap[]=`listRelatives -s ($carN+"con")`;
+setAttr ($shap[0]+".overrideEnabled") 1;
+setAttr ($shap[0]+".overrideColor") 6;
+
+select -cl;
+joint -p 0 0 0 -n ($carN+"rootBn"); 
+joint -p 0 2 0 -n ($carN+"bodyBn"); 
+joint -p 0 4 0 -n ($carN+"bodyBnEnd"); 
+select -r ($carN+"rootBn"); 
+joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+
+select -r ($carN+"rootBn");
+select -add  ($carN+"con");
+parent;
+
+
+float $perTireDis;
+if($tireNum>1)$perTireDis=4;
+float $backPos=0-(($tireNum-1)*$perTireDis*0.5);
+
+for($i=0;$i<$tireNum;$i++){
+    
+    select -r ($carN+"rootBn");
+    joint -p 2 1.0 ($backPos+$i*$perTireDis) -n ($carN+"l_tireBn"+$i);  
+    joint -p 2 0 ($backPos+$i*$perTireDis) -n ($carN+"l_tireBnEnd"+$i);  
+    select -r ($carN+"l_tireBn"+$i);
+    joint -e  -oj xyz -secondaryAxisOrient yup -ch -zso;
+
+    }
+
+}
+////////////////////////////
+global proc gtVehicleSetUpProcA(){
+string $carN=`textFieldGrp -q -tx carTextF1`;
+int $tireNum=`intSliderGrp -q -v gtintNum`;
+int $carUpDown=`checkBox -q -v gtCarUpDown`;
+int $carPath=`checkBox -q -v gtCarPathCurve`;
+int $carGroud=`checkBox -q -v gtCargroudPlane`;
+
+    select -r ($carN+"_rootBn");
+    parent -world;
+    
+    spaceLocator -p 0 0 0 -n ($carN+"_rootBnLoc");
+    group -n ($carN+"_rootBnGrp");
+    select -r ($carN+"_rootBn");
+    select -add ($carN+"_rootBnGrp");
+    delete`parentConstraint`;
+    select -r ($carN+"_rootBn");
+    select -add ($carN+"_rootBnLoc");   
+    parent; 
+    setAttr ($carN+"_rootBnLocShape.visibility") 0;
+    setAttr -l true ($carN+"_rootBnLocShape.visibility") ;
+    select -r ($carN+"_con") ;
+    select -add ($carN+"_rootBnLoc") ;
+    parentConstraint -mo;
+    scaleConstraint;
+    
+    select -cl;
+    group -empty -n ($carN+"_notMoveGrp");
+    select -r ($carN+"_notMoveGrp");
+    select -add ($carN+"_rootBnGrp");
+    select -add ($carN+"_conGrp") ;
+    group -n  ($carN+"_Grp"); 
+    
+if($carPath==1){
+
+circle -ch 0 -o on -nr 0 1 0 -r 8 -n ($carN+"_conAll");
+group -n ($carN+"_conAllGrpA");
+group -n ($carN+"_conAllGrp");
+
+select -r ($carN+"_conAll.cv[7]") ;
+select -tgl ($carN+"_conAll.cv[5]") ;
+select -tgl ($carN+"_conAll.cv[3]") ;
+select -tgl ($carN+"_conAll.cv[1]") ;
+move -r 0 0.5 0;
+
+string $shap[]=`listRelatives -s ($carN+"_conAll")`;
+setAttr ($shap[0]+".overrideEnabled") 1;
+setAttr ($shap[0]+".overrideColor") 13;    
+    
+spaceLocator -p 0 0 0 -n ($carN+"_locMov");
+group -n ($carN+"_locMovGrp");
+select -r ($carN+"_conGrp");
+select -add ($carN+"_locMov");
+parent;
+
+select -r ($carN+"_conAll");
+select -add ($carN+"_locMov");
+scaleConstraint;
+
+curve -d 3 -p 0 0 0 -p 0 0 4 -p 0 0 8 -p 0 0 12 -p 0 0 16 -p 0 0 20 -p 0 0 24 -p 0 0 28 -p 0 0 32 -p 0 0 36 
+-k 0 -k 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 7 -k 7 -n ($carN+"_pathCurve");
+group -n ($carN+"_pathCurveGrp");
+group -n ($carN+"_planePathCurveGrp");
+xform -os -piv 0 0 0;
+select -r ($carN+"_conAll");
+select -add ($carN+"_planePathCurveGrp");
+parentConstraint;
+scaleConstraint;
+select -r ($carN+"_planePathCurveGrp");
+select -add ($carN+"_notMoveGrp");
+parent;
+
+textFieldGrp -e -text ($carN+"_pathCurve") carPathCurve;
+
+rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s 10 -d 3 -tol 0.01 ($carN+"_pathCurve");
+select -cl;
+string $shap[]=`listRelatives -s ($carN+"_pathCurve")`;
+setAttr ($shap[0]+".overrideEnabled") 1;
+setAttr ($shap[0]+".overrideColor") 12;
+
+
+select -r ($carN+"_locMov");
+select -tgl ($carN+"_pathCurve");
+pathAnimation -fractionMode false -follow true -followAxis z -upAxis y -worldUpType "objectrotation" -worldUpVector 0 1 0 -worldUpObject ($carN+"_conAll") 
+-inverseUp false -inverseFront false -bank false -startTimeU `playbackOptions -query -minTime` -endTimeU  `playbackOptions -query -maxTime`;
+string $pathShap[]=`listRelatives -s ($carN+"_pathCurve")`;
+string $pathN[]=`listConnections -s 0 -d 1 ($pathShap[0]+".worldSpace[0]")`;
+
+arcLengthDimension ($carN+"_pathCurve.u[0.0]") ;
+string $disNam[]=`ls -sl`;
+pickWalk -d down;
+string $disN[]=`ls -sl`;
+connectAttr -f ($pathN[0]+".uValue") ($disN[0]+".uParamValue");
+setAttr ($disNam[0]+".visibility") 0;
+setAttr -lock true ($disNam[0]+".visibility");
+
+select -r ($carN+"_conAll");
+addAttr -ln "dis"  -at double ;
+addAttr -ln "showLoc"  -at bool -k 1;
+connectAttr -f ($disN[0]+".arcLength") ($carN+"_conAll.dis");
+
+string $shap[]=`listRelatives -s ($carN+"_locMov")`;
+setAttr ($shap[0]+".v") 0;
+setAttr -l true ($shap[0]+".v") ;
+
+spaceLocator -p 0 0 0 -n ($carN+"_LocAll");
+group -n ($carN+"_LocAllGrp");
+setAttr ($carN+"_LocAllGrp.scaleZ") 5;
+setAttr ($carN+"_LocAllGrp.scaleX") 5;
+setAttr ($carN+"_LocAllGrp.scaleY") 5;
+
+select -r ($carN+"_conAllGrp") ;
+select -add ($carN+"_LocAll") ;
+parent;
+
+connectAttr -f  ($carN+"_conAll.showLoc") ($carN+"_LocAllShape.v");
+select -r ($carN+"_LocAllGrp") ;
+select -add ($carN+"_locMovGrp") ;
+select -add ($carN+"_Grp");
+parent;
+
+}
+
+///////////////
+select -cl;
+group -empty -n ($carN+"_tireRollNotMoveGrp");  
+select -r ($carN+"_tireRollNotMoveGrp");  
+select -add ($carN+"_notMoveGrp");  
+parent;
+
+for($i=0;$i<$tireNum;$i++){
+  select -r ($carN+"_l_tireBn"+$i) ;
+  mirrorJoint -mirrorYZ -searchReplace "l_" "r_";
+
+string $side="_l_";
+  circle -ch 0 -o on -nr  0 1 0 -r 1.0 -n ($carN+$side+"tireCon"+$i);
+  group -n ($carN+$side+"tireConGrpA"+$i);
+  group -n ($carN+$side+"tireConGrp"+$i);
+
+  select -r  ($carN+$side+"tireCon"+$i);
+  duplicate -rr;
+    rename ($carN+$side+"tireAPcurve"+$i);
+    select -r ($carN+$side+"tireAPcurve"+$i+".cv[2]") ;
+    select -tgl ($carN+$side+"tireAPcurve"+$i+".cv[0]") ;
+    select -tgl ($carN+$side+"tireAPcurve"+$i+".cv[4]") ;
+    select -tgl ($carN+$side+"tireAPcurve"+$i+".cv[6]") ;
+    scale -r -p 0cm 0cm 0cm 0 0 0 ;
+     string $shap[]=`listRelatives -s ($carN+$side+"tireAPcurve"+$i)`;
+     setAttr ($shap[0]+".overrideEnabled") 1;
+     setAttr ($shap[0]+".overrideColor") 14;
+
+  select -r ($carN+$side+"tireBn"+$i) ;
+  select -add  ($carN+$side+"tireConGrp"+$i);
+  delete`parentConstraint`;
+  
+
+  select -r ($carN+$side+"tireAPcurve"+$i);
+  select -add  ($carN+$side+"tireCon"+$i);
+  parent;
+  select -r  ($carN+$side+"tireCon"+$i);
+  addAttr -ln "showAPcurve"  -at bool -k 1; 
+  string $shap[]=`listRelatives -s ($carN+$side+"tireAPcurve"+$i)`;    
+  connectAttr -f ($carN+$side+"tireCon"+$i+".showAPcurve") ($shap[0]+".visibility");
+    
+  select -r ($carN+$side+"tireBn"+$i) ;
+  duplicate -rr;
+  rename ($carN+$side+"tireBnRot"+$i) ;
+  select -r ($carN+$side+"tireBnRot"+$i) ;
+  select -add ($carN+$side+"tireAPcurve"+$i);
+  parent;
+  select -r ($carN+$side+"tireBnRot"+$i) ;
+  select -add ($carN+$side+"tireBn"+$i) ;
+  parentConstraint;
+  scaleConstraint;
+  
+  setAttr ($carN+$side+"tireBnRot"+$i+".radius") 0.01; 
+  select -r ($carN+$side+"tireBnRot"+$i) ;
+  pickWalk -d down;
+  delete;
+  
+  string $shap[]=`listRelatives -s ($carN+$side+"tireCon"+$i)`;
+  setAttr ($shap[0]+".overrideEnabled") 1;
+  setAttr ($shap[0]+".overrideColor") 22;
+  
+
+  select -r ($carN+$side+"tireConGrp"+$i);
+  select -add  ($carN+"_con") ;
+  parent;
+
+  float $diam=`getAttr ($carN+$side+"tireBnEnd"+$i+".tx")`;
+  select -r ($carN+$side+"tireCon"+$i);
+  addAttr -ln "diameter"  -at double  -min 0.01 -dv ($diam*2) -k 1;
+  addAttr -ln "autoRoll"  -at bool  -dv 1 -k 1;
+  addAttr -ln "prePosx"  -at double;
+  addAttr -ln "prePosy"  -at double;
+  addAttr -ln "prePosz"  -at double;
+  select -cl;
+  group -empty -n ($carN+$side+"nowPos"+$i);
+  select -cl;
+  group -empty -n ($carN+$side+"prePos"+$i); 
+  
+  select -cl;
+  group -empty -n ($carN+$side+"prePosA"+$i); 
+  select -r ($carN+$side+"prePosA"+$i); 
+  select -add ($carN+$side+"tireCon"+$i);
+  parent;
+  setAttr ($carN+$side+"prePosA"+$i+".translateZ") 0;
+  setAttr ($carN+$side+"prePosA"+$i+".translateX") 0;
+  setAttr ($carN+$side+"prePosA"+$i+".translateY") 0;
+  
+  select -r ($carN+$side+"nowPos"+$i);
+  select -add ($carN+$side+"prePos"+$i); 
+  group -n ($carN+$side+"prePos"+$i+"Grp"); 
+  select -r ($carN+$side+"prePos"+$i+"Grp"); 
+  select -add ($carN+"_tireRollNotMoveGrp");  
+  parent;
+
+  select -r ($carN+$side+"tireCon"+$i);
+  select -add ($carN+$side+"nowPos"+$i);
+  pointConstraint;
+  select -r ($carN+$side+"prePos"+$i); 
+  select -add ($carN+$side+"prePosA"+$i); 
+  pointConstraint;
+  
+string $exp="";
+    $exp+="float $diameter=";
+    $exp+=($carN+$side+"tireCon"+$i)+".diameter;\n";
+    $exp+="float $autoRoll=";    
+    $exp+=($carN+$side+"tireCon"+$i)+".autoRoll;\n";
+    $exp+="float $prePosx=";     
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosx;\n";
+    $exp+="float $prePosy=";        
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosy;\n";
+    $exp+="float $prePosz=";        
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosz;\n\n";
+    $exp+=($carN+$side+"prePos"+$i)+".tx=$prePosx;\n";
+    $exp+=($carN+$side+"prePos"+$i)+".ty=$prePosy;\n";
+    $exp+=($carN+$side+"prePos"+$i)+".tz=$prePosz;\n";
+    $exp+="float $nowPosx=";
+    $exp+=($carN+$side+"nowPos"+$i)+".tx;\n";
+    $exp+="float $nowPosy=";
+    $exp+=($carN+$side+"nowPos"+$i)+".ty;\n";    
+    $exp+="float $nowPosz=";
+    $exp+=($carN+$side+"nowPos"+$i)+".tz;\n\n";    
+              
+    $exp+="float $dis=mag(<<$nowPosx,$nowPosy,$nowPosz>>-<<$prePosx,$prePosy,$prePosz>>);\n";
+    $exp+="float $curRoll=";
+    $exp+=($carN+$side+"tireBnRot"+$i)+".rotateY;\n\n";
+
+    $exp+="float $dirPreZ=";
+    $exp+=($carN+$side+"prePosA"+$i)+".translateZ;\n";
+
+    $exp+="int $dir=1;\n";
+    $exp+="if($dirPreZ>0)\n";
+    $exp+="$dir=-1;\n";
+    $exp+="float $perimeter=3.1415926*$diameter;\n";
+    
+    $exp+=($carN+$side+"tireBnRot"+$i)+".rotateY=$curRoll+($dis/$perimeter)*360*$autoRoll*$dir;\n";
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosx=$nowPosx;\n";
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosy=$nowPosy;\n";
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosz=$nowPosz;\n";
+    
+expression -s ($exp)  -o ($carN+$side+"tireBnRot"+$i) -ae 1 -uc all -n ($carN+$side+"tireBnRot"+$i+"exp");  
+
+////////////////////
+string $side="_r_";
+  
+    circle -ch 0 -o on -nr  0 1 0 -r 1.0 -n ($carN+$side+"tireCon"+$i);
+  group -n ($carN+$side+"tireConGrpA"+$i);
+  group -n ($carN+$side+"tireConGrp"+$i);
+
+  select -r  ($carN+$side+"tireCon"+$i);
+  duplicate -rr;
+    rename ($carN+$side+"tireAPcurve"+$i);
+    select -r ($carN+$side+"tireAPcurve"+$i+".cv[2]") ;
+    select -tgl ($carN+$side+"tireAPcurve"+$i+".cv[0]") ;
+    select -tgl ($carN+$side+"tireAPcurve"+$i+".cv[4]") ;
+    select -tgl ($carN+$side+"tireAPcurve"+$i+".cv[6]") ;
+    scale -r -p 0cm 0cm 0cm 0 0 0 ;
+     string $shap[]=`listRelatives -s ($carN+$side+"tireAPcurve"+$i)`;
+     setAttr ($shap[0]+".overrideEnabled") 1;
+     setAttr ($shap[0]+".overrideColor") 14;
+
+  select -r ($carN+$side+"tireBn"+$i) ;
+  select -add  ($carN+$side+"tireConGrp"+$i);
+  delete`parentConstraint`;
+  
+  select -r ($carN+$side+"tireAPcurve"+$i);
+  select -add  ($carN+$side+"tireCon"+$i);
+  parent;
+  select -r  ($carN+$side+"tireCon"+$i);
+  addAttr -ln "showAPcurve"  -at bool -k 1; 
+  string $shap[]=`listRelatives -s ($carN+$side+"tireAPcurve"+$i)`;    
+  connectAttr -f ($carN+$side+"tireCon"+$i+".showAPcurve") ($shap[0]+".visibility");
+    
+  select -r ($carN+$side+"tireBn"+$i) ;
+  duplicate -rr;
+  rename ($carN+$side+"tireBnRot"+$i) ;
+  select -r ($carN+$side+"tireBnRot"+$i) ;
+  select -add ($carN+$side+"tireAPcurve"+$i);
+  parent;
+  select -r ($carN+$side+"tireBnRot"+$i) ;
+  select -add ($carN+$side+"tireBn"+$i) ;
+  parentConstraint;
+  scaleConstraint;
+
+  setAttr ($carN+$side+"tireBnRot"+$i+".radius") 0.01; 
+  select -r ($carN+$side+"tireBnRot"+$i) ;
+  pickWalk -d down;
+  delete;
+  
+  string $shap[]=`listRelatives -s ($carN+$side+"tireCon"+$i)`;
+  setAttr ($shap[0]+".overrideEnabled") 1;
+  setAttr ($shap[0]+".overrideColor") 22;
+  
+
+  select -r ($carN+$side+"tireConGrp"+$i);
+  select -add  ($carN+"_con") ;
+  parent;
+
+  float $diam=`getAttr ($carN+$side+"tireBnEnd"+$i+".tx")`;
+  select -r ($carN+$side+"tireCon"+$i);
+  addAttr -ln "diameter"  -at double  -min 0.01 -dv ($diam*2) -k 1;
+  addAttr -ln "autoRoll"  -at bool  -dv 1 -k 1;
+  addAttr -ln "prePosx"  -at double;
+  addAttr -ln "prePosy"  -at double;
+  addAttr -ln "prePosz"  -at double;
+  select -cl;
+  group -empty -n ($carN+$side+"nowPos"+$i);
+  select -cl;
+  group -empty -n ($carN+$side+"prePos"+$i); 
+  
+  select -cl;
+  group -empty -n ($carN+$side+"prePosA"+$i); 
+  select -r ($carN+$side+"prePosA"+$i); 
+  select -add ($carN+$side+"tireCon"+$i);
+  parent;
+  setAttr ($carN+$side+"prePosA"+$i+".translateZ") 0;
+  setAttr ($carN+$side+"prePosA"+$i+".translateX") 0;
+  setAttr ($carN+$side+"prePosA"+$i+".translateY") 0;
+  
+  select -r ($carN+$side+"nowPos"+$i);
+  select -add ($carN+$side+"prePos"+$i); 
+  group -n ($carN+$side+"prePos"+$i+"Grp"); 
+  select -r ($carN+$side+"prePos"+$i+"Grp"); 
+  select -add ($carN+"_tireRollNotMoveGrp");  
+  parent;
+
+  select -r ($carN+$side+"tireCon"+$i);
+  select -add ($carN+$side+"nowPos"+$i);
+  pointConstraint;
+  select -r ($carN+$side+"prePos"+$i); 
+  select -add ($carN+$side+"prePosA"+$i); 
+  pointConstraint;
+  
+string $exp="";
+    $exp+="float $diameter=";
+    $exp+=($carN+$side+"tireCon"+$i)+".diameter;\n";
+    $exp+="float $autoRoll=";    
+    $exp+=($carN+$side+"tireCon"+$i)+".autoRoll;\n";
+    $exp+="float $prePosx=";     
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosx;\n";
+    $exp+="float $prePosy=";        
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosy;\n";
+    $exp+="float $prePosz=";        
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosz;\n\n";
+    $exp+=($carN+$side+"prePos"+$i)+".tx=$prePosx;\n";
+    $exp+=($carN+$side+"prePos"+$i)+".ty=$prePosy;\n";
+    $exp+=($carN+$side+"prePos"+$i)+".tz=$prePosz;\n";
+    $exp+="float $nowPosx=";
+    $exp+=($carN+$side+"nowPos"+$i)+".tx;\n";
+    $exp+="float $nowPosy=";
+    $exp+=($carN+$side+"nowPos"+$i)+".ty;\n";    
+    $exp+="float $nowPosz=";
+    $exp+=($carN+$side+"nowPos"+$i)+".tz;\n\n";    
+              
+    $exp+="float $dis=mag(<<$nowPosx,$nowPosy,$nowPosz>>-<<$prePosx,$prePosy,$prePosz>>);\n";
+    $exp+="float $curRoll=";
+    $exp+=($carN+$side+"tireBnRot"+$i)+".rotateY;\n\n";
+
+    $exp+="float $dirPreZ=";
+    $exp+=($carN+$side+"prePosA"+$i)+".translateZ;\n";
+
+    $exp+="int $dir=1;\n";
+    $exp+="if($dirPreZ>0)\n";
+    $exp+="$dir=-1;\n";
+    $exp+="float $perimeter=3.1415926*$diameter;\n";
+    
+    $exp+=($carN+$side+"tireBnRot"+$i)+".rotateY=$curRoll+($dis/$perimeter)*360*$autoRoll*$dir;\n";
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosx=$nowPosx;\n";
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosy=$nowPosy;\n";
+    $exp+=($carN+$side+"tireCon"+$i)+".prePosz=$nowPosz;\n";
+    
+expression -s ($exp)  -o ($carN+$side+"tireBnRot"+$i) -ae 1 -uc all -n ($carN+$side+"tireBnRot"+$i+"exp");  
+
+  
+}
+
+if($carGroud==1){
+
+nurbsPlane -ch on -o on -po 0 -ax 0 1 0 -w 50 -lr 1 -n ($carN+"_groudPlane");
+setAttr ($carN+"_groudPlane.translateZ") 15;
+string $shap[]=`listRelatives -s ($carN+"_groudPlane")`;
+string $makePlane[]=`listConnections -s 1 -d 0 ($shap[0]+".create")`;
+setAttr ($makePlane[0]+".patchesV") 30;
+setAttr ($makePlane[0]+".patchesU") 30;
+group -n ($carN+"_groudPlaneGrp");
+select -r ($carN+"_groudPlaneGrp") ;
+select -add ($carN+"_notMoveGrp");  
+parent;
+int $ex=`objExists ($carN+"_conAll")`;
+if($ex==1){
+    select -r ($carN+"_conAll");
+    select -add ($carN+"_groudPlaneGrp") ;
+    parentConstraint -mo;
+    scaleConstraint;
+}else{
+        select -r ($carN+"_con");
+    select -add ($carN+"_groudPlaneGrp") ;
+    parentConstraint;
+    scaleConstraint;    
+    }
+}
+//////////////////////
+select -cl;
+joint -p -2 0 0  -n ($carN+"_bodyRootBn");
+joint -p 2 0 0 -n ($carN+"_bodyEndBn");
+joint -e -zso -oj xyz -sao yup ($carN+"_bodyRootBn");
+
+select -r ($carN+"_bodyRootBn.rotatePivot") ;
+select -add ($carN+"_bodyEndBn.rotatePivot") ;
+ikHandle -sol ikRPsolver;
+rename ($carN+"_bodyIkhandle");
+
+curve -d 1 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 
+-p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 
+-p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0.5 0.5 
+-p 0.5 0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 
+-k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19  -n   ($carN+"_bodySideConR");
+group -n ($carN+"_bodySideConRGrp");
+select -r ($carN+"_bodyRootBn");
+select -add ($carN+"_bodySideConRGrp");
+delete `pointConstraint`;
+
+select -r ($carN+"_bodySideConR");
+select -add ($carN+"_bodyRootBn");
+parentConstraint -mo;
+
+string $shape[]=`listRelatives -s ($carN+"_bodySideConR")`;
+setAttr ($shape[0]+".overrideEnabled") 1;
+setAttr ($shape[0]+".overrideColor") 14;
+
+curve -d 1 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 
+-p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 
+-p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0.5 0.5 
+-p 0.5 0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 
+-k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19  -n   ($carN+"_bodySideConL");
+group -n ($carN+"_bodySideConLGrp");
+select -r ($carN+"_bodyIkhandle");
+select -add ($carN+"_bodySideConLGrp");
+delete `pointConstraint`;
+
+select -r ($carN+"_bodySideConL");
+select -add ($carN+"_bodyIkhandle");
+parentConstraint -mo;
+
+string $shape[]=`listRelatives -s ($carN+"_bodySideConL")`;
+setAttr ($shape[0]+".overrideEnabled") 1;
+setAttr ($shape[0]+".overrideColor") 14;
+
+distanceDimension -sp 0 -1 0 -ep 0 1 0 ;
+string $disnam[]=`ls -sl`;
+select -r $disnam[0];
+pickWalk -d up;
+rename ($carN+"_bodyDisLoc1");
+select -r  $disnam[1];
+rename ($carN+"_bodyDis");
+string $disShape[]=`listRelatives -s ($carN+"_bodyDis")`;
+string $loc[]=`listConnections -s 1 -d 0  ($disShape[0]+".startPoint")`;
+rename ($loc[0]) ($carN+"_bodyDisLoc2");
+
+
+select -r ($carN+"_bodySideConL");
+select -add ($carN+"_bodyDisLoc1");
+pointConstraint;
+
+select -r ($carN+"_bodySideConR");
+select -add ($carN+"_bodyDisLoc2");
+pointConstraint;
+
+shadingNode -asUtility multiplyDivide -n ($carN+"_bodyDidMulti");
+connectAttr -f ($disShape[0]+".distance") ($carN+"_bodyDidMulti.input1X");
+setAttr ($carN+"_bodyDidMulti.operation") 2;
+
+shadingNode -asUtility multiplyDivide -n ($carN+"_bodyStrechMulti");
+
+int $ex=`objExists ($carN+"_conAll")`;
+if($ex==1){connectAttr -f ($carN+"_conAll.scaleX") ($carN+"_bodyStrechMulti.input1X");
+}else{setAttr ($carN+"_bodyStrechMulti.input1X") 1;}
+
+connectAttr -f ($carN+"_con.scaleX") ($carN+"_bodyStrechMulti.input2X");
+
+shadingNode -asUtility multiplyDivide -n ($carN+"_bodyStrechMultiB");
+connectAttr -f ($carN+"_bodyStrechMulti.outputX") ($carN+"_bodyStrechMultiB.input1X");
+int $ex=`objExists ($carN+"_LocAll")`;
+if($ex==1)connectAttr -f ($carN+"_LocAll.scaleX") ($carN+"_bodyStrechMultiB.input2X");
+
+shadingNode -asUtility multiplyDivide -n ($carN+"_bodyStrechMultiA");
+connectAttr -f ($carN+"_bodyStrechMultiB.outputX") ($carN+"_bodyStrechMultiA.input1X");
+setAttr ($carN+"_bodyStrechMultiA.input2X") 4;
+
+connectAttr -f ($carN+"_bodyStrechMultiA.outputX") ($carN+"_bodyDidMulti.input2X");
+connectAttr -f ($carN+"_bodyDidMulti.outputX") ($carN+"_bodyRootBn.scaleX");
+
+select -r ($carN+"_bodyDisLoc1") ($carN+"_bodyDisLoc2") ($carN+"_bodyDis") ;
+select -add ($carN+"_bodyIkhandle");
+group -n ($carN+"_bodyDonotMoveGrp");
+setAttr ($carN+"_bodyDonotMoveGrp.visibility") 0;
+setAttr -lock true ($carN+"_bodyDonotMoveGrp.v");
+
+curve -d 1 -p -0.5 0.5 0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 
+-p -0.5 0.5 0.5 -p -0.5 0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 -0.5 0.5 
+-p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 -0.5 
+-p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0.5 0.5 
+-p 0.5 0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 
+-k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19  -n   ($carN+"_bodyCon");
+group -n ($carN+"_bodyConGrpA");
+group -n ($carN+"_bodyConGrp");
+select -r ($carN+"_bodyConGrp");
+select -add  ($carN+"_con");
+parent;
+
+select -r  ($carN+"_bodyCon");
+addAttr -ln "showCon"  -at bool -k 1 -dv 1;
+ 
+string $shape[]=`listRelatives -s ($carN+"_bodySideConL")`;
+connectAttr -f ($carN+"_bodyCon.showCon")  ($shape[0]+".v");
+
+string $shape[]=`listRelatives -s ($carN+"_bodySideConR")`;
+connectAttr -f ($carN+"_bodyCon.showCon")  ($shape[0]+".v");
+
+spaceLocator -p 0 0 0 -n  ($carN+"_bodyConLocP");
+select -add ($carN+"_bodyRootBn");
+parent;
+setAttr ($carN+"_bodyConLocP.visibility") 0;
+setAttr -lock true ($carN+"_bodyConLocP.v");
+
+select -r ($carN+"_bodySideConLGrp");
+select -add  ($carN+"_con");
+parent;
+select -r ($carN+"_bodySideConRGrp");
+select -add  ($carN+"_con");
+parent;
+
+select -r ($carN+"_bodyRootBn");
+select -add  ($carN+"_rootBn");
+parent;
+setAttr ($carN+"_bodyRootBn.visibility") 0;
+setAttr -lock true ($carN+"_bodyRootBn.v");
+
+string $shape[]=`listRelatives -s ($carN+"_bodyCon")`;
+setAttr ($shape[0]+".overrideEnabled") 1;
+setAttr ($shape[0]+".overrideColor") 6;
+select -r ($carN+"_bodyCon.cv[0:19]") ;
+scale -r -p 0cm 0cm 0cm 2 2 2 ;
+
+
+if($carUpDown==1){
+    select -cl;
+    for($ii=0;$ii<$tireNum;$ii++){
+        select -add  ($carN+"_l_tireAPcurve"+$ii);
+    }
+    select -add ($carN+"_bodySideConLGrp");
+    pointConstraint  -weight 1;
+    select -cl;
+    for($ii=0;$ii<$tireNum;$ii++){
+        select -add  ($carN+"_r_tireAPcurve"+$ii);
+    }
+    select -add ($carN+"_bodySideConRGrp");
+    pointConstraint  -weight 1;
+    
+    spaceLocator -p 0 0 0 -n ($carN+"_BodyUpDownAimLoc");
+    group  -n ($carN+"_BodyUpDownAimLocGrp");
+    
+    select -r ($carN+"_l_tireAPcurve0") ;
+    select -add ($carN+"_r_tireAPcurve0") ;
+    select -add ($carN+"_BodyUpDownAimLocGrp");
+    delete` pointConstraint -offset 0 0 0 -weight 1`;
+    
+    select -r ($carN+"_l_tireAPcurve0") ;
+    select -add ($carN+"_r_tireAPcurve0") ;
+    select -add ($carN+"_BodyUpDownAimLocGrp");    
+    pointConstraint  -weight 1;
+select -r ($carN+"_BodyUpDownAimLocGrp") ;
+select -add ($carN+"_bodyDonotMoveGrp") ;
+parent;
+
+select -r ($carN+"_bodyConLocP") ;
+parent -world;
+
+select -r ($carN+"_BodyUpDownAimLoc") ;
+select -add ($carN+"_bodyIkhandle") ;
+poleVectorConstraint -weight 1;
+select -r ($carN+"_bodyConLocP") ;
+select -add ($carN+"_bodyRootBn") ;
+parent;
+
+}
+
+select -r ($carN+"_bodyDonotMoveGrp") ;
+select -add ($carN+"_notMoveGrp");  
+parent;
+
+select -r ($carN+"_bodyConLocP");
+select -add ($carN+"_bodyConGrp");
+pointConstraint;
+orientConstraint -offset 0 0 0  -weight 1;
+
+select -r ($carN+"_bodyBn") ;
+select -add ($carN+"_bodyConGrpA");
+delete`parentConstraint`;
+
+select -r ($carN+"_bodyCon");
+select -add ($carN+"_bodyBn") ;
+parentConstraint;
+setAttr ($carN+"_bodyCon.showCon") 0;
+
+
+int $carAP=`checkBox -q -v gtCargroudAttach`;
+
+if($carAP==1){
+select -cl;
+    for($i=0;$i<$tireNum;$i++){
+string $side="_l_";
+select -add  ($carN+$side+"tireCon"+$i);
+string $side="_r_";
+select -add  ($carN+$side+"tireCon"+$i);
+        }
+    gtCarPlaceTyreDoA;    
+    }    
+    if($tireNum>1){
+    select -r ($carN+"_l_tireCon"+($tireNum-1));
+    select -add ($carN+"_r_tireCon"+($tireNum-1));
+    gtVehicleTireOrientProc;
+    }
+select -r ($carN+"_con");
+cycleCheck -e off;
+}
+
+////////////////////////////////////////////////////////////////////
+
+global proc gtCarPlaceTyreDoA(){
+string $carN=`textFieldGrp -q -tx carTextF1`;
+string $floor=($carN+"_groudPlane");
+
+string $sel[]=`ls -sl`; 
+                   
+string $groupPlane=$floor;                   
+
+int $ex=`objExists ($carN+"_conAll.startFrame")`;
+if($ex==0){
+    addAttr -ln "startFrame"  -at long  -dv 1 -k 1 ($carN+"_conAll");
+}
+
+for($jj=0;$jj<size($sel);$jj++){
+    string $con=($sel[$jj]);
+string $tm[];
+int $t=`tokenize ($con) "_" $tm`;
+string $aa=$tm[1];
+
+int $ex=`objExists ($con+".stickGround")`;
+if($ex==0){
+select -r $con;
+    addAttr -ln "stickGround"  -at long  -dv 10 -min 0 -max 10 -k 1;
+    addAttr -ln "nostickGround"  -at long  -dv 10 -min 0 -max 10 ;
+   
+    shadingNode -asUtility setRange -n ($con+"setRangeStick");
+    connectAttr -f ($con+".stickGround") ($con+"setRangeStick.valueX");
+    setAttr ($con+"setRangeStick.maxX") 1;
+    setAttr ($con+"setRangeStick.oldMaxX") 10;
+    shadingNode -asUtility reverse -n ($con+"reverseStick");
+connectAttr -f ($con+"setRangeStick.outValueX") ($con+"reverseStick.inputX");
+connectAttr -f ($con+"reverseStick.outputX") ($con+".nostickGround");   
+    }
+                                                
+ spaceLocator -p 0 0 0 -n ($sel[$jj]+"Loc");
+ select -r ($sel[$jj]);                             
+ select -add ($sel[$jj]+"Loc");           
+ delete `parentConstraint`;                        
+ select -r $groupPlane ($sel[$jj]+"Loc");  
+ delete ` geometryConstraint -weight 1`;            
+ select -r ($sel[$jj]+"Loc");             
+ makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;     
+ select -r ($sel[$jj]+"Loc");             
+ duplicate -rr;                                     
+ rename ($sel[$jj]+"LocA");              
+ duplicate -rr;                                     
+ rename ($sel[$jj]+"LocB");  
+ 
+ select -cl;
+ group -empty -n  ($sel[$jj]+"ApGrp");            
+ select -r ($sel[$jj]);  
+select -add ($sel[$jj]+"ApGrp"); 
+delete `parentConstraint`;
+string $parent[]=`listRelatives -p ($sel[$jj])`;  
+  
+select -r ($sel[$jj]+"ApGrp"); 
+select -add ($parent[0]);
+parent;
+select -r ($sel[$jj]);  
+select -add ($sel[$jj]+"ApGrp"); 
+parent;
+  select -r ($sel[$jj]+"LocB");  
+  select -add   ($sel[$jj]+"ApGrp");             
+ pointConstraint -mo -skip y -skip z -weight 1;     
+ select -r $groupPlane ($sel[$jj]+"Loc");
+ string $geometry[]=` geometryConstraint -weight 1`;
+ select -r ($sel[$jj]+"Loc") ($sel[$jj]+"LocA") ($sel[$jj]+"LocB"); 
+ string $pointC[]=` pointConstraint`; 
+ connectAttr -f ($con+".stickGround") ($pointC[0]+"."+$sel[$jj]+"LocW0");  
+ connectAttr -f ($con+".nostickGround") ($pointC[0]+"."+$sel[$jj]+"LocAW1"); 
+ select -r ($sel[$jj]+"Loc") ($sel[$jj]+"LocA") ($sel[$jj]+"LocB"); 
+ group -n ($sel[$jj]+"LocGrp"); 
+ select -add ($parent[0]);   
+ parent;  
+ setAttr ($sel[$jj]+"LocGrp.visibility") 0;
+ setAttr -lock true ($sel[$jj]+"LocGrp.visibility");
+     
+ string $exp="";                                               
+     $exp+="if(frame==";
+     $exp+=($carN);
+     $exp+="_conAll.startFrame){\n";              
+     $exp+="setAttr (\"";
+     $exp+=($sel[$jj]);
+     $exp+="Loc.tx\") 0;\n";    
+     $exp+="setAttr (\"";
+     $exp+=($sel[$jj]);
+     $exp+="Loc.ty\") 0;\n";    
+     $exp+="setAttr (\"";
+     $exp+=($sel[$jj]);
+     $exp+="Loc.tz\") 0;}\n";    
+expression -s $exp  -ae 1 -uc all -n ($sel[$jj]+"LocExp") ;   
+    }
+    select -r ($sel);
+}
+
+/////////////////////////////////////////////////////
+global proc gtVehicleTireOrientProc(){
+string $pathCurve=`textFieldGrp -q -tx carPathCurve`;
+string $sel[]=`ls -sl`;
+int $size=size($sel);
+if($size!=2)error "需要选择两个前轮胎曲线控制器";
+string $carN=`textFieldGrp -q -tx carTextF1`;
+int $ex=`objExists ($carN+"_conAll")`;
+string $conAll;
+if($ex==1)$conAll=($carN+"_conAll");
+
+string $con=($carN+"_con");
+
+curve -d 1 -p 0 0 -2 -p 0 0 2 -k 0 -k 1 -n ($sel[0]+"orientFixCurve") ;
+circle -ch 0 -o on -nr 0 1 0 -r 2.5 -n ($carN+"_steerCon") ;
+group -n ($carN+"_steerConGrpA");
+group -n ($carN+"_steerConGrp");
+select -add ($con);
+parent;
+
+select -r ($sel[0]+"orientFixCurve") ;
+select -add ($carN+"_steerCon") ;
+parent;
+
+select -cl;
+for($i=0;$i<size($sel);$i++){
+    select -add ($sel[$i]);
+}
+
+select -add ($carN+"_steerConGrp");
+delete `pointConstraint`;
+select -r ($carN+"_steerConGrp");
+move -r 0 2 0;
+
+select -r ($sel[0]+"orientFixCurve") ;
+move -r 0 -2 0;
+
+setAttr ($sel[0]+"orientFixCurve.visibility") 0;
+setAttr -lock true ($sel[0]+"orientFixCurve.v");
+
+setAttr -lock true ($carN+"_steerCon.tx");
+setAttr -lock true ($carN+"_steerCon.ty");
+setAttr -lock true ($carN+"_steerCon.tz");
+setAttr -lock true ($carN+"_steerCon.sx");
+setAttr -lock true ($carN+"_steerCon.sy");
+setAttr -lock true ($carN+"_steerCon.sz");
+setAttr -lock true ($carN+"_steerCon.rx");
+setAttr -lock true ($carN+"_steerCon.rz");
+setAttr -lock true ($carN+"_steerCon.v");
+
+string $shape[]=`listRelatives -s ($carN+"_steerCon")`;
+setAttr ($shape[0]+".overrideEnabled") 1;
+setAttr ($shape[0]+".overrideColor") 13;
+
+select -r ($carN+"_steerCon.cv[4]") ;
+move -r  1.5 0 0 ;
+select -r ($carN+"_steerCon.cv[6]") ;
+move -r  -1.5 0 0 ;
+
+select -r $con;
+addAttr -ln "autoSteer"  -at double  -min 0 -max 10 -dv 10 -k 1;
+addAttr -ln "showSteerCon"  -at bool -k 1 -dv 1 ;
+string $shap[]=`listRelatives -s ($carN+"_steerCon")`;
+connectAttr -f ($con+".showSteerCon") ($shap[0]+".v");
+
+shadingNode -asUtility setRange -n ($sel[0]+"setRangeSteer");
+connectAttr -f ($con+".autoSteer") ($sel[0]+"setRangeSteer.valueX");
+setAttr ($sel[0]+"setRangeSteer.maxX") 1;
+setAttr ($sel[0]+"setRangeSteer.oldMaxX") 10;
+shadingNode -asUtility reverse -n ($sel[0]+"reverseSteer");
+connectAttr -f ($sel[0]+"setRangeSteer.outValueX") ($sel[0]+"reverseSteer.inputX");
+
+for($i=0;$i<size($sel);$i++){  
+
+select -r ($sel[$i]);
+pickWalk -d up;
+string $parent[]=`ls -sl`;
+select -r ($sel[0]+"orientFixCurve") ;
+select -add  $pathCurve;
+select -add $parent[0];
+string $constraint[]=`tangentConstraint -weight 1 -aimVector 0 0 -1 -upVector -1 0 0 -worldUpType "objectrotation" -worldUpVector 0 1 0 -worldUpObject $conAll`;
+connectAttr -f ($sel[0]+"setRangeSteer.outValueX") ($constraint[0]+"."+$pathCurve+"W1");
+connectAttr -f ($sel[0]+"reverseSteer.outputX") ($constraint[0]+"."+$sel[0]+"orientFixCurveW0");
+select -r ($carN+"_steerCon");
+    }
+}
+////////////////////////////////ok////////////
+gtVehicleSetUpWin;
+///////////////////////////////////2016-3-21

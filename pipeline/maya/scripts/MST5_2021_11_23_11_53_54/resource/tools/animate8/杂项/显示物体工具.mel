@@ -1,0 +1,79 @@
+//批量隐藏/显示物体绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtShowHideObjWin(){
+   if(`window -ex gtShowHideObjWin`) deleteUI -window gtShowHideObjWin;
+    window -wh 500 200 -t "老船角色绑定-☆☆☆☆☆-批量隐藏/显示物体绑定工具!" gtShowHideObjWin;
+    columnLayout -adj 1 mainColumnattr;
+ text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 30  -c "showHelp -a \"http://www.animate8.com/archives/1422\"";
+
+
+    formLayout  gtCOTAF;
+   
+    text -l "勾选该选项将隐藏/显示物体的形节点" tgtextTempC;
+    checkBox -l "应用到形节点"  gtLoarSkinObjC;
+    text -l "勾选该选项将锁定显示属性" tgtextTempA;
+
+    checkBox -l "锁定显示属性"  -v 1 gtLoarSkinObjD;
+
+    button -l "隐藏显示选择的物体"   -c "gtVisbleAndLockProc" but6;
+    
+    formLayout -e
+
+     -af tgtextTempC left 5 -af tgtextTempC top 5  -ap tgtextTempC right 0 50
+    -ac gtLoarSkinObjC left 5 tgtextTempC -af gtLoarSkinObjC top 5 -af gtLoarSkinObjC right 5
+    
+    -af tgtextTempA left 5 -ac tgtextTempA top 5 tgtextTempC -ap tgtextTempA right 0 50
+    -ac gtLoarSkinObjD left 5 tgtextTempA -ac gtLoarSkinObjD top 5 tgtextTempC -ap gtLoarSkinObjD right 0 50
+    
+    -af but6 left 5  -ac but6 top 5 tgtextTempA -af but6 right 5
+    
+    gtCOTAF;     
+    showWindow gtShowHideObjWin;   
+}
+/////////////////////////
+global proc gtVisbleAndLockProc(){
+    int $shapV=`checkBox -q -v gtLoarSkinObjC`;
+    int $lock=`checkBox -q -v gtLoarSkinObjD`;
+
+    string $sel[]=`ls -sl`;
+for($i=0;$i<size($sel);$i++){
+    if($shapV==1){
+    string $shape[]=`listRelatives -s ($sel[$i])`;
+    for($j=0;$j<size($shape);$j++){
+        setAttr -lock 0 ($shape[$j]+".v");
+        int $stat=`getAttr ($shape[$j]+".v")`;
+        if($stat==0){
+           setAttr ($shape[$j]+".v") 1;
+        }else{
+          setAttr ($shape[$j]+".v") 0;  
+        }
+        if($lock==1){
+          setAttr -lock 1 ($shape[$j]+".v");  
+            }
+        }
+    }else{
+       
+        setAttr -lock 0 ($sel[$i]+".v");
+         int $stat=`getAttr ($sel[$i]+".v")`;
+        if($stat==0){
+           setAttr ($sel[$i]+".v") 1;
+        }else{
+          setAttr ($sel[$i]+".v") 0;  
+        }
+        if($lock==1){
+          setAttr -lock 1 ($sel[$i]+".v");  
+            }
+        }
+    }
+}
+/////////////////////
+gtShowHideObjWin;

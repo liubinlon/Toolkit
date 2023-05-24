@@ -1,0 +1,136 @@
+//redshift renderer tools collections. in 2016
+//RS渲染器 补充工具集，加速渲染工作
+
+//UI
+global proc tjh_Redshift_Tools()
+{
+	
+	
+	if (`windowPref -exists tjh_Redshift_Tools_window`)
+		    windowPref -remove  tjh_Redshift_Tools_window;     
+
+			  
+			  if (`window -exists tjh_Redshift_Tools_window`)
+			  deleteUI tjh_Redshift_Tools_window;
+
+
+	window  -menuBar true -rtf 1  -w 300 -h 300 tjh_Redshift_Tools_window;
+	
+	
+		//menu -label "Help" ;
+		//	menuItem -label "Help..." -c "tjh_Redshift_Tools_help";
+
+		menu -tearOff on -label "Blog" tjh_Redshift_Tools__menu_Blog;
+			menuItem  -label "Goto Blog..." -c "showHelp -absolute \"http://blog.sina.com.cn/tiancgweb\"" tjh_Redshift_Tools__menuItem_Blog;
+
+
+
+		
+
+	scrollLayout -childResizable 1 
+			     -minChildWidth 300
+			     //-backgroundColor 0.1 0.1 0.1 
+			     -w 305 
+			     //-h 500
+			     ;
+
+
+		separator -h 20 -w 300;
+		text   -fn boldLabelFont  -al "left" -l "    tjh_Redshift_Tools V1.0  ";
+		
+		separator -h 20 -w 300;
+
+
+		text -w 300 -wordWrap on  -al "left" -l "  this tool is selections tools for Human Ik skeleton.\nusage: please select a side FK skeleton of HumanIk and run button.";
+		text  -w 300   -al "right" -l "  Programmer：tiancg  ";
+		text  -w 300   -al "right" -l "  2016-8-27  ";
+
+		separator -h 10 -w 300;
+
+				
+					
+		rowColumnLayout -numberOfColumns 2
+			-columnWidth 1 150
+			-columnWidth 2 150;			
+			
+			button  -w 150 -backgroundColor 0.7 1.0 1.0  -label "Create AOV All \" EXR_merge \""  -command  "tjh_Redshift_Tools__create_AOV_all_imageFormat(\"EXR_merge\")";
+
+			button  -w 150 -backgroundColor 0.7 1.0 1.0  -label "Create AOV All \" EXR_seperate \""  -command  "tjh_Redshift_Tools__create_AOV_all_imageFormat(\"EXR_seperate\")";
+
+
+			button  -w 150 -backgroundColor 0.7 1.0 1.0  -label "Create AOV All \" PNG \""  -command  "tjh_Redshift_Tools__create_AOV_all_imageFormat(\"PNG\")";
+
+			button  -w 150 -backgroundColor 0.7 1.0 1.0  -label "Create AOV All \" TIFF \""  -command  "tjh_Redshift_Tools__create_AOV_all_imageFormat(\"TIF\")";
+
+			button  -w 150 -backgroundColor 0.7 1.0 1.0  -label "Create AOV All \" JPG \""  -command  "tjh_Redshift_Tools__create_AOV_all_imageFormat(\"JPG\")";
+
+			button  -w 150 -backgroundColor 0.7 1.0 1.0  -label "Create AOV All \" TGA \""  -command  "tjh_Redshift_Tools__create_AOV_all_imageFormat(\"TGA\")";
+
+			//button  -w 150 -backgroundColor 0.7 1.0 1.0  -label "None"  -command  "";
+
+			separator -h 10 -w 300;
+			separator -h 10 -w 300;
+
+			button  -w 150 -backgroundColor 1.0 0.7 1.0  -label "Delete All AOVs"  -command  "delete `ls -type \"RedshiftAOV\"`";
+
+			button  -w 150 -backgroundColor 1.0 0.7 1.0 -label "none"  -command  "";
+
+			setParent ..; 
+			
+
+		setParent ..;
+
+	showWindow;
+
+}
+
+
+
+
+
+
+global proc tjh_Redshift_Tools__create_AOV_all_imageFormat(string $imageFormat)
+{
+	string $selects[] =` ls -type "RedshiftAOV" `;
+	string $sel ;
+	for( $sel in $selects ) 
+	{
+		if($imageFormat == "PNG" )
+		{
+		setAttr  ($sel +".fileFormat" ) 2;
+		setAttr -type "string"  ($sel +".filePrefix")   "<BeautyPath>/<BeautyFile>.<RenderPass>";
+		}
+
+		if($imageFormat == "TIF" )
+		{
+		setAttr  ($sel +".fileFormat" ) 5;
+		setAttr -type "string"  ($sel +".filePrefix")   "<BeautyPath>/<BeautyFile>.<RenderPass>";
+		}
+
+		if($imageFormat == "JPG" )
+		{
+		setAttr  ($sel +".fileFormat" ) 4;
+		setAttr -type "string"  ($sel +".filePrefix")   "<BeautyPath>/<BeautyFile>.<RenderPass>";
+		}
+
+		if($imageFormat == "EXR_merge" )
+		{
+		setAttr  ($sel +".fileFormat" ) 1;
+		setAttr -type "string"  ($sel +".filePrefix")   "<BeautyPath>/<BeautyFile>";
+		}
+
+		if($imageFormat == "EXR_seperate" )
+		{
+		setAttr  ($sel +".fileFormat" ) 1;
+		setAttr -type "string"  ($sel +".filePrefix")   "<BeautyPath>/<BeautyFile>.<RenderPass>";
+		}
+
+		if($imageFormat == "TGA" )
+		{
+		setAttr  ($sel +".fileFormat" ) 3;
+		setAttr -type "string"  ($sel +".filePrefix")   "<BeautyPath>/<BeautyFile>.<RenderPass>";
+		}
+	}
+
+}
+tjh_Redshift_Tools()

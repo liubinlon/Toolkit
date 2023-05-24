@@ -1,0 +1,250 @@
+//多边形烘焙动画工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8.com>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//网址：www.animate8.com
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+////////////////////////////////////
+global proc gtBakeToBlendShapeWin(){
+if(`window -ex gtBakeToBlendShapeWin`) deleteUI  -window gtBakeToBlendShapeWin;
+window -wh 400 200 -title "老船动画吧-多边形烘焙动画工具" gtBakeToBlendShapeWin;
+columnLayout   -w 400 mainColumnL;
+text -l "老船绑定工具-老船动画吧：http://www.animate8.com/";
+    button -l "访 问 老 船 动 画 吧！" -bgc 0.3 0.2 0.1 -h 45 -w 366 -c "showHelp -a \"http://www.animate8.com\"";
+    string $onc="intFieldGrp -e -en 1 gtIntFrameNum";
+    string $ofc="intFieldGrp -e -en 0 gtIntFrameNum";
+    
+    radioButtonGrp -on1 $onc -on2 $ofc -cw3 140  100  100  -numberOfRadioButtons 2 -l "时间范围："  -la2 "指定帧数:" "时间滑条"  -sl 1 gtRangRad;   
+	intFieldGrp -l "开始/结束帧"  -nf 2  -v1 1 -v2 100  gtIntFrameNum;
+	intFieldGrp -l "烘焙数量"  -nf 1  -v1 1  gtIntObjNum;
+     text -l "                           动力学解算物体，需要创建缓存";
+	//intFieldGrp -l "动力学初始帧"  -nf 1  -v1 1  gtIntDynFrameNum;
+	//button  -l "烘培多边形变形动画" -c "gtBakeGeoProc" -w 366 gtBnButb;
+    separator -style double;	
+
+	rowColumnLayout -nc 3 -cw 1 180 -cw 2 5 -cw 3 180 ;
+
+	button  -l "逐帧混合变形烘焙动画" -c "gtBakeGeoProc" gtBnBut;
+	text -l "";
+	button  -l "中间帧混合变形烘焙动画" -c "gtBakeClothProc" gtBnButA;
+	
+	setParent..;
+separator -style double;	
+showWindow gtBakeToBlendShapeWin;
+}
+////////////////////////////////////////////
+global proc gtBakeGeoProc()
+{
+    int $start=`intFieldGrp -q -v1 gtIntFrameNum`;
+    int $end=`intFieldGrp -q -v2 gtIntFrameNum`;
+    int $sl=`radioButtonGrp -q -sl gtRangRad`;
+    int $objNum=`intFieldGrp -q -v1  gtIntObjNum`;
+    if($objNum<1)error "烘焙数量不能小于:1";
+    float $startFrame;
+	float $endFrame;    
+    if($sl==2){
+    $startFrame = `playbackOptions -q -minTime`;
+	$endFrame = `playbackOptions -q -maxTime`;
+	}else{
+    $startFrame = $start;
+	$endFrame = $end;	    
+	}
+	float $frameRange = $endFrame - $startFrame;
+	float $weightInc = (1/$frameRange);
+	float $currentWeight;
+	int $stepSize = ($frameRange / 999) +1;
+    string $sel[] = `ls -sl`;
+    
+	int $ex=`objExists ($sel[0]+"BakeGrp")`;
+	if($ex==0){
+	    select -cl;
+	    group -empty -n  ($sel[0]+"BakeGrp");
+	}	
+     
+for ($origSurf in $sel)
+{
+    for($n=0;$n<$objNum;$n++){
+   // $origSurf=$sel[0];   
+	currentTime -e $startFrame;
+
+	string $baseGeo[] = `duplicate $origSurf`;
+	rename $baseGeo[0] ($origSurf + "_baked"+$n);
+
+    currentTime -e $endFrame;
+
+              
+	string $endShape[] = `duplicate $origSurf`;
+	select -r $endShape[0] ($origSurf + "_baked"+$n);
+
+	string $blendOptions = ("blendShapeDeleteTarget " + 
+					"\"" + "blendShape -ib -name " + 
+					($origSurf + "_bakeBlend"+$n) + "\"");
+	eval $blendOptions;			
+    select -r  ($origSurf + "_baked"+$n);
+    select -add  ($sel[0]+"BakeGrp");
+    parent;
+    
+	int $j = 1;
+    	currentTime -e $startFrame;    	    
+
+	for ($i=($startFrame+1); $i<$endFrame+1; $i+=$stepSize)
+	{     
+	    currentTime -e $i; 
+		$currentWeight = ($j*$weightInc);
+		$currentWeight = ($currentWeight*1000);
+		$currentWeight = trunc($currentWeight);
+		$currentWeight = ($currentWeight/1000);
+		$j+=$stepSize;
+
+		string $tempShape[] = `duplicate $origSurf`;
+		blendShape -e -ib -t ($origSurf + "_baked"+$n) 0
+					 $tempShape[0] $currentWeight ($origSurf + "_bakeBlend"+$n);
+		delete $tempShape[0];
+	}
+	currentTime -e $endFrame;
+	setAttr ($origSurf + "_bakeBlend"+$n+"." + $endShape[0]) 1;	
+	setKeyframe ($origSurf + "_bakeBlend"+$n+"." + $endShape[0]);
+	currentTime -e $startFrame;
+	setAttr ($origSurf + "_bakeBlend"+$n+"." + $endShape[0]) 0;	
+	setKeyframe ($origSurf + "_bakeBlend"+$n+"." + $endShape[0]);
+	string $curveA[]=`listConnections -s 1-d 0 ($origSurf + "_bakeBlend"+$n+"." + $endShape[0])`;
+
+	keyTangent -itt linear -ott linear ($curveA[0]);
+        }
+	hide $origSurf;
+	rename $origSurf ($origSurf + "_original");	
+    }
+	print ("烘焙 " + $origSurf +"完成\n");
+}
+/////////////////////////////
+
+global proc gtBakeClothProc()
+{
+	string $frameNum ;
+	string $temp[];
+	string $clothObj[] = `ls -selection -transforms`;
+	if ($clothObj[0] == "")error "请先选择物体，然后执行工具按钮";
+
+	int $minTime;
+	int $maxTime;
+    int $start=`intFieldGrp -q -v1 gtIntFrameNum`;
+    int $end=`intFieldGrp -q -v2 gtIntFrameNum`;
+    int $sl=`radioButtonGrp -q -sl gtRangRad`;
+    int $objNum=`intFieldGrp -q -v1  gtIntObjNum`;
+    if($objNum<1)error "烘焙数量不能小于:1";
+   
+    if($sl==2){
+    $minTime = `playbackOptions -q -minTime`;
+	$maxTime = `playbackOptions -q -maxTime`;
+	}else{
+    $minTime = $start;
+	$maxTime = $end;	    
+	}
+	
+	int $index = 0;
+	string $blendShape, $base, $target, $buf[];
+
+	currentTime $minTime;
+	refresh;
+	string $nspace="";
+	string $mayVer= `about -v`;
+	for($a=0;$a<$objNum;$a++){	
+	for ($obj in $clothObj){
+	    //string $obj=$clothObj[0];
+		if (!size(`listRelatives -shapes $obj`))
+		{
+			continue;
+		}
+
+		string $name = `match "[^|]+$" $obj`;
+
+		if (($mayVer=="7.0.1")&&`referenceQuery -isNodeReferenced $obj`)
+		{
+			string $temp[];
+			tokenize $obj ":" $temp;
+			if (!`namespace -exists $temp[0]`)
+			{
+				namespace -add $temp[0];
+			}
+			$nspace = $temp[0];
+			$buf = `duplicate $obj`;
+			$base = `rename $buf[0] ($name + "_BAKED"+$a)`;
+			$blendShape = $name + "_BlendShape"+$a;
+			if (`objExists $blendShape`)
+				delete $blendShape;
+			blendShape -name $blendShape $base;
+
+			hide $obj;
+		}
+		else
+		{
+			$buf = `duplicate $obj`;
+			$base = `rename $buf[0] ($name + "_BAKED"+$a)`;
+			$blendShape = $name + "BS"+$a;
+			if (`objExists $blendShape`)
+				delete $blendShape;
+			blendShape -name $blendShape $base;
+
+			hide $obj;
+		}
+	}
+
+	for ($i=$minTime; $i<($maxTime+1); $i++)
+	{
+		currentTime $i;
+		refresh;
+		for ($each in $clothObj)
+		{
+			if (!size(`listRelatives -shapes $each`))
+			{
+				continue;
+			}
+
+			string $name = `match "[^|]+$" $each`;
+
+			if (($mayVer=="7.0.1")&&`referenceQuery -isNodeReferenced $each`)
+			{
+				$buf = `duplicate $each`;
+				$base = $each + "_BAKED"+$a;
+
+				$target = `rename $buf[0] ($name + "_baked_frame_" + $i)`;
+				$blendShape = $name + "_BlendShape"+$a;
+				print ("\n $base "+$base);
+				print ("\n $index "+$index);
+				print ("\n $target "+$target);
+				print ("\n $blendShape "+$blendShape);
+																
+				blendShape -edit -target $base $index $target 1.0 $blendShape;
+
+				delete $target;
+			}
+			else
+			{
+				$buf = `duplicate $each`;
+		
+				$base = $each + "_BAKED"+$a;
+				$target = `rename $buf[0] ($name + "baked_frame_" + $i)`;
+				$blendShape = $name + "BS"+$a;
+				blendShape -edit -target $base $index $target 1.0 $blendShape;
+
+				delete $target;
+			}
+			if ($i != $minTime)
+				setKeyframe -time ($i-1) -value 0 -inTangentType "flat" -outTangentType "flat" ($blendShape + "." + $target);
+			setKeyframe -time $i -value 1 -inTangentType "flat" -outTangentType "flat" ($blendShape + "." + $target);
+			if ($i != $maxTime)
+				setKeyframe -time ($i+1) -value 0 -inTangentType "flat" -outTangentType "flat" ($blendShape + "." + $target);
+		}
+		$index ++;
+		flushUndo;
+	}
+}
+	flushUndo;
+	refresh;
+}
+///////////////////////////////////
+gtBakeToBlendShapeWin;
+////////////////////////////

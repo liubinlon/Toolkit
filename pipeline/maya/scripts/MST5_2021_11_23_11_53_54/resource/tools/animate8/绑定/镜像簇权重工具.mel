@@ -1,0 +1,130 @@
+//MAYA簇变形权重镜像绑定工具
+//本工具仅供学习研究和个人创作使用，未经本站授权请勿商用！
+//转载请注明出处<Animate8>！谢谢支持O(∩_∩)O~
+//赋予角色生命，演绎梦想故事。
+//更多精彩内容请关注<老船@动画吧>！
+//QQ：149090900
+//QQ群：130930540
+//新浪微博：老船动画吧
+///////////////////////////////////////
+global proc gtClusterDeformToolMirrorWin(){
+
+if(`window -ex gtClusterDeformToolMirrorWin`) deleteUI -window gtClusterDeformToolMirrorWin;
+window -wh 420 200 -t "老船角色绑定-☆-MAYA簇变形权重镜像绑定工具" gtClusterDeformToolMirrorWin;
+scrollLayout gtmainBSL;
+
+columnLayout -adj 1 -w 380 gtBSColumlayout;
+text -l "点击下方按钮↓↓↓↓↓";
+button -l "访问老船@动画吧-查看工具应用视频" -bgc 0.3 0.2 0.1 -h 40  -c "showHelp -a \"http://www.animate8.com/archives/1776\"";
+separator -style single  sep1;
+
+rowColumnLayout -nc 2 -cw 1 240 -cw 2 140;
+
+textFieldGrp  -cw2 100 130 -l "变形模型" -tx "请载入变形模型" -ed 0 gtTextBSLCluster3a;
+button -l "载入变形模型" -c "gtBSLoadClusterMesha" gtButBSC3;
+
+setParent..;
+
+rowColumnLayout -nc 3 -cw 1 60  -cw 2 180 -cw 3 140;
+text -l "";
+checkBox -l "轴向：- X  到 + X" -v 0 gtClusterMirror;
+button -l "镜像簇权重" -c "gtClusterWeightMirrorMiddleLCA;" but3bb;
+
+setParent..;
+separator -style single  sep2;
+
+showWindow  gtClusterDeformToolMirrorWin;
+}
+//////////////////////////////
+global proc gtBSLoadClusterMesha(){
+string $sel[]=`ls -sl`;
+string $obj="";
+for($i=0;$i<size($sel);$i++){
+    $obj+=(" "+$sel[$i]);
+}
+textFieldGrp -e -tx ($obj) gtTextBSLCluster3a;
+}
+
+///////////////////////////////////////////
+global proc gtClusterWeightMirrorMiddleLCA(){
+string $sel[]=`ls -sl`;
+string $mesh=`textFieldGrp -q -text  gtTextBSLCluster3a`;
+    int $state=`checkBox -q -v gtClusterMirror`;
+
+for($ii=0;$ii<size($sel);$ii++){
+    
+string $clustA=$sel[$ii];
+float $maxDist,$mag;
+
+int $vexAll[]=`polyEvaluate -v $mesh`;
+
+string $clusA[]=`listConnections -s 0 -d 1 ($clustA+".worldMatrix[0]")`;
+string $cluster=$clusA[0];
+$tempStringA=`listConnections ($clusA[0]+".message")`;
+string $clusterSet=$tempStringA[0];
+select `sets -q ($tempStringA)`;
+$dvtxs=`ls -sl -fl`;
+
+select -r ($mesh+".vtx[0:999999]");
+$vtxs=`ls -sl -fl`;
+
+int $vexNum=size($vtxs);
+//int $state=1;
+
+	string $geometry=$mesh;
+
+if($state==1){
+select -cl;
+for ($i=0;$i<size($vtxs);$i++)
+	{
+	$pos=`xform -q -ws -t $vtxs[$i]`;
+	if($pos[0]>0.001)
+	   select -add $vtxs[$i];
+	}	
+}
+if($state==0){
+select -cl;
+for ($i=0;$i<size($vtxs);$i++)
+	{
+	$pos=`xform -q -ws -t $vtxs[$i]`;
+	if($pos[0]<-0.001)
+	   select -add $vtxs[$i];
+	    }	
+	}
+string $cVext[]=`ls -sl -fl`;	
+		select -d $dvtxs;
+		string $vex[]=`ls -sl -fl`;
+		if(size($vex)>0){
+		sets -add ($clusterSet) `ls -sl`;
+		percent -v 0 $clusA[0] `ls -sl`;
+		}
+				
+createNode -n closestSampler closestPointOnMesh;
+$tempString=`listRelatives -ni -s $geometry`;
+connectAttr -f ($tempString[0]+".outMesh") closestSampler.inMesh;
+connectAttr -f ($geometry+".worldMatrix[0]") closestSampler.inputMatrix;
+int $closestOppositeVtxNr;
+global string $gMainProgressBar;
+
+progressBar -e -st ("镜像簇权重："+$sel[$ii]) -bp -ii 1 -min 0 -max `size($cVext)` $gMainProgressBar;
+for ($i=0;$i<size($cVext);$i++)
+	{
+	if (`progressBar -q -ic $gMainProgressBar`)
+		break;
+	progressBar -e -s 1 $gMainProgressBar;
+	$posB=`xform -q -ws -t $cVext[$i]`;
+	setAttr -type float3 closestSampler.inPosition ($posB[0]*-1) $posB[1] $posB[2];
+	$closestOppositeVtxNr=`getAttr closestSampler.result.closestVertexIndex`;
+	$tempFloat=`percent -q -v $cluster ($geometry+".vtx["+$closestOppositeVtxNr+"]")`;
+	
+	if (!`sets -im $clusterSet ($geometry+".vtx["+$closestOppositeVtxNr+"]")`)
+		$tempFloat[0]=0;		
+	percent -v $tempFloat[0] $cluster $cVext[$i];
+	}
+progressBar -e -ep $gMainProgressBar;
+delete closestSampler;
+    }
+}
+////////////////////////////////////////////
+gtClusterDeformToolMirrorWin;
+//////////////////2016-10-30
