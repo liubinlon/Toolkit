@@ -2,10 +2,24 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om
 
 def show_prompt_dialog(title, message, icon=None):
+    """
+       显示信息窗口
+    Args:
+        title (str): 窗口抬头
+        message (str): 显示信息
+        icon (str, optional): 显示图标类型. Defaults to None.
+    """
     cmds.confirmDialog(title=title, message=message, button=['OK'], defaultButton='OK', cancelButton='OK', dismissString='OK', icon=icon)
 
-
 def find_nearest_joints(source_joint, target_joint):
+    """
+    对两个骨骼链相近的骨骼对进行约束
+    Args:
+        source_joint (str): 驱动根骨骼名字
+        target_joint (str): 被驱动根骨骼名字
+    Returns:
+        list: 骨骼对列表
+    """
     source_list = cmds.listRelatives(source_joint, ad=1, type="joint")
     source_list.append(source_joint)
     target_list = cmds.listRelatives(target_joint, ad=1, type="joint")
@@ -36,8 +50,8 @@ def find_nearest_joints(source_joint, target_joint):
 
 try:
     source_joints, target_joints = cmds.ls(sl=1)
-    nearest_pairs = find_nearest_joints(source_joints, target_joints)
-    
+    # 获取骨骼对
+    nearest_pairs = find_nearest_joints(source_joints, target_joints)    
     if nearest_pairs:
         for pair in nearest_pairs:
             source_joint, target_joint = pair
