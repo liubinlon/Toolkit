@@ -236,7 +236,7 @@ class MhOutputFbx:
         """
         return os.path.splitext(os.path.split(abs_path)[-1])[0]
        
-    def get_ref_ns(self, keywords):
+    def get_ref_ns(self, ref=None, name_space=None):
         """
             查找文件里的所有引用文件，导入存在关键字的文件，删除空间命
         Args:
@@ -245,16 +245,19 @@ class MhOutputFbx:
         Returns:
             list: 资产类型和名字
         """
-        for ref in cmds.file(q=True, r=True):
-            ref_node = cmds.referenceQuery(ref, referenceNode=True)
-            if keywords in ref and cmds.referenceQuery(ref_node, il=True):
-                name_space = cmds.referenceQuery(ref, ns=True)
-                file_name = self.get_file_name(ref)
-                cmds.file(ref, ir=1)
-                print(name_space)
-                cmds.namespace(mv=[name_space, ":"], f=1)
-                cmds.namespace(rm=name_space)
-                return file_name.split("_")[1:3]
+        name_space_lst = ["DHIbody", "DHIhead"]
+        if name_space:
+            for sp in name_space_lst:
+                cmds.namespace(mv=[sp, ":"], f=1)
+                cmds.namespace(rm=sp)
+        if ref:
+            name_space = cmds.referenceQuery(ref, ns=True)
+            file_name = self.get_file_name(ref)
+            cmds.file(ref, ir=1)
+            print(name_space)
+            cmds.namespace(mv=[name_space, ":"], f=1)
+            cmds.namespace(rm=name_space)            
+            return file_name.split("_")[1:3]
 
     def export_fbx_file(self, fbx_file, anim=False):
         """
@@ -297,23 +300,31 @@ class MhOutputFbx:
         """
         copy_lst = list()
         loct_path = self.get_file_data(full_path=1, dir_path=1)
-        file_name, fextension = os.path.splitext(self.get_file_data())        
-        if anim:
-            str_lst = file_name.split("_")[0:3]
+        file_name, fextension = os.path.splitext(self.get_file_data())
+        if anim:            
             # 导入引用文件
-            ch_str = self.get_ref_ns(ch_name)
-            cmds.parent("DHIbody:root", "head_grp", w=1)
-            cmds.select("DHIbody:root", hi=1)
-            str_lst.extend(ch_str)           
-            new_file_str = "_".join(str_lst)
-            body_fbx_name = "{0}/{1}_DHIbody.fbx".format(loct_path, new_file_str)
-            self.export_fbx_file(body_fbx_name, anim=1)
-            copy_lst.append(body_fbx_name)
-            cmds.select(self.face_con_lst)
-            head_fbx_name = "{0}/{1}_DHIhead.fbx".format(loct_path, new_file_str)
-            self.export_fbx_file(head_fbx_name, anim=1)
-            copy_lst.append(head_fbx_name)        
-        else:
+            for ref in cmds.file(q=True, r=True):
+                ref_node = cmds.referenceQuery(ref, referenceNode=True)
+                if ch_name in ref and cmds.referenceQuery(ref_node, il=True):
+                    str_lst = file_name.split("_")[0:3]
+                    ch_str = self.get_ref_ns(ref=ref)
+                    cmds.parent("DHIbody:root", "head_grp", w=1)
+                    cmds.select("DHIbody:root", hi=1)
+                    str_lst.extend(ch_str)
+                    new_file_str = "_".join(str_lst)
+                    body_fbx_name = "{0}/{1}_DHIbody.fbx".format(loct_path, new_file_str)
+                    self.export_fbx_file(body_fbx_name, anim=1)
+                    copy_lst.append(body_fbx_name)
+                    cmds.select(self.face_con_lst)
+                    head_fbx_name = "{0}/{1}_DHIhead.fbx".format(loct_path, new_file_str)
+                    self.export_fbx_file(head_fbx_name, anim=1)
+                    copy_lst.append(head_fbx_name)
+                    cmds.select("Sets", hi=1)
+                    cmds.select("DHIbody:root", "head_grp", add=1)
+                    cmds.delete()
+                    self.get_ref_ns(name_space=1)
+                                                         
+        if ch_name in file_name:
             cmds.parent("DHIbody:root", "Geometry", w=1)           
             cmds.delete("spine_04_drv", "thigh_r_drv", "thigh_l_drv")
             cmds.parent("DHIhead:spine_04", "spine_03_drv")            
@@ -340,3 +351,4 @@ if __name__ == "__main__":
     mh_com = MhOutputFbx()
     copy_file = mh_com.out_fbx()
     print(copy_file)
+    

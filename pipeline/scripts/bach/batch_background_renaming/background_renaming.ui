@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>BoneRenameV001</class>
+ <widget class="QMainWindow" name="BoneRenameV001">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>535</width>
-    <height>506</height>
+    <width>1228</width>
+    <height>579</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Bone rename - v001</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="2" column="0" colspan="3">
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QLabel" name="lab_undone">
-        <property name="text">
-         <string>未完成文件</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPlainTextEdit" name="ptet_undone"/>
-      </item>
-     </layout>
+    <item row="3" column="0" colspan="4">
+     <widget class="QProgressBar" name="progress_bar">
+      <property name="value">
+       <number>0</number>
+      </property>
+     </widget>
     </item>
-    <item row="1" column="0" colspan="3">
+    <item row="4" column="0">
+     <widget class="QPushButton" name="btn_run">
+      <property name="text">
+       <string>执行</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="4">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="lab_finish">
@@ -39,11 +39,18 @@
        </widget>
       </item>
       <item>
-       <widget class="QPlainTextEdit" name="ptet_finish"/>
+       <widget class="QPlainTextEdit" name="ptet_finish">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="plainText">
+         <string/>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
-    <item row="3" column="2">
+    <item row="4" column="2" colspan="2">
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <property name="spacing">
        <number>3</number>
@@ -59,6 +66,9 @@
         <property name="text">
          <string>完成</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -66,23 +76,47 @@
         <property name="text">
          <string>未完成</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="btn_save_data">
+       <widget class="QPushButton" name="btn_output_data">
         <property name="text">
-         <string>保存数据</string>
+         <string>导出数据</string>
         </property>
        </widget>
       </item>
      </layout>
     </item>
-    <item row="0" column="1" colspan="2">
+    <item row="2" column="0" colspan="4">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="lab_undone">
+        <property name="text">
+         <string>未完成文件</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPlainTextEdit" name="ptet_undone">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="plainText">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="0" colspan="4">
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
        <widget class="QLabel" name="lab_file_directory">
         <property name="text">
-         <string>文件根目录：</string>
+         <string>项目根目录：</string>
         </property>
        </widget>
       </item>
@@ -104,6 +138,13 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="4" column="1">
+     <widget class="QPushButton" name="btn_clear_data">
+      <property name="text">
+       <string>清空</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

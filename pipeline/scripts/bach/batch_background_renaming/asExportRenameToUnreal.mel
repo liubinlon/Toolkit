@@ -59,7 +59,7 @@ if (!`objExists root`)
 	setAttr root.jointOrientX -90;
 	addAttr -k 0 -ln noRootMotionJointBeforeRename -at bool -dv 1 root;
 	}
-parent -w root;
+// parent -w root;
 
 //Spine
 $tempString=`ls -l Chest_M`;
@@ -190,3 +190,41 @@ parent Geometry Group;
 select -cl;
 print "// Renamed back to AdvancedSkeleton names.\n";
 }
+
+global proc string asDoPadd (int $frameNr,int $padding)
+{
+string $frameName;
+string $padd="";
+string $neg="";
+string $frameNrAsString=$frameNr;
+for ($i=0;$i<$padding;$i++)
+	$padd=$padd+"0";
+//move the negative symbol to start of string//
+if ($frameNr<0)
+	$neg="-";
+int $nr=`size ($frameNrAsString)`;
+if ($padding>$nr)
+	$frameName=$neg+`substring $padd ($nr+1) 999`+abs($frameNr);
+else
+	$frameName=$frameNr;
+return $frameName;
+}
+global proc asCreateGameEngineRootMotion ()
+{
+string $tempString[];
+
+if (`objExists root`)
+	error "\"root\" already exists";
+select -cl;
+
+joint -n root;
+$tempString=`listRelatives -c -type joint DeformationSystem`;
+parent root DeformationSystem;
+parentConstraint Main root;
+parent root_parentConstraint1 ConstraintSystem;
+if (size($tempString))
+	parent $tempString root;
+select root;
+print ("// root-motion-joint \"root\" created.\n");
+}
+asExportRenameToUnreal;
