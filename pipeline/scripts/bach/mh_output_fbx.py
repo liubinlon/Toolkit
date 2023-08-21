@@ -201,7 +201,513 @@ class MhOutputFbx:
             'CTRL_L_eyeAim',
             'CTRL_convergenceSwitch',
             'CTRL_C_eyesAim'
-        ] 
+        ]
+        self.remove_joint_list = [
+            "upperarm_twistCor_01", 
+            "thumb_03_side_inn", 
+            "index_01_palm", 
+            "middle_03_in", 
+            "pinky_01_mcp", 
+            "wrist_outer", 
+            "thumb_03_side_out", 
+            "thigh_bck", 
+            "pinky_02_bulge", 
+            "clavicle_scap", 
+            "lowerarm_in", 
+            "pinky_02_in", 
+            "lowerarm_out", 
+            "index_03_in", 
+            "upperarm_tricep", 
+            "ring_03_bulge", 
+            "clavicle_pec", 
+            "upperarm_in", 
+            "lowerarm_fwd", 
+            "middle_02_side_inn", 
+            "upperarm_out", 
+            "index_metacarpal_slide", 
+            "ring_02_dip", 
+            "index_01_mcp", 
+            "thigh_twistCor_02", 
+            "ring_02_bulge", 
+            "thigh_twistCor_01", 
+            "middle_01_palm", 
+            "middle_02_in", 
+            "index_02_bulge", 
+            "ankle_bck", 
+            "index_01_side_inn", 
+            "index_01_bulge", 
+            "spine_04_latissimus", 
+            "pinky_01_bulge", 
+            "pinky_01_side_inn", 
+            "pinky_01_palm", 
+            "middle_01_bulge", 
+            "index_02_in", 
+            "thigh_fwd_lwr", 
+            "pinky_02_dip", 
+            "ring_01_bulge", 
+            "middle_03_bulge", 
+            "calf_kneeBack", 
+            "ring_01_side_out", 
+            "index_01_palmMid", 
+            "ring_01_mcp", 
+            "ring_02_side_inn", 
+            "clavicle_out", 
+            "thumb_03_bulge", 
+            "pinky_02_pip", 
+            "pinky_02_side_inn", 
+            "upperarm_bck", 
+            "thumb_02_bulge", 
+            "ring_03_in", 
+            "thumb_02_side_inn", 
+            "index_02_dip", 
+            "thigh_out", 
+            "pinky_02_side_out", 
+            "ring_02_pip", 
+            "thigh_bck_lwr", 
+            "calf_twistCor_02", 
+            "middle_01_palmMid", 
+            "middle_02_bulge", 
+            "ring_metacarpal_slide", 
+            "thumb_02_side_out", 
+            "thumb_02_in", 
+            "ring_01_palm", 
+            "thumb_01_side_out", 
+            "thumb_01_side_inn", 
+            "calf_knee", 
+            "ring_01_palmMid", 
+            "ring_02_side_out", 
+            "ring_02_in", 
+            "middle_01_side_out", 
+            "middle_01_side_inn", 
+            "lowerarm_bck", 
+            "pinky_03_in", 
+            "index_02_side_out", 
+            "ring_01_side_inn", 
+            "middle_02_pip", 
+            "thumb_02_mcp", 
+            "pinky_03_bulge", 
+            "wrist_inner", 
+            "thigh_in", 
+            "thigh_fwd", 
+            "pinky_01_palmMid", 
+            "middle_01_mcp", 
+            "middle_02_dip", 
+            "index_02_side_inn", 
+            "middle_02_side_out", 
+            "ankle_fwd", 
+            "index_02_pip", 
+            "index_01_side_out", 
+            "middle_metacarpal_slide", 
+            "pinky_metacarpal_slide", 
+            "pinky_01_side_out", 
+            "thumb_03_pip", 
+            "upperarm_bicep", 
+            "thumb_03_in", 
+            "upperarm_fwd", 
+            "index_03_bulge"
+        ]
+        self.zb_default_joint = [
+            "root", 
+            "pelvis", 
+            "spine_01", 
+            "spine_02", 
+            "spine_03", 
+            "spine_04", 
+            "spine_05", 
+            "neck_01", 
+            "neck_02", 
+            "head", 
+            "FACIAL_C_Neck2Root", 
+            "FACIAL_L_12IPV_NeckBackA1", 
+            "FACIAL_L_12IPV_NeckBackA2", 
+            "FACIAL_C_12IPV_AdamsA2", 
+            "FACIAL_C_12IPV_AdamsA1", 
+            "FACIAL_R_NeckBackA", 
+            "FACIAL_L_12IPV_NeckA5", 
+            "FACIAL_R_12IPV_NeckA2", 
+            "FACIAL_R_12IPV_NeckA3", 
+            "FACIAL_R_12IPV_NeckA1", 
+            "FACIAL_R_12IPV_NeckA6", 
+            "FACIAL_R_12IPV_NeckA4", 
+            "FACIAL_R_12IPV_NeckA5", 
+            "FACIAL_L_NeckBackA", 
+            "FACIAL_C_NeckBackA", 
+            "FACIAL_C_12IPV_NeckBackA1", 
+            "FACIAL_C_12IPV_NeckBackA2", 
+            "FACIAL_R_12IPV_NeckBackA2", 
+            "FACIAL_R_12IPV_NeckBackA1", 
+            "FACIAL_L_12IPV_NeckA4", 
+            "FACIAL_L_12IPV_NeckA6", 
+            "FACIAL_L_12IPV_NeckA1", 
+            "FACIAL_L_12IPV_NeckA2", 
+            "FACIAL_L_12IPV_NeckA3", 
+            "FACIAL_C_AdamsApple", 
+            "FACIAL_L_NeckA1", 
+            "FACIAL_L_NeckA3", 
+            "FACIAL_L_NeckA2", 
+            "FACIAL_R_NeckA3", 
+            "FACIAL_R_NeckA2", 
+            "FACIAL_R_NeckA1", 
+            "FACIAL_C_Neck1Root", 
+            "FACIAL_L_12IPV_NeckB5", 
+            "FACIAL_L_12IPV_NeckB4", 
+            "FACIAL_L_12IPV_NeckB7", 
+            "FACIAL_L_12IPV_NeckB6", 
+            "FACIAL_L_12IPV_NeckB3", 
+            "FACIAL_R_12IPV_NeckB6", 
+            "FACIAL_R_12IPV_NeckB4", 
+            "FACIAL_R_NeckBackB", 
+            "FACIAL_C_12IPV_NeckB1", 
+            "FACIAL_C_12IPV_NeckB2", 
+            "FACIAL_R_12IPV_NeckB5", 
+            "FACIAL_R_12IPV_NeckBackB2", 
+            "FACIAL_R_12IPV_NeckBackB1", 
+            "FACIAL_L_NeckBackB", 
+            "FACIAL_C_NeckBackB", 
+            "FACIAL_L_NeckB1", 
+            "FACIAL_L_NeckB2", 
+            "FACIAL_R_NeckB2", 
+            "FACIAL_R_NeckB1", 
+            "FACIAL_R_12IPV_NeckB7", 
+            "FACIAL_R_12IPV_NeckB3", 
+            "FACIAL_L_12IPV_NeckBackB1", 
+            "FACIAL_L_12IPV_NeckBackB2", 
+            "FACIAL_C_12IPV_NeckBackB1", 
+            "FACIAL_C_12IPV_NeckBackB2", 
+            "FACIAL_C_NeckB", 
+            "clavicle_l", 
+            "upperarm_l", 
+            "upperarm_correctiveRoot_l", 
+            "upperarm_bck_l", 
+            "upperarm_fwd_l", 
+            "upperarm_in_l", 
+            "upperarm_out_l", 
+            "lowerarm_l", 
+            "hand_l", 
+            "pinky_metacarpal_l", 
+            "pinky_01_l", 
+            "pinky_02_l", 
+            "pinky_03_l", 
+            "pinky_03_bulge_l", 
+            "pinky_03_half_l", 
+            "pinky_03_in_l", 
+            "pinky_02_dip_l", 
+            "pinky_02_bulge_l", 
+            "pinky_02_side_out_l", 
+            "pinky_02_side_inn_l", 
+            "pinky_02_half_l", 
+            "pinky_02_in_l", 
+            "pinky_02_pip_l", 
+            "pinky_01_palmMid_l", 
+            "pinky_01_bulge_l", 
+            "pinky_01_side_out_l", 
+            "pinky_01_side_inn_l", 
+            "pinky_01_half_l", 
+            "pinky_01_mcp_l", 
+            "pinky_01_palm_l", 
+            "pinky_metacarpal_slide_l", 
+            "ring_metacarpal_l", 
+            "ring_01_l", 
+            "ring_02_l", 
+            "ring_03_l", 
+            "ring_03_bulge_l", 
+            "ring_03_half_l", 
+            "ring_02_dip_l", 
+            "ring_03_in_l", 
+            "ring_02_bulge_l", 
+            "ring_02_side_out_l", 
+            "ring_02_side_inn_l", 
+            "ring_02_half_l", 
+            "ring_02_in_l", 
+            "ring_02_pip_l", 
+            "ring_01_palmMid_l", 
+            "ring_01_bulge_l", 
+            "ring_01_side_out_l", 
+            "ring_01_side_inn_l", 
+            "ring_01_half_l", 
+            "ring_01_mcp_l", 
+            "ring_01_palm_l", 
+            "ring_metacarpal_slide_l", 
+            "thumb_01_l", 
+            "thumb_02_l", 
+            "thumb_03_l", 
+            "thumb_03_bulge_l", 
+            "thumb_03_side_out_l", 
+            "thumb_03_side_inn_l", 
+            "thumb_03_half_l", 
+            "thumb_03_pip_l", 
+            "thumb_03_in_l", 
+            "thumb_02_bulge_l", 
+            "thumb_02_side_out_l", 
+            "thumb_02_side_inn_l", 
+            "thumb_02_half_l", 
+            "thumb_02_in_l", 
+            "thumb_02_mcp_l", 
+            "thumb_01_side_out_l", 
+            "thumb_01_side_inn_l", 
+            "middle_metacarpal_l", 
+            "middle_01_l", 
+            "middle_02_l", 
+            "middle_03_l", 
+            "middle_03_bulge_l", 
+            "middle_03_half_l", 
+            "middle_03_in_l", 
+            "middle_02_dip_l", 
+            "middle_02_bulge_l", 
+            "middle_02_side_out_l", 
+            "middle_02_side_inn_l", 
+            "middle_02_half_l", 
+            "middle_02_pip_l", 
+            "middle_02_in_l", 
+            "middle_01_palmMid_l", 
+            "middle_01_bulge_l", 
+            "middle_01_side_out_l", 
+            "middle_01_side_inn_l", 
+            "middle_01_half_l", 
+            "middle_01_mcp_l", 
+            "middle_01_palm_l", 
+            "middle_metacarpal_slide_l", 
+            "index_metacarpal_l", 
+            "index_01_l", 
+            "index_02_l", 
+            "index_03_l", 
+            "index_03_bulge_l", 
+            "index_03_half_l", 
+            "index_02_dip_l", 
+            "index_03_in_l", 
+            "index_02_bulge_l", 
+            "index_02_side_out_l", 
+            "index_02_side_inn_l", 
+            "index_02_half_l", 
+            "index_02_in_l", 
+            "index_02_pip_l", 
+            "index_01_palmMid_l", 
+            "index_01_bulge_l", 
+            "index_01_side_out_l", 
+            "index_01_side_inn_l", 
+            "index_01_half_l", 
+            "index_01_mcp_l", 
+            "index_01_palm_l", 
+            "index_metacarpal_slide_l", 
+            "wrist_inner_l", 
+            "wrist_outer_l", 
+            "lowerarm_twist_02_l", 
+            "lowerarm_twist_01_l", 
+            "lowerarm_correctiveRoot_l", 
+            "lowerarm_in_l", 
+            "lowerarm_out_l", 
+            "lowerarm_fwd_l", 
+            "lowerarm_bck_l", 
+            "upperarm_twist_01_l", 
+            "upperarm_twistCor_01_l", 
+            "upperarm_twist_02_l", 
+            "upperarm_tricep_l", 
+            "upperarm_bicep_l", 
+            "upperarm_twistCor_02_l", 
+            "clavicle_out_l", 
+            "clavicle_scap_l", 
+            "clavicle_r", 
+            "upperarm_r", 
+            "upperarm_correctiveRoot_r", 
+            "upperarm_bck_r", 
+            "upperarm_in_r", 
+            "upperarm_fwd_r", 
+            "upperarm_out_r", 
+            "lowerarm_r", 
+            "hand_r", 
+            "pinky_metacarpal_r", 
+            "pinky_01_r", 
+            "pinky_02_r", 
+            "pinky_03_r", 
+            "pinky_03_bulge_r", 
+            "pinky_03_half_r", 
+            "pinky_03_in_r", 
+            "pinky_02_dip_r", 
+            "pinky_02_bulge_r", 
+            "pinky_02_side_out_r", 
+            "pinky_02_side_inn_r", 
+            "pinky_02_half_r", 
+            "pinky_02_in_r", 
+            "pinky_02_pip_r", 
+            "pinky_01_palmMid_r", 
+            "pinky_01_bulge_r", 
+            "pinky_01_side_out_r", 
+            "pinky_01_side_inn_r", 
+            "pinky_01_half_r", 
+            "pinky_01_mcp_r", 
+            "pinky_01_palm_r", 
+            "pinky_metacarpal_slide_r", 
+            "ring_metacarpal_r", 
+            "ring_01_r", 
+            "ring_02_r", 
+            "ring_03_r", 
+            "ring_03_bulge_r", 
+            "ring_03_half_r", 
+            "ring_02_dip_r", 
+            "ring_03_in_r", 
+            "ring_02_bulge_r", 
+            "ring_02_side_out_r", 
+            "ring_02_side_inn_r", 
+            "ring_02_half_r", 
+            "ring_02_in_r", 
+            "ring_02_pip_r", 
+            "ring_01_palmMid_r", 
+            "ring_01_bulge_r", 
+            "ring_01_side_out_r", 
+            "ring_01_side_inn_r", 
+            "ring_01_half_r", 
+            "ring_01_mcp_r", 
+            "ring_01_palm_r", 
+            "ring_metacarpal_slide_r", 
+            "thumb_01_r", 
+            "thumb_02_r", 
+            "thumb_03_r", 
+            "thumb_03_bulge_r", 
+            "thumb_03_side_out_r", 
+            "thumb_03_side_inn_r", 
+            "thumb_03_half_r", 
+            "thumb_03_pip_r", 
+            "thumb_03_in_r", 
+            "thumb_02_bulge_r", 
+            "thumb_02_side_out_r", 
+            "thumb_02_side_inn_r", 
+            "thumb_02_half_r", 
+            "thumb_02_in_r", 
+            "thumb_02_mcp_r", 
+            "thumb_01_side_out_r", 
+            "thumb_01_side_inn_r", 
+            "middle_metacarpal_r", 
+            "middle_01_r", 
+            "middle_02_r", 
+            "middle_03_r", 
+            "middle_03_bulge_r", 
+            "middle_03_half_r", 
+            "middle_03_in_r", 
+            "middle_02_dip_r", 
+            "middle_02_bulge_r", 
+            "middle_02_side_out_r", 
+            "middle_02_side_inn_r", 
+            "middle_02_half_r", 
+            "middle_02_pip_r", 
+            "middle_02_in_r", 
+            "middle_01_palmMid_r", 
+            "middle_01_bulge_r", 
+            "middle_01_side_out_r", 
+            "middle_01_side_inn_r", 
+            "middle_01_half_r", 
+            "middle_01_mcp_r", 
+            "middle_01_palm_r", 
+            "middle_metacarpal_slide_r", 
+            "index_metacarpal_r", 
+            "index_01_r", 
+            "index_02_r", 
+            "index_03_r", 
+            "index_03_bulge_r", 
+            "index_03_half_r", 
+            "index_02_dip_r", 
+            "index_03_in_r", 
+            "index_02_bulge_r", 
+            "index_02_side_out_r", 
+            "index_02_side_inn_r", 
+            "index_02_half_r", 
+            "index_02_in_r", 
+            "index_02_pip_r", 
+            "index_01_palmMid_r", 
+            "index_01_bulge_r", 
+            "index_01_side_out_r", 
+            "index_01_side_inn_r", 
+            "index_01_half_r", 
+            "index_01_mcp_r", 
+            "index_01_palm_r", 
+            "index_metacarpal_slide_r", 
+            "wrist_inner_r", 
+            "wrist_outer_r", 
+            "lowerarm_twist_02_r", 
+            "lowerarm_twist_01_r", 
+            "lowerarm_correctiveRoot_r", 
+            "lowerarm_out_r", 
+            "lowerarm_in_r", 
+            "lowerarm_fwd_r", 
+            "lowerarm_bck_r", 
+            "upperarm_twist_01_r", 
+            "upperarm_twistCor_01_r", 
+            "upperarm_twist_02_r", 
+            "upperarm_tricep_r", 
+            "upperarm_bicep_r", 
+            "upperarm_twistCor_02_r", 
+            "clavicle_out_r", 
+            "clavicle_scap_r", 
+            "clavicle_pec_r", 
+            "spine_04_latissimus_l", 
+            "spine_04_latissimus_r", 
+            "clavicle_pec_l", 
+            "thigh_r", 
+            "calf_r", 
+            "foot_r", 
+            "ball_r", 
+            "littletoe_01_r", 
+            "littletoe_02_r", 
+            "ringtoe_01_r", 
+            "ringtoe_02_r", 
+            "middletoe_01_r", 
+            "middletoe_02_r", 
+            "bigtoe_01_r", 
+            "bigtoe_02_r", 
+            "indextoe_01_r", 
+            "indextoe_02_r", 
+            "ankle_bck_r", 
+            "ankle_fwd_r", 
+            "calf_twist_02_r", 
+            "calf_twistCor_02_r", 
+            "calf_twist_01_r", 
+            "calf_correctiveRoot_r", 
+            "calf_kneeBack_r", 
+            "calf_knee_r", 
+            "thigh_twist_01_r", 
+            "thigh_twistCor_01_r", 
+            "thigh_twist_02_r", 
+            "thigh_twistCor_02_r", 
+            "thigh_correctiveRoot_r", 
+            "thigh_fwd_r", 
+            "thigh_bck_r", 
+            "thigh_out_r", 
+            "thigh_in_r", 
+            "thigh_bck_lwr_r", 
+            "thigh_fwd_lwr_r", 
+            "thigh_l", 
+            "calf_l", 
+            "foot_l", 
+            "ball_l", 
+            "indextoe_01_l", 
+            "indextoe_02_l", 
+            "bigtoe_01_l", 
+            "bigtoe_02_l", 
+            "littletoe_01_l", 
+            "littletoe_02_l", 
+            "middletoe_01_l", 
+            "middletoe_02_l", 
+            "ringtoe_01_l", 
+            "ringtoe_02_l", 
+            "ankle_bck_l", 
+            "ankle_fwd_l", 
+            "calf_twist_02_l", 
+            "calf_twistCor_02_l", 
+            "calf_twist_01_l", 
+            "calf_correctiveRoot_l", 
+            "calf_kneeBack_l", 
+            "calf_knee_l", 
+            "thigh_twist_01_l", 
+            "thigh_twistCor_01_l", 
+            "thigh_twist_02_l", 
+            "thigh_twistCor_02_l", 
+            "thigh_correctiveRoot_l", 
+            "thigh_bck_l", 
+            "thigh_fwd_l", 
+            "thigh_out_l", 
+            "thigh_bck_lwr_l", 
+            "thigh_in_l", 
+            "thigh_fwd_lwr_l"
+        ]
         
     def get_file_data(self, full_path=False, dir_path=False):
         """
@@ -236,29 +742,43 @@ class MhOutputFbx:
         """
         return os.path.splitext(os.path.split(abs_path)[-1])[0]
        
-    def get_ref_ns(self, ref=None, name_space=None):
+    def edit_ns(self, remove_space=None, add_space=None):
         """
-            查找文件里的所有引用文件，导入存在关键字的文件，删除空间命
+        添加和删除指定的空间命
         Args:
-            keywords (string): 关键字
+            remove_space (string): 移除的空间命. Defaults to None.
+            add_space (string): _description_. Defaults to None.
+        """
+        if remove_space:
+            cmds.namespace(mv=[remove_space, ":"], f=1)
+            cmds.namespace(rm=remove_space)
+        if add_space:
+            cmds.namespace(set=":")
+            cmds.namespace(add=add_space)
+            
+    def get_except_joint(self, root_joint=None):
+        """
+        移除MH骨骼列表的修型骨骼
+
+        Args:
+            root_joint (joint): 根骨骼
 
         Returns:
-            list: 资产类型和名字
+            list: 需要bake动画的骨骼列表
         """
-        name_space_lst = ["DHIbody", "DHIhead"]
-        if name_space:
-            for sp in name_space_lst:
-                cmds.namespace(mv=[sp, ":"], f=1)
-                cmds.namespace(rm=sp)
-        if ref:
-            name_space = cmds.referenceQuery(ref, ns=True)
-            file_name = self.get_file_name(ref)
-            cmds.file(ref, ir=1)
-            print(name_space)
-            cmds.namespace(mv=[name_space, ":"], f=1)
-            cmds.namespace(rm=name_space)            
-            return file_name.split("_")[1:3]
+        if root_joint:
+            return [jnt for jnt in cmds.ls(root_joint, dag=1, ni=1, type="joint") if jnt.split(":")[-1].replace("_r", "").replace("_l", "") not in self.remove_joint_list]
 
+    def zb_other_joint(self, name_space=None):
+        if name_space:
+            zb_name_space = name_space.replace("MH", "MHZB").replace("Chars", "Props")
+            zb_root = "{}:root".format(zb_name_space)
+            if cmds.objExists(zb_root):
+                other_joint = [jnt.split(":")[-1] for jnt in cmds.ls(zb_root, dag=1, ni=1, type="joint")]
+                other_joint = list(set(other_joint).difference(set(self.zb_default_joint)))
+                for jnt in other_joint:
+                    cmds.parentConstraint("{0}:{1}".format(zb_name_space, jnt), "{0}:{1}".format(name_space, jnt), mo=0)
+    
     def export_fbx_file(self, fbx_file, anim=False):
         """
             设置fbx导出选项，导出fbx
@@ -273,8 +793,9 @@ class MhOutputFbx:
         mel.eval('FBXExportInputConnections -v 0')
         mel.eval('FBXExportIncludeChildren  -v 1')
         if anim:
-            (startFrame, endFrame) = self.get_time_side()
-            mel.eval('FBXProperty Export|IncludeGrp|Animation -v true;')
+            mel.eval('FBXProperty Export|IncludeGrp|Animation -v true;')    
+            (startFrame, endFrame) = self.get_time_side() 
+            # mel.eval('FBXProperty Export|IncludeGrp|Animation -v true;')
             mel.eval('FBXProperty Export|IncludeGrp|Animation|BakeComplexAnimation -v true;')
             mel.eval('FBXProperty Export|IncludeGrp|Animation|BakeComplexAnimation|BakeFrameStart -v %s;' %startFrame)
             mel.eval('FBXProperty Export|IncludeGrp|Animation|BakeComplexAnimation|BakeFrameEnd -v %s;' %endFrame)
@@ -286,46 +807,85 @@ class MhOutputFbx:
             pm.mel.FBXExport(f=fbx_file, s=True)
         else:
             om.MGlobal.displayError(u'存储Lamber的UE的Fbx文件异常!')
+            
+    def make_bake_results(self, joint_lst, min_frame, max_frame):
+        
+        cmds.bakeResults(joint_lst,  
+                         t=(min_frame-5, max_frame+5),
+                         simulation = 1,
+                         sampleBy=1,
+                         oversamplingRate =1,
+                         disableImplicitControl=1,
+                         preserveOutsideKeys=1,
+                         sparseAnimCurveBake=0,
+                         removeBakedAttributeFromLayer=0,
+                         removeBakedAnimFromLayer = 0,
+                         bakeOnOverrideLayer=0,
+                         minimizeRotation = 1,
+                         controlPoints=0,
+                         shape=1
+                         )
+    
+    def delete_constraint(self, root_joint):
+        cmds.delete(cmds.ls(root_joint, 
+                            dag=1,
+                            type=["parentConstraint", 
+                            "scaleConstraint", 
+                            "pointConstraint",
+                            "orientConstraint"]))
 
-    def out_fbx(self, ch_name="MH", anim=False):
+    def out_fbx(self, anim=False):
         """
             默认导出绑定的fbx文件, 带骨骼和蒙皮模型, 输出路径为当前文件路
             anim为1输出骨骼
         Args:
-            ch_name (str, optional): 检索的关键字，默认为"MH".
             anim (bool, optional): 是否导出动画fbx, 默认为False.
-
         Returns:
             _type_: fbx文件绝对路径列表
         """
+        body_root = "DHIbody:root"
         copy_lst = list()
         loct_path = self.get_file_data(full_path=1, dir_path=1)
         file_name, fextension = os.path.splitext(self.get_file_data())
-        if anim:            
-            # 导入引用文件
-            for ref in cmds.file(q=True, r=True):
-                ref_node = cmds.referenceQuery(ref, referenceNode=True)
-                if ch_name in ref and cmds.referenceQuery(ref_node, il=True):
-                    str_lst = file_name.split("_")[0:3]
-                    ch_str = self.get_ref_ns(ref=ref)
-                    cmds.parent("DHIbody:root", "head_grp", w=1)
-                    cmds.select("DHIbody:root", hi=1)
-                    str_lst.extend(ch_str)
-                    new_file_str = "_".join(str_lst)
-                    body_fbx_name = "{0}/{1}_DHIbody.fbx".format(loct_path, new_file_str)
-                    self.export_fbx_file(body_fbx_name, anim=1)
-                    copy_lst.append(body_fbx_name)
-                    cmds.select(self.face_con_lst)
-                    head_fbx_name = "{0}/{1}_DHIhead.fbx".format(loct_path, new_file_str)
-                    self.export_fbx_file(head_fbx_name, anim=1)
-                    copy_lst.append(head_fbx_name)
-                    cmds.select("Sets", hi=1)
-                    cmds.select("DHIbody:root", "head_grp", add=1)
-                    cmds.delete()
-                    self.get_ref_ns(name_space=1)
-                                                         
-        if ch_name in file_name:
-            cmds.parent("DHIbody:root", "Geometry", w=1)           
+        if anim:
+            if not cmds.ls("*:DHIbody:root"):
+                return copy_lst
+            min_frame, max_frame = self.get_time_side()
+            for dhi in cmds.ls('*:DHIbody:root'):
+                name_space = dhi.split(":")[0]
+                newNameSpace = '_'.join(name_space.split("_")[1::])
+                self.zb_other_joint(name_space)
+                self.edit_ns(remove_space=name_space)
+                str_lst = file_name.split("_")[0:3]
+                new_file_name = "_".join(str_lst)
+                cmds.parent(body_root, "head_grp", w=1)
+                # body_joint = self.get_except_joint(body_root)
+                # self.make_bake_results(body_joint, min_frame, max_frame)
+                # cmds.currentTime(min_frame-5)
+                # self.delete_constraint(body_root)
+                cmds.select(body_root)
+                body_fbx_name = "{0}/{1}_{2}_DHIbody.fbx".format(loct_path, new_file_name, newNameSpace)
+                self.export_fbx_file(body_fbx_name, anim=1)
+                copy_lst.append(body_fbx_name)
+                cmds.select(self.face_con_lst)
+                head_fbx_name = "{0}/{1}_{2}_DHIhead.fbx".format(loct_path, new_file_name, newNameSpace)
+                self.export_fbx_file(head_fbx_name, anim=1)
+                copy_lst.append(head_fbx_name)
+                cmds.parent(body_root, "head_grp", "Group")
+                self.edit_ns(add_space=name_space)
+                for obj in cmds.ls("Group", dag=1, ni=1):
+                    if cmds.objExists(obj):
+                        cmds.rename(obj, ":{0}:{1}".format(name_space, obj))
+                if cmds.namespace(exists="DHIbody"):
+                    self.edit_ns(remove_space="DHIbody")
+                if cmds.namespace(exists="DHIhead"):
+                    self.edit_ns(remove_space="DHIhead")
+        else:
+            if not cmds.ls("*DHIbody:root"):
+                return copy_lst
+            self.delete_constraint(body_root)
+            self.delete_constraint("DHIhead:spine_04")
+            cmds.parent(body_root, "Geometry", w=1)           
             cmds.delete("spine_04_drv", "thigh_r_drv", "thigh_l_drv")
             cmds.parent("DHIhead:spine_04", "spine_03_drv")            
             as_name_lst = ["root_drv", "pelvis_drv", "spine_01_drv", "spine_02_drv", "spine_03_drv"]
@@ -333,22 +893,21 @@ class MhOutputFbx:
             for index, item in enumerate(as_name_lst):
                 cmds.rename(item, bs_name_lst[index])
             cmds.parent("root", w=1)
-            cmds.select("DHIbody:root", hi=1)
+            cmds.select(body_root, hi=1)
             cmds.select("body_GeoGP", add=1)
             body_fbx_name = "{0}/{1}_DHIbody.fbx".format(loct_path, file_name)
             self.export_fbx_file(body_fbx_name)
             copy_lst.append(body_fbx_name)
-            cmds.select(self.face_con_lst)
+            # cmds.select(self.face_con_lst)
             cmds.select("root", hi=1)
             cmds.select("head_GeoGP", add=1)
             head_fbx_name = "{0}/{1}_DHIhead.fbx".format(loct_path, file_name)
             self.export_fbx_file(head_fbx_name)
             copy_lst.append(head_fbx_name)
-        cmds.file("{0}/{1}".format(loct_path, self.get_file_data()), open=1, f=1)
+            cmds.file("{0}/{1}".format(loct_path, self.get_file_data()), open=1, f=1)
         return copy_lst
                      
 if __name__ == "__main__":
     mh_com = MhOutputFbx()
-    copy_file = mh_com.out_fbx()
+    copy_file = mh_com.out_fbx(anim=1)
     print(copy_file)
-    
