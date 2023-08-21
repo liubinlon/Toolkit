@@ -1,0 +1,4 @@
+import maya.cmds as cmds
+if "MH" in  cmds.file(q=1, sn=1):
+    script_node = cmds.scriptNode(n="reload_dna_file", bs="import os\nimport maya.cmds as cmds\ndna_node_lst = cmds.ls(type=\"embeddedNodeRL4\")\nfor dna_node in dna_node_lst:\n    dna_file_path = cmds.getAttr(\"{}.dnaFilePath\".format(dna_node))\n    file_loc_dir = os.path.split(cmds.file(q=1, loc=1))[0]\n    if not os.path.isfile(dna_file_path):\n        dna_file_name = os.path.split(dna_file_path)[-1]\n        dna_file_loc = os.path.join(file_loc_dir, dna_file_name)\n        cmds.setAttr(\"rl4Embedded_Cooper_rl.dnaFilePath\", dna_file_loc, type=\"string\")")
+    cmds.setAttr("{}.scriptType".format(script_node), 1)
